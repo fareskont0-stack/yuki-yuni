@@ -9,7 +9,7 @@ const mahmud = async () => {
 
 module.exports = {
         config: {
-                name: "فري فاير",
+                name: "فري فاير"
                 aliases: ["ffvid", "freefirevideo", "فریفاير"],
                 version: "1.7",
                 author: "MahMUD",
