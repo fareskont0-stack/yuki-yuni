@@ -29,7 +29,7 @@ module.exports = {
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.FISH_API_KEY}`,
+            Authorization: `Bearer ${process.env.1c582f665eba4274b1afb6c8c29c88a9}`,
             "Content-Type": "application/json"
           },
           responseType: "arraybuffer"
