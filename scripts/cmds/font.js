@@ -9,17 +9,20 @@ module.exports = {
         config: {
                 name: "font",
                 aliases: ["style"],
-                version: "1.7",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
+                        ar: "قم بتحويل النص الخاص بك إلى خطوط أنيقة ومتنوعة",
                         bn: "আপনার টেক্সটকে বিভিন্ন স্টাইলিশ ফন্টে রূপান্তর করুন",
                         en: "Convert your text into various stylish fonts",
                         vi: "Chuyển đổi văn bản của bạn thành nhiều phông chữ phong cách khác nhau"
                 },
                 category: "general",
                 guide: {
+                        ar: '   {pn} <رقم> <النص>: احصل على نص أنيق'
+                                + '\n   {pn} list: عرض جميع قائمة الخطوط',
                         bn: '   {pn} <নাম্বার> <টেক্সট>: স্টাইলিশ টেক্সট পান'
                                 + '\n   {pn} list: সব ফন্ট লিস্ট দেখুন',
                         en: '   {pn} <number> <text>: Get stylish text'
@@ -30,6 +33,11 @@ module.exports = {
         },
 
         langs: {
+                ar: {
+                        noList: "× لم يتم العثور على أنماط الخطوط.",
+                        invalid: "× استخدام غير صحيح! التنسيق: {pn} <رقم> <النص>",
+                        error: "× حدث خطأ: %1. تواصل مع MahMUD للمساعدة.\n•WhatsApp: 01836298139"
+                },
                 bn: {
                         noList: "× কোনো ফন্ট স্টাইল খুঁজে পাওয়া যায়নি।",
                         invalid: "× ভুল ফরম্যাট! সঠিক নিয়ম: {pn} <নাম্বার> <টেক্সট>",
