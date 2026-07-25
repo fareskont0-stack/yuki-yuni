@@ -7,7 +7,7 @@ const getBaseApi = async () => {
 
 module.exports = {
         config: {
-                name: "deepseek",
+                name: "تكلم",
                 version: "1.7",
                 author: "MahMUD",
                 countDown: 5,
