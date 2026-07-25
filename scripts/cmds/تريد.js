@@ -3,7 +3,7 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "تريد",
-    version: "1.0.0",
+    version: "1.1.0",
     author: "Fares",
     countDown: 5,
     role: 0,
@@ -34,18 +34,28 @@ module.exports = {
         userID = Object.keys(event.mentions)[0];
       }
 
-      // إذا لم توجد صورة مرفقة، نستخدم أفتار الفيسبوك
+      // 2. جلب رابط صورة البروفايل المباشر المضمون من فيسبوك
       if (!imageUrl) {
-        imageUrl = `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc154112c035045610b97d39103b994d8`;
+        try {
+          const userInfo = await api.getUserInfo(userID);
+          if (userInfo && userInfo[userID] && userInfo[userID].thumbSrc) {
+            imageUrl = userInfo[userID].thumbSrc;
+          }
+        } catch (e) {}
+      }
+
+      // صورة بديلة مضمونة 100% في حال تعذر جلب البروفايل
+      if (!imageUrl) {
+        imageUrl = "https://i.imgur.com/6EaXf9v.png";
       }
 
       if (message.react) message.react("⏳");
 
-      // 2. تشفير رابط الصورة وبناء رابط الـ API من Some Random API
+      // 3. تشفير رابط الصورة وبناء رابط الـ API
       const encodedAvatar = encodeURIComponent(imageUrl);
-      const apiUrl = `https://api.some-random-api.com/canvas/overlay/triggered?avatar=${encodedAvatar}`;
+      const apiUrl = `https://some-random-api.com/canvas/overlay/triggered?avatar=${encodedAvatar}`;
 
-      // 3. جلب ملف الـ GIF كـ Stream مباشر
+      // 4. جلب ملف الـ GIF
       const response = await axios.get(apiUrl, {
         responseType: "stream",
         headers: {
@@ -55,16 +65,15 @@ module.exports = {
 
       if (message.react) message.react("🔥");
 
-      // 4. إرسال النتيجة إلى المحادثة
       return message.reply({
         body: `🔥 | **تفضل يا حبة قلبي، الصورة بتأثير Triggered واجدة لعيونك:** ✨🌸`,
         attachment: [response.data]
       });
 
     } catch (error) {
-      console.error("Triggered Command Error:", error?.message || error);
+      console.error("Triggered Command Error:", error?.response?.data || error?.message || error);
       if (message.react) message.react("🥺");
-      return message.reply("🥺 **سامحني يا غالي، صرا مشكل مع السيرفر.. عاود جرب بعد شوية برك!**");
+      return message.reply("🥺 **سامحني يا غالي، صرا مشكل مع السيرفر.. عاود جرب بالرد (Reply) على صورة مباشرة!**");
     }
   }
 };
