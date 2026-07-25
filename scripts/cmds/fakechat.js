@@ -10,7 +10,7 @@ const mahmud = async () => {
 module.exports = {
         config: {
                 name: "هكر",
-                aliases: ["fc", "fake", "ফেকচ্যাট"],
+                aliases: ["fc", "fake", "فেকচ্যাট"],
                 version: "1.7",
                 author: "MahMUD",
                 countDown: 5,
@@ -18,7 +18,8 @@ module.exports = {
                 description: {
                         bn: "কাউকে দিয়ে ফেক চ্যাট মেসেজ তৈরি করুন",
                         en: "Generate a fake chat message for someone",
-                        vi: "Tạo tin nhắn trò chuyện giả cho ai đó"
+                        vi: "Tạo tin nhắn trò chuyện giả cho ai đó",
+                        ar: "توليد رسالة محادثة وهمية لشخص ما"
                 },
                 category: "fun",
                 guide: {
@@ -27,7 +28,9 @@ module.exports = {
                         en: '   {pn} <@tag/reply> <text>: Create fake chat'
                                 + '\n   {pn} <uid> <text>: Create via UID',
                         vi: '   {pn} <@tag/reply> <văn bản>: Tạo trò chuyện giả'
-                                + '\n   {pn} <uid> <văn bản>: Tạo qua UID'
+                                + '\n   {pn} <uid> <văn bản>: Tạo qua UID',
+                        ar: '   {pn} <@tag/reply> <text>: إنشاء محادثة وهمية'
+                                + '\n   {pn} <uid> <text>: الإنشاء عبر UID'
                 }
         },
 
@@ -47,8 +50,14 @@ module.exports = {
                 vi: {
                         noTarget: "× Cưng ơi, vui lòng phản hồi, gắn thẻ hoặc cung cấp UID! 🗨️",
                         noText: "× Cưng ơi, vui lòng nhập nội dung tin nhắn giả! ✍️",
-                        success: "🗨️ Đã tạo đoạn chat giả cho: %1",
+                        success: "× Đã tạo đoạn chat giả cho: %1",
                         error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                },
+                ar: {
+                        noTarget: "× يا عُمري، حط منشن، دير ريبلاي، والا عطيني الـ UID يا غالي! 🗨️",
+                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر في الشات! ✍️",
+                        success: "🗨️ تم توليد الشات الوهمي بنجاح لـ: %1 🌸",
+                        error: "× صار خطا يا غالي: %1. تواصل مع MahMUD إذا احتجت مساعدة."
                 }
         },
 
