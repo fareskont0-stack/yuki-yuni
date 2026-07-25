@@ -4,8 +4,8 @@ const path = require("path");
 
 module.exports = {
     config: {
-        name: "voiceReply",
-        version: "2.1.0",
+        name: "فارس",
+        version: "2.3.0",
         author: "Fares",
         countDown: 0,
         role: 0,
@@ -13,22 +13,22 @@ module.exports = {
             ar: "الرد الصوتي التلقائي"
         },
         longDescription: {
-            ar: "يرد البوت صوتياً تلقائياً عند قول كلمة بوت"
+            ar: "يرد البوت صوتياً تلقائياً عند قول الكلمة المخصصة"
         },
         category: "خدمات"
     },
 
-    onStart: async function () {
-        // تركها فارغة لكي لا تعتبر أمراً مكتوباً بالبادئة
-    },
+    onStart: async function () {},
 
     handleEvent: async function ({ api, event, message }) {
         try {
             if (!event.body) return;
             const content = event.body.toLowerCase();
             
-            // تحقق إذا كانت الرسالة تحتوي على كلمة بوت فقط أو تبدأ بها
-            if (content === "بوت" || content.startsWith("بوت ") || content.includes("يا بوت")) {
+            // قم بتغيير كلمة "فارس" أدناه إلى أي كلمة ترغب في أن يتقرب منها البوت ويرد صوتياً
+            const triggerWord = "فارس";
+            
+            if (content === triggerWord || content.startsWith(triggerWord + " ") || content.includes("يا " + triggerWord)) {
                 
                 const cacheDir = path.join(__dirname, "cache");
                 if (!fs.existsSync(cacheDir)) {
@@ -36,9 +36,6 @@ module.exports = {
                 }
                 
                 const audioPath = path.join(cacheDir, `bot_voice_${Date.now()}.mp3`);
-
-                if (message.react) message.react("🎙️");
-
                 const apiKey = "1c582f665eba4274b1afb6c8c29c88a9";
                 
                 try {
@@ -55,20 +52,18 @@ module.exports = {
 
                     fs.writeFileSync(audioPath, Buffer.from(response.data));
 
+                    return message.reply({
+                        body: "نعم يا عمري تفضل 🥺✨",
+                        attachment: fs.createReadStream(audioPath)
+                    }, () => {
+                        if (fs.existsSync(audioPath)) {
+                            fs.unlinkSync(audioPath);
+                        }
+                    });
+
                 } catch (apiError) {
-                    console.error("API Error, sending text fallback:", apiError.message);
-                    if (message.react) message.react("✨");
                     return message.reply("نعم يا عمري تفضل 🥺✨");
                 }
-
-                return message.reply({
-                    body: "نعم يا عمري تفضل 🥺✨",
-                    attachment: fs.createReadStream(audioPath)
-                }, () => {
-                    if (fs.existsSync(audioPath)) {
-                        fs.unlinkSync(audioPath);
-                    }
-                });
             }
         } catch (error) {
             console.error("Voice Reply Event Error:", error);
