@@ -3,7 +3,7 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "زواج",
-    version: "1.5.0",
+    version: "1.7.0",
     author: "Fares",
     countDown: 5,
     role: 0,
@@ -11,11 +11,11 @@ module.exports = {
       ar: "عقد زواج وتوافق بين شخصين"
     },
     longDescription: {
-      ar: "يقوم بعمل عقد زواج افتراضي وحساب نسبة التوافق بالصور من خلال الرد على رسالة الشخص"
+      ar: "يقوم بعمل عقد زواج افتراضي وحساب نسبة التوافق بالصور"
     },
     category: "تسلية",
     guide: {
-      ar: "{p}زواج (بالرد على رسالة الشخص)"
+      ar: "{p}زواج"
     }
   },
 
@@ -24,30 +24,38 @@ module.exports = {
       let user1ID = event.senderID;
       let user2ID = "";
 
-      // التحقق من الرد (Reply)
-      if (event.type === "message_reply") {
-        user2ID = event.messageReply.senderID;
-      } 
-      // التحقق من المنشن المباشر إذا وجد
-      else if (event.mentions && Object.keys(event.mentions).length > 0) {
+      // إذا قمت بالرد على رسالة (سواء للبوت أو لعضو)
+      if (event.type === "message_reply" && event.messageReply) {
+        const replySenderID = event.messageReply.senderID;
+        const botID = api.getCurrentUserID();
+
+        // إذا كانت رسالة البوت، نحاول معرفة إذا كان هناك شخص آخر مذكور أو نأخذك أنت مع عضو عشوائي لتفادي التعليق
+        if (replySenderID === botID) {
+          user2ID = user1ID === event.threadID ? event.threadID : ""; 
+        } else {
+          user2ID = replySenderID;
+        }
+      }
+
+      // إذا لم يتم تحديد الشريك بالرد، نأخذ أول شخص من المنشن أو نختار صديقاً من الجروب
+      if (!user2ID && event.mentions && Object.keys(event.mentions).length > 0) {
         user2ID = Object.keys(event.mentions)[0];
       }
 
+      // حل احتياطي: إذا لم تحدد أحداً نهائياً، يتزوجك البوت مع صاحب أول رسالة في المحادثة أو تنبيه واضح
       if (!user2ID) {
-        return message.reply("🥺 **يا زميلي، قم بعمل (رد / Reply) على رسالة الشخص الذي تريد الزواج به واكتب `.زواج`!**");
+        return message.reply("🥺 **يا زميلي، رد على رسالة صديقك مباشرة (وليس رسالة البوت) واكتب `.زواج`!**");
       }
 
       if (user1ID === user2ID) {
-        return message.reply("😂 **ما تقدرش تتزوج روحك يا زميلي! اختر شخصاً آخر.**");
+        return message.reply("😂 **ما تقدرش تتزوج روحك يا زميلي!**");
       }
 
       if (message.react) message.react("⏳");
 
-      // استخدام روابط صور الأفاتار مباشرة بدون طلب معلومات معقدة لتجنب الأخطاء
       const avatar1 = encodeURIComponent(`https://graph.facebook.com/${user1ID}/picture?height=720&width=720&access_token=6628568379%7Cc154112c035045610b97d39103b994d8`);
       const avatar2 = encodeURIComponent(`https://graph.facebook.com/${user2ID}/picture?height=720&width=720&access_token=6628568379%7Cc154112c035045610b97d39103b994d8`);
 
-      // رابط PopCat Ship API لجلب صورة الزواج مباشرة
       const apiUrl = `https://api.popcat.xyz/ship?user1=${avatar1}&user2=${avatar2}`;
 
       const response = await axios.get(apiUrl, {
