@@ -1,17 +1,22 @@
-const { createCanvas, loadImage } = require("canvas");
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+
+const mahmud = async () => {
+        const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
+        return base.data.mahmud;
+};
 
 module.exports = {
         config: {
                 name: "شات",
-                aliases: ["fc", "fake"],
-                version: "2.2",
+                aliases: ["فاك", "fake", "شات"],
+                version: "2.5",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
-                        ar: "توليد صورة محادثة وهمية محلية بدون مشاكل الرموز"
+                        ar: "توليد محادثة وهمية مع دعم النص العربي"
                 },
                 category: "fun",
                 guide: {
@@ -21,9 +26,9 @@ module.exports = {
 
         langs: {
                 ar: {
-                        noTarget: "× يا عُمري، حط منشن والا دير ريبلاي على الشخص يا غالي! 🗨️",
-                        noText: "× يا روح قلبي، اكتب النص بالحروف اللاتينية باش يظهر بوضوح تام! ✍️",
-                        success: "🗨️ يا عسل، ها هو الشات الوهمي نقي ومعدول: %1 🌸✨",
+                        noTarget: "× يا عُمري، دير ريبلاي على الشخص والا حط منشن باش يخدم الأمر! 🗨️",
+                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر داخل الشات! ✍️",
+                        success: "🗨️ يا عسل، ها هو الشات الوهمي جاهز ومعدول لـ: %1 🌸✨",
                         error: "× صار خطا يا غالي: %1"
                 }
         },
@@ -55,62 +60,22 @@ module.exports = {
 
                         let userName = "User";
                         try {
-                                const fetchedName = await usersData.getName(targetId);
-                                if (fetchedName) {
-                                        userName = fetchedName.replace(/[^\x00-\x7F]/g, "").trim() || "User";
-                                }
+                                userName = (await usersData.getName(targetId)) || "User";
                         } catch {
                                 userName = "User";
                         }
 
                         api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-                        const avatarUrl = `https://graph.facebook.com/${targetId}/picture?height=720&width=720&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
-                        let avatarImage;
-                        try {
-                                avatarImage = await loadImage(avatarUrl);
-                        } catch {
-                                avatarImage = await loadImage("https://i.imgur.com/DZ47K4k.png");
-                        }
-
-                        const canvas = createCanvas(800, 350);
-                        const ctx = canvas.getContext("2d");
-
-                        // خلفية فخمة
-                        ctx.fillStyle = "#6B1D2F";
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                        // صورة البروفايل دائرية
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.arc(80, 200, 50, 0, Math.PI * 2, true);
-                        ctx.closePath();
-                        ctx.clip();
-                        ctx.drawImage(avatarImage, 30, 150, 100, 100);
-                        ctx.restore();
-
-                        // فقاعة الشات
-                        ctx.fillStyle = "#262626";
-                        ctx.beginPath();
-                        ctx.roundRect(150, 130, 580, 140, 20);
-                        ctx.fill();
-
-                        // اسم المستخدم
-                        ctx.fillStyle = "#ffffff";
-                        ctx.font = "bold 24px Arial";
-                        ctx.fillText(userName, 180, 175);
-
-                        // النص بحروف لاتينية واضحة وصافية
-                        ctx.fillStyle = "#e4e6eb";
-                        ctx.font = "22px Arial";
-                        ctx.fillText(userText, 180, 225);
+                        const baseUrl = await mahmud();
+                        const apiUrl = `${baseUrl}/api/fakechat?id=${targetId}&name=${encodeURIComponent(userName)}&text=${encodeURIComponent(userText)}`;
 
                         const cacheDir = path.join(__dirname, "cache");
                         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
                         const filePath = path.join(cacheDir, `fakechat_${Date.now()}.png`);
 
-                        const buffer = canvas.toBuffer("image/png");
-                        fs.writeFileSync(filePath, buffer);
+                        const response = await axios.get(apiUrl, { responseType: "arraybuffer" });
+                        fs.writeFileSync(filePath, Buffer.from(response.data, "binary"));
 
                         return message.reply({
                                 body: getLang("success", userName),
@@ -121,7 +86,7 @@ module.exports = {
                         });
 
                 } catch (err) {
-                        console.error("Local Fakechat Error:", err);
+                        console.error("Fakechat Error:", err);
                         api.setMessageReaction("❌", event.messageID, () => {}, true);
                         return message.reply(getLang("error", err.message));
                 }
