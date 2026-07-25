@@ -1,22 +1,22 @@
 module.exports = {
   config: {
     name: "welcome",
-    version: "1.2.0",
+    version: "1.3.0",
     author: "Fares",
     category: "events"
   },
 
   onEvent: async function ({ api, event }) {
-    // 1. التحقق من حدث انضمام أعضاء جدد إلى المجموعة
-    if (event.logMessageType === "log:subscribe") {
+    // 1. التحقق من نوع حدث إضافة الأعضاء الجدد
+    if (event.type === "event" && event.logMessageType === "log:subscribe") {
       const threadID = event.threadID;
       const addedParticipants = event.logMessageData.addedParticipants;
 
       for (const user of addedParticipants) {
-        // في حال كان العضو المنضم هو البوت نفسه
+        // إذا كان البوت هو من أُضيف للمجموعة
         if (user.userFbId === api.getCurrentUserID()) {
           return api.sendMessage(
-            "أهلاً بكم جميعاً! شكراً لإضافتي إلى هذه المجموعة ❤️\nيمكنكم كتابة **.أوامر** لعرض قائمة الأوامر المتاحة.",
+            "أهلاً بكم جميعا! شكراً لإضافتي إلى هذه المجموعة ❤️\nيمكنكم كتابة **.أوامر** لرؤية القائمة.",
             threadID
           );
         }
@@ -25,18 +25,18 @@ module.exports = {
         const userFbId = user.userFbId;
         const newNickname = `[🍓] ${userName}`;
 
-        // 2. تغيير الكنية (Nickname) للعضو الجديد
+        // 2. محاولة تغيير الكنية (تستمر العملية حتى لو فشل بسبب الصلاحيات)
         try {
           await api.changeNickname(newNickname, threadID, userFbId);
-        } catch (error) {
-          console.error(`لم يتم تغيير كنية ${userName}:`, error?.message || error);
+        } catch (e) {
+          console.log("لم يتم تغيير الكنية - قد يحتاج البوت لرتبة أدمن:", e?.message);
         }
 
-        // 3. إرسال نص الترحيب مع إشارة (Mention) للعضو
+        // 3. إرسال نص الترحيب
         const welcomeMsg = `نورت مجموعة يا عيوني 🍓✨\n\nأهلاً بك يا ${userName} معنا في العائلة! ❤️`;
 
         try {
-          api.sendMessage({
+          await api.sendMessage({
             body: welcomeMsg,
             mentions: [
               {
@@ -45,8 +45,8 @@ module.exports = {
               }
             ]
           }, threadID);
-        } catch (error) {
-          console.error("خطأ في إرسال رسالة الترحيب:", error?.message || error);
+        } catch (err) {
+          console.error("خطأ أثناء إرسال رسالة الترحيب:", err?.message);
         }
       }
     }
