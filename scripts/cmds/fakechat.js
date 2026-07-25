@@ -9,7 +9,7 @@ const mahmud = async () => {
 
 module.exports = {
         config: {
-                name: "fakechat",
+                name: "هكر",
                 aliases: ["fc", "fake", "ফেকচ্যাট"],
                 version: "1.7",
                 author: "MahMUD",
