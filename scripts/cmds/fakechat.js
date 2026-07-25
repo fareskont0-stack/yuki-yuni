@@ -5,25 +5,25 @@ const path = require("path");
 module.exports = {
         config: {
                 name: "شات",
-                aliases: ["وهمي", "fake"],
-                version: "2.1",
+                aliases: ["fc", "fake"],
+                version: "2.2",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
-                        ar: "توليد صورة محادثة وهمية مع النص محلياً وبدون مشاكل"
+                        ar: "توليد صورة محادثة وهمية محلية بدون مشاكل الرموز"
                 },
                 category: "fun",
                 guide: {
-                        ar: '   {pn} <@tag/reply> <text>: دير ريبلاي أو منشن مع كتابة النص'
+                        ar: '   {pn} <@tag/reply> <text>: دير ريبلاي أو منشن مع النص'
                 }
         },
 
         langs: {
                 ar: {
                         noTarget: "× يا عُمري، حط منشن والا دير ريبلاي على الشخص يا غالي! 🗨️",
-                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر داخل الشات! ✍️",
-                        success: "🗨️ يا عسل، ها هو الشات الوهمي مع النص مضبوط 100/100: %1 🌸✨",
+                        noText: "× يا روح قلبي، اكتب النص بالحروف اللاتينية باش يظهر بوضوح تام! ✍️",
+                        success: "🗨️ يا عسل، ها هو الشات الوهمي نقي ومعدول: %1 🌸✨",
                         error: "× صار خطا يا غالي: %1"
                 }
         },
@@ -55,14 +55,16 @@ module.exports = {
 
                         let userName = "User";
                         try {
-                                userName = (await usersData.getName(targetId)) || "User";
+                                const fetchedName = await usersData.getName(targetId);
+                                if (fetchedName) {
+                                        userName = fetchedName.replace(/[^\x00-\x7F]/g, "").trim() || "User";
+                                }
                         } catch {
                                 userName = "User";
                         }
 
                         api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-                        // جلب صورة البروفايل الخاصة بالشخص
                         const avatarUrl = `https://graph.facebook.com/${targetId}/picture?height=720&width=720&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
                         let avatarImage;
                         try {
@@ -71,15 +73,14 @@ module.exports = {
                                 avatarImage = await loadImage("https://i.imgur.com/DZ47K4k.png");
                         }
 
-                        // إنشاء لوحة الرسم (Canvas) محلياً
                         const canvas = createCanvas(800, 350);
                         const ctx = canvas.getContext("2d");
 
-                        // رسم خلفية دافئة وجميلة
+                        // خلفية فخمة
                         ctx.fillStyle = "#6B1D2F";
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                        // رسم صورة البروفايل دائرية
+                        // صورة البروفايل دائرية
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(80, 200, 50, 0, Math.PI * 2, true);
@@ -88,18 +89,18 @@ module.exports = {
                         ctx.drawImage(avatarImage, 30, 150, 100, 100);
                         ctx.restore();
 
-                        // رسم فقاعة الرسالة (Bubble)
+                        // فقاعة الشات
                         ctx.fillStyle = "#262626";
                         ctx.beginPath();
                         ctx.roundRect(150, 130, 580, 140, 20);
                         ctx.fill();
 
-                        // كتابة اسم المستخدم
+                        // اسم المستخدم
                         ctx.fillStyle = "#ffffff";
                         ctx.font = "bold 24px Arial";
                         ctx.fillText(userName, 180, 175);
 
-                        // كتابة النص الذي أدخله المستخدم داخل الفقاعة
+                        // النص بحروف لاتينية واضحة وصافية
                         ctx.fillStyle = "#e4e6eb";
                         ctx.font = "22px Arial";
                         ctx.fillText(userText, 180, 225);
