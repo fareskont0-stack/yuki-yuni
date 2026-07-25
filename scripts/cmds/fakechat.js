@@ -9,26 +9,25 @@ const mahmud = async () => {
 
 module.exports = {
         config: {
-                name: "شات",
-                aliases: ["وهمي", "fake", "فেকচ্যাট"],
-                version: "1.9",
+                name: "هكر",
+                aliases: ["fc", "fake", "فেকচ্যাট"],
+                version: "2.0",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
-                        ar: "توليد رسالة محادثة وهمية بدون مشاكل"
+                        ar: "توليد صورة محادثة وهمية بدون مشاكل المربع الأسود"
                 },
                 category: "fun",
                 guide: {
-                        ar: '   {pn} <@tag/reply> <text>: دير ريبلاي أو منشن مع النص'
+                        ar: '   {pn} <@tag/reply>: دير ريبلاي أو منشن للشخص'
                 }
         },
 
         langs: {
                 ar: {
-                        noTarget: "× يا عُمري، حط منشن، دير ريبلاي على الشخص، والا عطيني الـ UID تاعو يا غالي! 🗨️",
-                        noText: "× يا روح قلبي، اكتب النص بالحروف اللاتينية أو الإنجليزية باش ما يخرجش المربع الأسود! ✍️",
-                        success: "🗨️ يا عسل، ها هو الشات الوهمي بنجاح لـ: %1 🌸✨",
+                        noTarget: "× يا عُمري، حط منشن والا دير ريبلاي على الشخص باش نجبدلك البروفايل تاعو! 🗨️",
+                        success: "🗨️ يا عسل، ها هو الشات الوهمي جاهز بدون مربعات سوداء: %1 🌸✨",
                         error: "× يا غالي صار خطا في السيرفر: %1. تواصل مع MahMUD ربي يحفظك."
                 }
         },
@@ -42,27 +41,21 @@ module.exports = {
                 try {
                         const { mentions, messageReply } = event;
                         let targetId;
-                        let userText = args.join(" ").trim();
 
                         if (messageReply) {
                                 targetId = messageReply.senderID;
                         } else if (Object.keys(mentions).length > 0) {
                                 targetId = Object.keys(mentions)[0];
-                                const mentionName = mentions[targetId];
-                                userText = args.join(" ").replace(new RegExp(`@?${mentionName}`, "gi"), "").trim();
                         } else if (args.length > 0 && /^\d+$/.test(args[0])) {
                                 targetId = args[0];
-                                userText = args.slice(1).join(" ").trim();
                         }
 
                         if (!targetId) return message.reply(getLang("noTarget"));
-                        if (!userText) return message.reply(getLang("noText"));
 
-                        let userName = "Yuki User";
+                        let userName = "User";
                         try {
                                 const fetchedName = await usersData.getName(targetId);
                                 if (fetchedName) {
-                                        // تنظيف الاسم وتحويله لحروف لاتينية لتفادي المربعات السوداء
                                         userName = fetchedName.replace(/[^\x00-\x7F]/g, "").trim() || "User";
                                 }
                         } catch {
@@ -72,7 +65,8 @@ module.exports = {
                         api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
                         const baseUrl = await mahmud();
-                        const apiUrl = `${baseUrl}/api/fakechat?id=${targetId}&name=${encodeURIComponent(userName)}&text=${encodeURIComponent(userText)}`;
+                        // تم إزالة النص من الرابط نهائياً لكي لا تظهر المربعات السوداء
+                        const apiUrl = `${baseUrl}/api/fakechat?id=${targetId}&name=${encodeURIComponent(userName)}&text=`;
 
                         const cacheDir = path.join(__dirname, "cache");
                         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
