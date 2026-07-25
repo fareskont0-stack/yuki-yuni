@@ -2,7 +2,7 @@ const axios = require("axios");
 
 module.exports = {
   config: {
-    name: "لا_تغفر",
+    name: "كروم",
     version: "1.0.0",
     author: "Fares",
     countDown: 5,
