@@ -9,8 +9,8 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "profile",
-                aliases: ["pp", "dp", "pfp", "প্রোফাইল"],
+                name: "بروفايل",
+                aliases: ["بب", "dp", "pfp", "প্রোফাইল"],
                 version: "1.7",
                 author: "MahMUD",
                 countDown: 5,
@@ -18,7 +18,8 @@ module.exports = {
                 description: {
                         bn: "ব্যবহারকারীর প্রোফাইল পিকচার ডাউনলোড করুন",
                         en: "Fetch user's profile picture",
-                        vi: "Tải ảnh đại diện của người dùng"
+                        vi: "Tải ảnh đại diện của người dùng",
+                        ar: "جلب صورة البروفايل للمستخدم بكل حب وحنان"
                 },
                 category: "utility",
                 guide: {
@@ -27,7 +28,8 @@ module.exports = {
                         en: '   {pn}: Fetch your profile picture'
                                 + '\n   {pn} <@tag/reply/UID>: Fetch someone\'s profile picture',
                         vi: '   {pn}: Lấy ảnh đại diện của bạn'
-                                + '\n   {pn} <@tag/reply/UID>: Lấy ảnh đại diện của người khác'
+                                + '\n   {pn} <@tag/reply/UID>: Lấy ảnh đại diện của người khác',
+                        ar: '   {pn}: شوف صورة بروفايلك يا عُمري\n   {pn} <@tag/reply/UID>: شوف صورة بروفايل الشخص اللي تحبه 🌸'
                 }
         },
 
@@ -46,6 +48,11 @@ module.exports = {
                         success: ">🎀 %1\nCưng ơi, ảnh đại diện của cưng đây 😘",
                         error: "× Không thể lấy ảnh đại diện, liên hệ MahMUD: %1\n•WhatsApp: 01836298139",
                         invalid: "! UID hoặc liên kết không hợp lệ"
+                },
+                ar: {
+                        success: ">🎀 %1\nيا عُمري ويا روح قلبي، ها هي صورة البروفايل تاع الغالي %1 راك منورها بطلتك الحلوة 🤍✨",
+                        error: "× يا غالي صار خطا في جلب الصورة، تواصل مع MahMUD ربي يحفظك: %1\n•WhatsApp: 01836298139",
+                        invalid: "! يا الحبيب، حط UID صحيح والا رابط صالح باش نقدر نجبدها لك 🌸"
                 }
         },
 
