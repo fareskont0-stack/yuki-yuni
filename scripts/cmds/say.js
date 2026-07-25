@@ -7,7 +7,7 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "say",
+                name: "قول",
                 version: "1.7",
                 author: "MahMUD",
                 countDown: 5,
@@ -15,13 +15,15 @@ module.exports = {
                 description: {
                         bn: "যেকোনো লেখাকে অডিও বা ভয়েস মেসেজে রূপান্তর করুন",
                         en: "Convert any text into an audio or voice message",
-                        vi: "Chuyển đổi bất kỳ văn bản nào thành tin nhắn âm thanh hoặc giọng nói"
+                        vi: "Chuyển đổi bất kỳ văn bản nào thành tin nhắn âm thanh hoặc giọng nói",
+                        ar: "تحويل أي نص إلى رسالة صوتية بلهجة جزائرية وبكل حب 🤍"
                 },
                 category: "media",
                 guide: {
                         bn: '   {pn} <লেখা>: (অথবা কোনো মেসেজে রিপ্লাই দিন)',
                         en: '   {pn} <text>: (or reply to a message)',
-                        vi: '   {pn} <văn bản>: (hoặc trả lời tin nhắn)'
+                        vi: '   {pn} <văn bản>: (hoặc trả lời tin nhắn)',
+                        ar: '   {pn} <النص>: (أو دير ريبلاي على رسالة باش يحولها صوت)'
                 }
         },
 
@@ -37,6 +39,10 @@ module.exports = {
                 vi: {
                         noInput: "× Cưng ơi, hãy viết gì đó hoặc phản hồi tin nhắn",
                         error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                },
+                ar: {
+                        noInput: "× يا عُمري، اكتب حاجة والا دير ريبلاي على رسالة باش نقدر نحولها لك صوت 🌸",
+                        error: "حدث خطأ برمجي تكلم معا مطور fares kouachi رقم واتساب 0793229194"
                 }
         },
 
@@ -67,7 +73,7 @@ module.exports = {
                                 body: "",
                                 attachment: response.data
                         }, () => {
-                                api.setMessageReaction("🪽", event.messageID, () => {}, true);
+                                api.setMessageReaction("🩵", event.messageID, () => {}, true);
                         });
 
                 } catch (err) {
