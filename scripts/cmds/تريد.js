@@ -2,16 +2,16 @@ const axios = require("axios");
 
 module.exports = {
   config: {
-    name: "تريد",
-    version: "1.1.0",
+    name: "تو",
+    version: "1.2.0",
     author: "Fares",
     countDown: 5,
     role: 0,
     shortDescription: {
-      ar: "تأثير Triggered على الصورة"
+      ar: "تأثير Triggered بجودة عالية"
     },
     longDescription: {
-      ar: "توليد صورة متحركة بصيغة GIF بتأثير الاهتزاز الشهير على صورتك أو صورة العضو المحدّد"
+      ar: "توليد صورة متحركة بصيغة GIF بتأثير الاهتزاز مع الحفاظ على جودة الصورة عالية HD"
     },
     category: "تسلية",
     guide: {
@@ -24,7 +24,7 @@ module.exports = {
       let userID = event.senderID;
       let imageUrl = "";
 
-      // 1. تحديد الصورة من الريبلاي، المنشن، أو العضو الحالي
+      // 1. تحديد الصورة إذا كان هناك رد على صورة مباشرة (تكون بعالية الجودة)
       if (event.type === "message_reply") {
         userID = event.messageReply.senderID;
         if (event.messageReply.attachments && event.messageReply.attachments.length > 0 && event.messageReply.attachments[0].type === "photo") {
@@ -34,28 +34,18 @@ module.exports = {
         userID = Object.keys(event.mentions)[0];
       }
 
-      // 2. جلب رابط صورة البروفايل المباشر المضمون من فيسبوك
+      // 2. إذا لم تكن هناك صورة مرفقة، نطلب صورة البروفايل بجودة عالية (720x720)
       if (!imageUrl) {
-        try {
-          const userInfo = await api.getUserInfo(userID);
-          if (userInfo && userInfo[userID] && userInfo[userID].thumbSrc) {
-            imageUrl = userInfo[userID].thumbSrc;
-          }
-        } catch (e) {}
-      }
-
-      // صورة بديلة مضمونة 100% في حال تعذر جلب البروفايل
-      if (!imageUrl) {
-        imageUrl = "https://i.imgur.com/6EaXf9v.png";
+        imageUrl = `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc154112c035045610b97d39103b994d8`;
       }
 
       if (message.react) message.react("⏳");
 
-      // 3. تشفير رابط الصورة وبناء رابط الـ API
+      // 3. تشفير رابط الصورة وبناء طلب الـ API
       const encodedAvatar = encodeURIComponent(imageUrl);
-      const apiUrl = `https://some-random-api.com/canvas/overlay/triggered?avatar=${encodedAvatar}`;
+      const apiUrl = `https://api.some-random-api.com/canvas/overlay/triggered?avatar=${encodedAvatar}`;
 
-      // 4. جلب ملف الـ GIF
+      // 4. جلب الصورة بـ Stream
       const response = await axios.get(apiUrl, {
         responseType: "stream",
         headers: {
@@ -66,12 +56,12 @@ module.exports = {
       if (message.react) message.react("🔥");
 
       return message.reply({
-        body: `🔥 | **تفضل يا حبة قلبي، الصورة بتأثير Triggered واجدة لعيونك:** ✨🌸`,
+        body: `🔥 | **تفضل يا حبة قلبي، الصورة بتأثير Triggered بجودة عالية HD:** ✨🌸`,
         attachment: [response.data]
       });
 
     } catch (error) {
-      console.error("Triggered Command Error:", error?.response?.data || error?.message || error);
+      console.error("Triggered Command Error:", error?.message || error);
       if (message.react) message.react("🥺");
       return message.reply("🥺 **سامحني يا غالي، صرا مشكل مع السيرفر.. عاود جرب بالرد (Reply) على صورة مباشرة!**");
     }
