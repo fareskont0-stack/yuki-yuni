@@ -4,8 +4,8 @@ const path = require("path");
 
 module.exports = {
     config: {
-        name: "فارس",
-        version: "2.3.0",
+        name: "voiceReply",
+        version: "2.4.0",
         author: "Fares",
         countDown: 0,
         role: 0,
@@ -20,12 +20,16 @@ module.exports = {
 
     onStart: async function () {},
 
+    onEvent: async function (data) {
+        return module.exports.handleEvent(data);
+    },
+
     handleEvent: async function ({ api, event, message }) {
         try {
-            if (!event.body) return;
+            if (!event || !event.body) return;
             const content = event.body.toLowerCase();
             
-            // قم بتغيير كلمة "فارس" أدناه إلى أي كلمة ترغب في أن يتقرب منها البوت ويرد صوتياً
+            // الكلمة التي تنادي بها البوت (يمكنك تغييرها متى شئت)
             const triggerWord = "فارس";
             
             if (content === triggerWord || content.startsWith(triggerWord + " ") || content.includes("يا " + triggerWord)) {
