@@ -66,7 +66,7 @@ module.exports = {
                 if (!args[0]) return message.reply(getLang("noInput"));
 
                 try {
-                        api.setMessageReaction("🐤", event.messageID, () => {}, true);
+                        api.setMessageReaction("🧼", event.messageID, () => {}, true);
                         
                         const apiUrl = await baseApiUrl();
                         const checkurl = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
@@ -98,7 +98,7 @@ module.exports = {
                                 body: getLang("success", title),
                                 attachment: fs.createReadStream(filePath)
                         }, () => {
-                                api.setMessageReaction("🪽", event.messageID, () => {}, true);
+                                api.setMessageReaction("🧼", event.messageID, () => {}, true);
                                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         });
 
