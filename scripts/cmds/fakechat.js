@@ -1,17 +1,17 @@
-const { createCanvas, loadImage, registerFont } = require("canvas");
+const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
 const path = require("path");
 
 module.exports = {
         config: {
-                name: "شات",
+                name: "هكر",
                 aliases: ["fc", "fake", "شات"],
-                version: "4.0",
+                version: "4.1",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
-                        ar: "توليد صورة محادثة وهمية محلية تدعم العربية بدون مربعات سوداء"
+                        ar: "توليد صورة محادثة وهمية محلية مع دعم النصوص"
                 },
                 category: "fun",
                 guide: {
@@ -23,7 +23,7 @@ module.exports = {
                 ar: {
                         noTarget: "× يا عُمري، دير ريبلاي على الشخص والا حط منشن باش يخدم الأمر! 🗨️",
                         noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر داخل الشات! ✍️",
-                        success: "🗨️ يا عسل، ها هو الشات الوهمي محلي ومضبوط 100/100 لـ: %1 🌸✨",
+                        success: "🗨️ يا عسل، ها هو الشات الوهمي مريقل وواضح لـ: %1 🌸✨",
                         error: "× صار خطا يا غالي: %1"
                 }
         },
@@ -62,7 +62,6 @@ module.exports = {
 
                         api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-                        // جلب صورة البروفايل بدقة عالية
                         const avatarUrl = `https://graph.facebook.com/${targetId}/picture?height=720&width=720&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
                         let avatarImage;
                         try {
@@ -71,15 +70,14 @@ module.exports = {
                                 avatarImage = await loadImage("https://i.imgur.com/DZ47K4k.png");
                         }
 
-                        // إنشاء اللوحة محلياً بأبعاد واضحة
                         const canvas = createCanvas(800, 320);
                         const ctx = canvas.getContext("2d");
 
-                        // رسم الخلفية (لون دايم وجذاب يشبه الفيك شات الأصلي)
+                        // خلفية الشات
                         ctx.fillStyle = "#6B1D2F";
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                        // رسم دائرة البروفايل
+                        // صورة البروفايل
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(80, 160, 45, 0, Math.PI * 2, true);
@@ -88,33 +86,22 @@ module.exports = {
                         ctx.drawImage(avatarImage, 35, 115, 90, 90);
                         ctx.restore();
 
-                        // رسم إطار فقاعة الرسالة (Bubble)
+                        // فقاعة الرسالة
                         ctx.fillStyle = "#262626";
                         ctx.beginPath();
                         ctx.roundRect(145, 95, 615, 130, 18);
                         ctx.fill();
 
-                        // كتابة اسم الشخص المستهدف
+                        // اسم المستخدم
                         ctx.fillStyle = "#ffffff";
                         ctx.font = "bold 22px Arial, sans-serif";
                         ctx.fillText(userName, 175, 135);
 
-                        // كتابة النص المدخل (مع معالجة تمنع ظهور الرموز التالفة)
+                        // كتابة النص (بإمكانك كتابته بالحروف اللاتينية أو الفرنسية لتظهر الكتابة واضحة ومقروءة تماماً بدون مربعات)
                         ctx.fillStyle = "#e4e6eb";
                         ctx.font = "20px Arial, sans-serif";
-                        
-                        // تقسيم النص الطويل تلقائياً لكي لا يخرج عن حدود الفقاعة
-                        const maxCharsPerLine = 45;
-                        if (userText.length > maxCharsPerLine) {
-                                let line1 = userText.substring(0, maxCharsPerLine);
-                                let line2 = userText.substring(maxCharsPerLine, maxCharsPerLine * 2);
-                                ctx.fillText(line1, 175, 175);
-                                ctx.fillText(line2, 175, 205);
-                        } else {
-                                ctx.fillText(userText, 175, 180);
-                        }
+                        ctx.fillText(userText, 175, 180);
 
-                        // حفظ الصورة مؤقتاً في ملف الكاش
                         const cacheDir = path.join(__dirname, "cache");
                         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
                         const filePath = path.join(cacheDir, `fakechat_${Date.now()}.png`);
