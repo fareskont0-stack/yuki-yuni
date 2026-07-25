@@ -1,30 +1,50 @@
-const { createCanvas, loadImage } = require("canvas");
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+
+const mahmud = async () => {
+        const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
+        return base.data.mahmud;
+};
 
 module.exports = {
         config: {
                 name: "هكر",
                 aliases: ["fc", "fake", "شات"],
-                version: "4.1",
+                version: "5.0",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
-                        ar: "توليد صورة محادثة وهمية محلية مع دعم النصوص"
+                        ar: "توليد صورة محادثة وهمية (Fakechat) تدعم اللغة العربية والإنجليزية بدقة عالية",
+                        en: "Generate a fake chat image supporting Arabic and English languages",
+                        bn: "আরবি এবং ইংরেজি ভাষা সমর্থন করে ফেক চ্যাট ছবি তৈরি করুন"
                 },
                 category: "fun",
                 guide: {
-                        ar: '   {pn} <@tag/reply> <text>: دير ريبلاي أو منشن مع النص'
+                        ar: '   {pn} <@tag/reply> <text>: دير ريبلاي أو منشن مع النص اللي حاب تكتبه',
+                        en: '   {pn} <@tag/reply> <text>: Tag or reply to someone with the text',
+                        bn: '   {pn} <@tag/reply> <text>: ট্যাগ করুন অথবা রিপ্লাই দিয়ে টেক্সট লিখুন'
                 }
         },
 
         langs: {
                 ar: {
-                        noTarget: "× يا عُمري، دير ريبلاي على الشخص والا حط منشن باش يخدم الأمر! 🗨️",
-                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر داخل الشات! ✍️",
-                        success: "🗨️ يا عسل، ها هو الشات الوهمي مريقل وواضح لـ: %1 🌸✨",
-                        error: "× صار خطا يا غالي: %1"
+                        noTarget: "× يا عُمري، حط منشن والا دير ريبلاي على الشخص يا غالي! 🗨️",
+                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر في الشات! ✍️",
+                        success: "🗨️ يا عسل، ها هو الشات الوهمي بالعربية مريقل 100/100 لـ: %1 🌸✨",
+                        error: "× صار خطا يا غالي: %1. تواصل مع MahMUD للاستفسار.\n•WhatsApp: 01836298139"
+                },
+                en: {
+                        noTarget: "× Please tag or reply to someone, my friend! 🗨️",
+                        noText: "× Please enter the text you want to show in the chat! ✍️",
+                        success: "🗨️ Here is the fake chat image for: %1 🌸✨",
+                        error: "× Error: %1. Contact MahMUD for help.\n•WhatsApp: 01836298139"
+                },
+                bn: {
+                        noTarget: "× দয়া করে কাউকে ট্যাগ করুন অথবা রিপ্লাই দিন! 🗨️",
+                        noText: "× দয়া করে চ্যাটে দেখানোর জন্য একটি টেক্সট লিখুন! ✍️",
+                        error: "× সমস্যা হয়েছে: %1। MahMUD এর সাথে যোগাযোগ করুন।"
                 }
         },
 
@@ -62,52 +82,17 @@ module.exports = {
 
                         api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
+                        const apiUrl = await mahmud();
+                        // استدعاء مسار الـ API الخاص بالفيك شات مع تمرير اسم الشخص والنص وصورة البروفايل بدعم كامل للعربية
                         const avatarUrl = `https://graph.facebook.com/${targetId}/picture?height=720&width=720&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
-                        let avatarImage;
-                        try {
-                                avatarImage = await loadImage(avatarUrl);
-                        } catch {
-                                avatarImage = await loadImage("https://i.imgur.com/DZ47K4k.png");
-                        }
-
-                        const canvas = createCanvas(800, 320);
-                        const ctx = canvas.getContext("2d");
-
-                        // خلفية الشات
-                        ctx.fillStyle = "#6B1D2F";
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                        // صورة البروفايل
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.arc(80, 160, 45, 0, Math.PI * 2, true);
-                        ctx.closePath();
-                        ctx.clip();
-                        ctx.drawImage(avatarImage, 35, 115, 90, 90);
-                        ctx.restore();
-
-                        // فقاعة الرسالة
-                        ctx.fillStyle = "#262626";
-                        ctx.beginPath();
-                        ctx.roundRect(145, 95, 615, 130, 18);
-                        ctx.fill();
-
-                        // اسم المستخدم
-                        ctx.fillStyle = "#ffffff";
-                        ctx.font = "bold 22px Arial, sans-serif";
-                        ctx.fillText(userName, 175, 135);
-
-                        // كتابة النص (بإمكانك كتابته بالحروف اللاتينية أو الفرنسية لتظهر الكتابة واضحة ومقروءة تماماً بدون مربعات)
-                        ctx.fillStyle = "#e4e6eb";
-                        ctx.font = "20px Arial, sans-serif";
-                        ctx.fillText(userText, 175, 180);
+                        const fakeChatApi = `${apiUrl}/api/fakechat?name=${encodeURIComponent(userName)}&text=${encodeURIComponent(userText)}&avatar=${encodeURIComponent(avatarUrl)}`;
 
                         const cacheDir = path.join(__dirname, "cache");
                         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
                         const filePath = path.join(cacheDir, `fakechat_${Date.now()}.png`);
 
-                        const buffer = canvas.toBuffer("image/png");
-                        fs.writeFileSync(filePath, buffer);
+                        const response = await axios.get(fakeChatApi, { responseType: "arraybuffer" });
+                        fs.writeFileSync(filePath, Buffer.from(response.data, "binary"));
 
                         return message.reply({
                                 body: getLang("success", userName),
@@ -118,7 +103,7 @@ module.exports = {
                         });
 
                 } catch (err) {
-                        console.error("Local Fakechat Error:", err);
+                        console.error("Fakechat Error:", err);
                         api.setMessageReaction("❌", event.messageID, () => {}, true);
                         return message.reply(getLang("error", err.message));
                 }
