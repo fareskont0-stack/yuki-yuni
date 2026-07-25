@@ -9,9 +9,9 @@ const mahmud = async () => {
 
 module.exports = {
         config: {
-                name: "هكر",
+                name: "شات",
                 aliases: ["fc", "fake", "فেকচ্যাট"],
-                version: "1.7",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
@@ -19,7 +19,7 @@ module.exports = {
                         bn: "কাউকে দিয়ে ফেক চ্যাট মেসেজ তৈরি করুন",
                         en: "Generate a fake chat message for someone",
                         vi: "Tạo tin nhắn trò chuyện giả cho ai đó",
-                        ar: "توليد رسالة محادثة وهمية لشخص ما"
+                        ar: "توليد رسالة محادثة وهمية لشخص ما بلهجة جزائرية رائعة"
                 },
                 category: "fun",
                 guide: {
@@ -29,8 +29,7 @@ module.exports = {
                                 + '\n   {pn} <uid> <text>: Create via UID',
                         vi: '   {pn} <@tag/reply> <văn bản>: Tạo trò chuyện giả'
                                 + '\n   {pn} <uid> <văn bản>: Tạo qua UID',
-                        ar: '   {pn} <@tag/reply> <text>: إنشاء محادثة وهمية'
-                                + '\n   {pn} <uid> <text>: الإنشاء عبر UID'
+                        ar: '   {pn} <@tag/reply> <text>: دير ريبلاي أو منشن مع النص يا عُمري\n   {pn} <uid> <text>: أو حط الـ UID والنص'
                 }
         },
 
@@ -54,10 +53,10 @@ module.exports = {
                         error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
                 },
                 ar: {
-                        noTarget: "× يا عُمري، حط منشن، دير ريبلاي، والا عطيني الـ UID يا غالي! 🗨️",
-                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر في الشات! ✍️",
-                        success: "🗨️ تم توليد الشات الوهمي بنجاح لـ: %1 🌸",
-                        error: "× صار خطا يا غالي: %1. تواصل مع MahMUD إذا احتجت مساعدة."
+                        noTarget: "× يا عُمري، حط منشن، دير ريبلاي على الشخص، والا عطيني الـ UID تاعو يا غالي! 🗨️",
+                        noText: "× يا روح قلبي، اكتب النص اللي حاب يظهر في الشات ما تنساش! ✍️",
+                        success: "🗨️ يا عسل، ها هو الشات الوهمي بنجاح لـ: %1 🌸✨",
+                        error: "× يا غالي صار خطا في السيرفر: %1. تواصل مع MahMUD ربي يحفظك."
                 }
         },
 
@@ -93,6 +92,9 @@ module.exports = {
                                 userName = targetId;
                         }
 
+                        // إرسال تفاعل تدل على جاري العمل
+                        api.setMessageReaction("⌛", event.messageID, () => {}, true);
+
                         const baseUrl = await mahmud();
                         const apiUrl = `${baseUrl}/api/fakechat?id=${targetId}&name=${encodeURIComponent(userName)}&text=${encodeURIComponent(userText)}`;
 
@@ -107,11 +109,13 @@ module.exports = {
                                 body: getLang("success", userName),
                                 attachment: fs.createReadStream(filePath)
                         }, () => {
+                                api.setMessageReaction("✅", event.messageID, () => {}, true);
                                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         });
 
                 } catch (err) {
                         console.error("Fakechat Error:", err);
+                        api.setMessageReaction("❌", event.messageID, () => {}, true);
                         return message.reply(getLang("error", err.message));
                 }
         }
