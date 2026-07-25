@@ -7,7 +7,7 @@ const mahmud = async () => {
 
 module.exports = {
         config: {
-                name: "font",
+                name: "خطوط",
                 aliases: ["style"],
                 version: "1.8",
                 author: "MahMUD",
