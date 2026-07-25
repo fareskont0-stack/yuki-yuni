@@ -5,29 +5,29 @@ const path = require("path");
 module.exports = {
     config: {
         name: "voiceReply",
-        version: "2.0.0",
+        version: "2.1.0",
         author: "Fares",
         countDown: 0,
         role: 0,
         shortDescription: {
-            ar: "الرد الصوتي الذكي عبر الـ API"
+            ar: "الرد الصوتي التلقائي"
         },
         longDescription: {
-            ar: "يرد البوت برسالة صوتية حقيقية تلقائياً عندما يناديه المستخدم بكلمة بوت باستخدام مفتاح الـ API"
+            ar: "يرد البوت صوتياً تلقائياً عند قول كلمة بوت"
         },
-        category: "خدمات",
-        guide: {
-            ar: "اكتب 'بوت' في المحادثة وسيرد عليك صوتياً"
-        }
+        category: "خدمات"
     },
 
-    onStart: async function () {},
+    onStart: async function () {
+        // تركها فارغة لكي لا تعتبر أمراً مكتوباً بالبادئة
+    },
 
-    onChat: async function ({ api, event, message }) {
+    handleEvent: async function ({ api, event, message }) {
         try {
-            const content = event.body ? event.body.toLowerCase() : "";
+            if (!event.body) return;
+            const content = event.body.toLowerCase();
             
-            // التحقق مما إذا كانت الرسالة تبدأ أو تحتوي على كلمة بوت
+            // تحقق إذا كانت الرسالة تحتوي على كلمة بوت فقط أو تبدأ بها
             if (content === "بوت" || content.startsWith("بوت ") || content.includes("يا بوت")) {
                 
                 const cacheDir = path.join(__dirname, "cache");
@@ -39,12 +39,9 @@ module.exports = {
 
                 if (message.react) message.react("🎙️");
 
-                // استخدام الـ API الخاص بك لتوليد الصوت (مثال موجه لخدمة تحويل النص إلى كلام)
-                // يمكنك تعديل الرابط الأساسي للـ API حسب الخدمة التي يتبع لها مفتاحك
                 const apiKey = "1c582f665eba4274b1afb6c8c29c88a9";
                 
                 try {
-                    // محاولة جلب الصوت من الـ API (مثال افتراضي متوافق مع خدمات الـ TTS الشهيرة)
                     const response = await axios.post("https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM", {
                         text: "نعم يا عمري تفضل",
                         model_id: "eleven_multilingual_v2"
@@ -59,13 +56,11 @@ module.exports = {
                     fs.writeFileSync(audioPath, Buffer.from(response.data));
 
                 } catch (apiError) {
-                    // خطة بديلة احتياطية (Fallback) في حال اختلف رابط الـ API ليعمل البوت نصياً وصوتياً بدون توقف
-                    console.error("API Voice Generation Error, using fallback text:", apiError.message);
+                    console.error("API Error, sending text fallback:", apiError.message);
                     if (message.react) message.react("✨");
                     return message.reply("نعم يا عمري تفضل 🥺✨");
                 }
 
-                // إرسال الرد الصوتي في حال نجاح العملية
                 return message.reply({
                     body: "نعم يا عمري تفضل 🥺✨",
                     attachment: fs.createReadStream(audioPath)
@@ -76,7 +71,7 @@ module.exports = {
                 });
             }
         } catch (error) {
-            console.error("Voice Reply Main Error:", error);
+            console.error("Voice Reply Event Error:", error);
         }
     }
 };
