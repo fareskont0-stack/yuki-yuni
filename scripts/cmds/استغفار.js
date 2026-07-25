@@ -64,6 +64,6 @@ module.exports = {
         ];
         
         const randomZikr = azkar[Math.floor(Math.random() * azkar.length)];
-        return message.reply(`🕊️ يا روح قلبي، ذكر بها الكروب:\n\n${randomZikr}`);
+        return message.reply(`تفضل 🩵:\n\n${randomZikr}`);
     }
 };
