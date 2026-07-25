@@ -1,4 +1,4 @@
-const axios = require("axios");
+Const axios = require("axios");
 const cheerio = require("cheerio");
 const Canvas = require("canvas");
 const fs = require("fs-extra");
@@ -13,20 +13,22 @@ const langsSupported = [
 
 module.exports = {
 	config: {
-		name: "emojimean",
-		alias: ["em", "emojimeaning", "emojimean"],
+		name: "ايموجي",
+		alias: ["em", "emojimeaning", "ايموجي"],
 		version: "1.4",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
 		description: {
 			vi: "Tìm nghĩa của emoji",
-			en: "Find the meaning of emoji"
+			en: "Find the meaning of emoji",
+			ar: "البحث عن معنى الرمز التعبيري (الإيموجي)"
 		},
 		category: "wiki",
 		guide: {
 			vi: "   {pn} <emoji>: Tìm nghĩa của emoji",
-			en: "   {pn} <emoji>: Find the meaning of emoji"
+			en: "   {pn} <emoji>: Find the meaning of emoji",
+			ar: "   {pn} <emoji>: ابحث عن معنى الإيموجي يا غالي"
 		}
 	},
 
@@ -46,6 +48,14 @@ module.exports = {
 			meanOfWikipedia: "📑 Meaning of \"%1\" on Wikipedia:\n%2",
 			manyRequest: "⚠️ The bot has sent too many requests, please try again later",
 			notHave: "Not have"
+		},
+		ar: {
+			missingEmoji: "⚠️ يا عُمري، ما دخلتش الإيموجي! حط إيموجي باش نبحث لك عليه 🌸",
+			meaningOfEmoji: "📌 معنى الإيموجي %1:\n\n📄 المعنى الأول: %2\n\n📑 معاني أخرى: %3%4\n\n📄 الكود المختصر: %5\n\n©️ المصدر: %6\n\n📺 ها هي صور كيفاش يظهر الإيموجي في مختلف المنصات يا غالي:",
+			meaningOfWikipedia: "\n\n📝 دير رياكشن على هذه الرسالة باش تشوف المعنى \"%1\" من ويكيبيديا 🤍",
+			meanOfWikipedia: "📑 معنى \"%1\" في ويكيبيديا:\n%2",
+			manyRequest: "⚠️ يا غالي، البوت راهو دار بزاف طلبات، عاود جرب من بعد ربي يحفظك 🤍",
+			notHave: "ما كاش"
 		}
 	},
 
@@ -55,7 +65,7 @@ module.exports = {
 			return message.reply(getLang("missingEmoji"));
 		const threadData = await threadsData.get(event.threadID);
 		let myLang = threadData.data.lang ? threadData.data.lang : global.GoatBot.config.language;
-		myLang = langsSupported.includes(myLang) ? myLang : "en";
+		myLang = langsSupported.includes(myLang) ? myLang : "ar";
 
 		let getMeaning;
 		try {
@@ -126,8 +136,6 @@ module.exports = {
 			const url = `https://www.emojiall.com/${el.url}`;
 			try {
 				imageLoaded = await Canvas.loadImage(url);
-				// https://www.emojiall.com/en/svg-to-png/openmoji-black/640/1F97A.png
-				// https://www.emojiall.com/images/svg/openmoji-black/1F97A.svg
 			}
 			catch (e) {
 				try {
@@ -211,7 +219,6 @@ async function getEmojiMeaning(emoji, lang) {
 	const meaning = getElMeaning.eq(0).text().trim();
 	const moreMeaning = getElMeaning.eq(1).text().trim();
 
-	// get wikipedia
 	const getEl1 = $(".emoji_card_list.pages > .emoji_card_list.border_top > .emoji_card_content.pointer");
 	const getWikiText = getEl1.text().replace(/\s+/g, " ").trim();
 	let wikiText;
