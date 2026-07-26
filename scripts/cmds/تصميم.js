@@ -1,27 +1,30 @@
+const sentVideos = new Map();
+
 module.exports = {
   config: {
     name: "تصميم",
-    author: "حسين يعقوبي",
     aliases: ["biography", "bio"],
+    version: "1.0",
+    author: "حسين يعقوبي",
     category: "سير ذاتية",
+    role: 0,
+    countDown: 2,
     shortDescription: {
-      en: "إرسال سيرة ذاتية مع فيديو.",
-      tl: "Magpadala ng bio na may video."
+      ar: "إرسال تصميم عشوائي",
+      en: "Send random design"
     },
     longDescription: {
-      en: "سيرسل هذا الأمر سيرة ذاتية إنجليزية مزخرفة مع شرحها بالعربية وفيديو مميز.",
-      tl: "Magpapadala ito ng bold styled english bio na may video."
+      ar: "يرسل فيديو تصميم عشوائي بدون تكرار حتى تنتهي جميع الفيديوهات.",
+      en: "Send random design video without repeating."
     },
     guide: {
-      en: "{p}تصميم",
-      tl: "{p}bio"
+      ar: "{p}تصميم",
+      en: "{p}design"
     }
   },
-  onStart: async function ({ message, api, event }) {
+
+  onStart: async function ({ message, event, api }) {
     try {
-      const bioText = "تفضل ياعمري 💖";
-      
-      // قائمة الفيديوهات (يمكنك إضافة حتى 100 فيديو هنا بنفس الطريقة)
       const videos = [
         "https://stream.vidhosting.in/videos/6cc8c91f.mp4",
         "https://stream.vidhosting.in/videos/b0ea160c.mp4",
@@ -33,24 +36,36 @@ module.exports = {
         "https://stream.vidhosting.in/videos/e656c2b9.mp4"
       ];
 
-      // اختيار فيديو عشوائي تماماً في كل مرة يتم فيها استخدام الأمر
-      const videoLink = videos[Math.floor(Math.random() * videos.length)];
+      const threadID = event.threadID;
 
-      // وضع تفاعل لإعلامك ببدء التنفيذ
+      if (!sentVideos.has(threadID))
+        sentVideos.set(threadID, []);
+
+      let used = sentVideos.get(threadID);
+
+      if (used.length === videos.length)
+        used = [];
+
+      const available = videos.filter(v => !used.includes(v));
+
+      const videoLink =
+        available[Math.floor(Math.random() * available.length)];
+
+      used.push(videoLink);
+      sentVideos.set(threadID, used);
+
       api.setMessageReaction("💖", event.messageID, () => {}, true);
-    
-      // جلب الفيديو كـ Stream
+
       const stream = await global.utils.getStreamFromURL(videoLink);
 
-      // إرسال النص مع الفيديو في رسالة واحدة
       return message.reply({
-        body: bioText,
+        body: "تفضل يا عمري 💖",
         attachment: stream
       });
 
-    } catch (error) {
-      console.error("خطأ في أمر تصميم (فيديو):", error);
-      return message.reply("حدث خطأ أثناء تنفيذ الأمر، يرجى المحاولة لاحقاً.");
+    } catch (err) {
+      console.error(err);
+      return message.reply("❌ حدث خطأ أثناء إرسال الفيديو.");
     }
   }
-};
+}; 
