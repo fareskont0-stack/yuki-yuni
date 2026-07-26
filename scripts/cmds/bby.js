@@ -1,4 +1,4 @@
-const Nst database = {
+const database = {
   "سلام": [
     "وعليكم السلام يا روحي 🤍",
     "هلا بعمري، كيف راك؟ 🥺"
@@ -15,7 +15,7 @@ const Nst database = {
   ],
   "توحشتك": [
     "حتى أنا توحشتك كتر يا عمري 😭💙",
-    "قلبي راك ديما فيه 🥺",
+    "امم زعما صح",
     "مام انا توحشتك 🥺",
     "كذاااب متوحشتنيش 😭"
   ],
@@ -1148,17 +1148,6 @@ const Nst database = {
     "ما كنش غيرك في البال",
     "قاعد وحدي ونخمم فيك"
   ]
-
-
-
-
-
-  
-  // يمكنك إضافة واستمرار ترتيب مئات الأوامر الأخرى هنا بنفس الطريقة تماماً بالطول:
-  // "كلمة البحث": [
-  //   "الرد الأول",
-  //   "الرد الثاني"
-  // ],
 };
 
 module.exports.config = {
@@ -1172,7 +1161,6 @@ module.exports.config = {
     category: "chat"
 };
 
-// دالة البحث الذكي داخل القاموس العمودي
 function getDatabaseResponse(message) {
     const text = message.toLowerCase().trim();
     for (const [key, replies] of Object.entries(database)) {
