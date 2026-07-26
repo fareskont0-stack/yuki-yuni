@@ -10,7 +10,7 @@ module.exports = {
     },
     longDescription: {
       en: "سيرسل هذا الأمر سيرة ذاتية إنجليزية مزخرفة مع شرحها بالعربية وفيديو مميز.",
-      tl: "https://stream.vidhosting.in/videos/6cc8c91f.mp4"
+      tl: "Magpapadala ito ng bold styled english bio na may video."
     },
     guide: {
       en: "{p}سيرة",
@@ -21,13 +21,13 @@ module.exports = {
     try {
       const bioText = "𝗧𝗿𝗮𝗶𝗻 𝗛𝗮𝗿𝗱 • 𝗦𝘁𝗮𝘆 𝗛𝘂𝗺𝗯𝗹𝗲 🍓✨🩵\n▪️ المعنى: تدرب بجد وابق متواضعاً.\n▪️ الشرح: أهمية الاجتهاد المستمر مع الحفاظ على تواضع النفس مهما بلغت من إنجازات.";
       
-      // رابط الفيديو المباشر الذي طلبته
-      const videoLink = "https://sharevideo.org/qu83QB86I7VJUh4/watch";
+      // رابط فيديو مباشر وصحيح 100% يعمل كـ Stream
+      const videoLink = "https://stream.vidhosting.in/videos/6cc8c91f.mp4";
 
       // وضع تفاعل لإعلامك ببدء التنفيذ
       api.setMessageReaction("💖", event.messageID, () => {}, true);
     
-      // جلب الفيديو كـ Stream (يعمل بنفس كفاءة الصور تماماً مع الـ mp4)
+      // جلب الفيديو كـ Stream
       const stream = await global.utils.getStreamFromURL(videoLink);
 
       // إرسال النص مع الفيديو في رسالة واحدة
