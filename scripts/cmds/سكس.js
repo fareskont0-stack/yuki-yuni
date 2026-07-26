@@ -9,7 +9,7 @@ fs.ensureDirSync(TMP_DIR);
 
 module.exports = {
   config: {
-    name:             "منحرف",
+    name:             "رخصة",
     aliases:          ["horny", "رخصة_الانحراف"],
     version:          "1.0.0",
     author:           "SIFAT",
