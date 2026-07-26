@@ -35,11 +35,12 @@ const saveConfig = (data) => {
 
 module.exports = {
     config: {
-        name: "تفاعل",
-        version: "3.0",
+        name: "تشغيل", // تم تغيير الاسم ليتطابق مع بداية الأمر الخاص بك
+        aliases: ["ايقاف", "تفاعل"],
+        version: "3.1",
         author: "MahMUD",
         countDown: 2,
-        role: 1, // للمشرفين
+        role: 1,
         description: {
             ar: "تشغيل أو إيقاف التفاعل التلقائي السريع برمز تعبيري في المجموعة ⚡"
         },
@@ -51,7 +52,7 @@ module.exports = {
 
     langs: {
         ar: {
-            usageError: "× يا غالي، استعمل الأمر هكذا:\n• .تشغيل تفاعل تلقائي 💖\n• .ايقاف تفاعل تلقائي",
+            usageError: "تشغيل تفاعل تلقائي 💖\n• .ايقاف تفاعل تلقائي",
             enabled: "✅ | تم **تشغيل التفاعل التلقائي** بنجاح بهذا الإيموجي: %1 ⚡",
             disabled: "🛑 | تم **إيقاف التفاعل التلقائي** في هذه المجموعة بنجاح."
         }
@@ -59,17 +60,16 @@ module.exports = {
 
     onStart: async function ({ api, event, args, getLang }) {
         const { threadID, messageID } = event;
-        const action = args[0] ? args[0].toLowerCase() : "";
-        const subAction = args[1] ? args[1].toLowerCase() : "";
+        const subAction1 = args[0] ? args[0].toLowerCase() : "";
+        const subAction2 = args[1] ? args[1].toLowerCase() : "";
         
         const config = getConfig();
 
-        // دعم .تشغيل تفاعل تلقائي 💖
-        if (action === "تشغيل" && (subAction === "تفاعل" || subAction === "تفاعل تلقائي")) {
-            // البحث عن الإيموجي في الكلمات المتبقية بعد الكلمات المفتاحية
-            const emoji = args[3] || args[2] !== "تفاعل" && args[2] !== "تفاعل تلقائي" ? args[2] : "💖";
-            // استخلاص الإيموجي بدقة
-            const finalEmoji = args.slice(2).find(arg => arg !== "تفاعل" && arg !== "تفاعل تلقائي") || "💖";
+        // التحقق من أن الأمر هو "تشغيل تفاعل تلقائي"
+        if (subAction1 === "تفاعل" && (subAction2 === "تلقائي" || !subAction2)) {
+            // استخلاص الإيموجي من المدخلات (البحث عن أول رمز أو إيموجي بعد الكلمات)
+            const emojiArg = args.find(arg => arg !== "تفاعل" && arg !== "تلقائي" && arg !== "تشغيل");
+            const finalEmoji = emojiArg || "💖";
 
             config[threadID] = {
                 status: true,
@@ -79,8 +79,8 @@ module.exports = {
 
             return api.sendMessage(getLang("enabled", finalEmoji), threadID, messageID);
         } 
-        // دعم .ايقاف تفاعل تلقائي
-        else if ((action === "ايقاف" || action === "إيقاف") && (subAction === "تفاعل" || subAction === "تفاعل تلقائي")) {
+        // التحقق من أن الأمر هو "ايقاف تفاعل تلقائي" أو كتابتها بطريقة أخرى
+        else if (subAction1 === "ايقاف" || subAction1 === "إيقاف") {
             if (config[threadID]) {
                 config[threadID].status = false;
                 saveConfig(config);
