@@ -147,8 +147,17 @@ module.exports.onChat = async ({ api, event }) => {
             if (!userText && attachments.length === 0) {
                 const singleWordReplies = [
                     "راني هنا يا غالي، واش راك حاب تقولي؟ 🥺🩵",
-                    "عيوني ليك يا قلبي، تفضل احكي 🇩🇿✨",
-                    "نعم يا روحي، راني نسمع فيك 🍓"
+                    "الجمد لله ونتا",
+                    "نعم يا روحي، راني نسمع فيك 🍓",
+                    "مام انا نحبك ياعمري ",
+                    "محاات",
+                    "مطوري Fares kouachi 😭",
+                    "راني نحكي معاك 🙂",
+                    "ياعمري مام انا توحشتك"
+                    "بزاف بزاف 🥺",
+                    "من عندك مكاش احبي",
+                    "وشراك دير 🥺"
+
                 ];
                 const selectedMsg = singleWordReplies[Math.floor(Math.random() * singleWordReplies.length)];
                 return api.sendMessage(selectedMsg, event.threadID, (err, info) => {
