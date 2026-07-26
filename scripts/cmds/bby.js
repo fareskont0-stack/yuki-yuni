@@ -36,7 +36,7 @@ const baseApiUrl = async () => {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.3",
+    version: "2.4",
     author: "MahMUD",
     countDown: 0,
     role: 0,
@@ -75,7 +75,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
                     attachments 
                 });
                 let reply = res.data.message;
-                if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama")) {
+                if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
                     return "عيوني ليك يا غالي، راك منورنا اليوم 🥺🩵";
                 }
                 return reply;
@@ -114,8 +114,9 @@ module.exports.onReply = async ({ api, event }) => {
                     attachments 
                 });
                 let reply = res.data.message;
-                if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama")) {
-                    return "قلبي الصغير لا يتحمل هذا الكلام الجميل يا عيوني 🥺💕";
+                // فحص صارع لملق الرد ومنع أي جملة أجنبية
+                if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
+                    return "قلبي الصغير لا يتحمل هذا الكلام الجميل يا عيوني 🥺💕 راني معاك!";
                 }
                 return reply;
             } catch {
@@ -125,6 +126,11 @@ module.exports.onReply = async ({ api, event }) => {
 
         const userReplyText = event.body?.toLowerCase() || "سلام";
         let replyMessage = await getBotResponse(userReplyText, event.attachments || []);
+
+        // تأكيد إضافي قبل الإرسال لمنع ظهور أي جملة غريبة نهائياً
+        if (!replyMessage || replyMessage.includes("Amake teach") || replyMessage.includes("oi Mama") || replyMessage.includes("kora")) {
+            replyMessage = "راك منورني بزاف يا عمري، قول لي واش راك حابزيد نحكي معاك؟ 🥺🩵";
+        }
 
         api.sendMessage(replyMessage, event.threadID, (err, info) => {
             if (!err) {
@@ -161,8 +167,7 @@ module.exports.onChat = async ({ api, event }) => {
                         attachments 
                     });
                     let reply = res.data.message;
-                    // تصفية الرد ومنع أي جملة أجنبية نهائياً
-                    if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama")) {
+                    if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
                         return "نموت عليك يا قلبي، واش راك حاب نحكي معاك اليوم؟ 🥺✨";
                     }
                     return reply;
