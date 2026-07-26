@@ -1,5 +1,7 @@
 const axios = require("axios");
 
+const OPENAI_API_KEY = "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";
+
 const mahmud = [
     "baby",
     "bby",
@@ -28,15 +30,43 @@ const mahmud = [
     "نحبك"
 ];
 
-const baseApiUrl = async () => {
-    const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
-    return base.data.mahmud;
-};
+// دالة الاتصال المباشر بـ OpenAI GPT
+async function getOpenAIResponse(promptText) {
+    try {
+        const response =.await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: "أنت مساعد ذكي لطيف تتحدث حصرياً باللهجة الجزائرية الصافية والدافئة مع استخدام الكلمات اللطيفة (مثل: عمري، روحي، عيوني)."
+                    },
+                    {
+                        role: "user",
+                        content: promptText
+                    }
+                ],
+                temperature: 0.7
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${OPENAI_API_KEY}`
+                }
+            }
+        );
+        return response.data.choices[0].message.content.trim();
+    } catch (error) {
+        console.error("OpenAI API Error:", error.response?.data || error.message);
+        return null;
+    }
+}
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.4",
+    version: "2.5",
     author: "MahMUD",
     countDown: 0,
     role: 0,
@@ -52,99 +82,68 @@ module.exports.config = {
     }
 };
 
-module.exports.onStart = async ({ api, event, args, usersData }) => {
+module.exports.onStart = async ({ api, event, args }) => {
     const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
     if (module.exports.config.author !== obfuscatedAuthor) {
         return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
     }
-    
-    const msg = args.join(" ").toLowerCase();
-    const uid = event.senderID;
 
-    try {
-        if (!args[0]) {
-            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي، واش خصك؟ ✨", "هيا نهضرو يا روحي 🥺🍓"];
-            return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);
+    const msg = args.join(" ").trim();  
+    const uid = event.senderID;  
+
+    try {  
+        if (!msg) {  
+            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي، واش خصك؟ ✨", "هيا نهضرو يا روحي 🥺🍓"];  
+            return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);  
+        }  
+
+        let botResponse = await getOpenAIResponse(msg);
+        if (!botResponse) {
+            botResponse = "ما فهمتكش مليح يا عمري، عاود قولي واش راك حاب 🥺";
         }
 
-        const getBotResponse = async (text, attachments) => {
-            try {
-                const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { 
-                    text: `تحدث باللهجة الجزائرية فقط وبطريقة لطيفة ودلوعة: ${text}`, 
-                    style: 3, 
-                    attachments 
-                });
-                let reply = res.data.message;
-                if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
-                    return "عيوني ليك يا غالي، راك منورنا اليوم 🥺🩵";
-                }
-                return reply;
-            } catch {
-                return "ما فهمتكش مليح يا عمري، علمني واش نجاوب بـ teach 🥺";
-            }
-        };
+        api.sendMessage(botResponse, event.threadID, (err, info) => {  
+            if (!err) {  
+                global.GoatBot.onReply.set(info.messageID, {  
+                   commandName: this.config.name,  
+                   type: "reply",  
+                   messageID: info.messageID,  
+                   author: uid,  
+                   text: botResponse  
+                });  
+            }  
+        }, event.messageID);  
 
-        const botResponse = await getBotResponse(msg, event.attachments || []);
-        api.sendMessage(botResponse, event.threadID, (err, info) => {
-            if (!err) {
-                global.GoatBot.onReply.set(info.messageID, {
-                   commandName: this.config.name,
-                   type: "reply",
-                   messageID: info.messageID,
-                   author: uid,
-                   text: botResponse
-                });
-            }
-        }, event.messageID);
-
-    } catch (err) {
-        console.error(err);
-        api.sendMessage(`Error: ${err.response?.data || err.message}`, event.threadID, event.messageID);
+    } catch (err) {  
+        console.error(err);  
+        api.sendMessage(`Error: ${err.message}`, event.threadID, event.messageID);  
     }
 };
 
 module.exports.onReply = async ({ api, event }) => {
     if (event.type !== "message_reply") return;
+    
     try {
-        const getBotResponse = async (text, attachments) => {
-            try {
-                const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { 
-                    text: `تحدث باللهجة الجزائرية فقط وبطريقة لطيفة: ${text}`, 
-                    style: 3, 
-                    attachments 
-                });
-                let reply = res.data.message;
-                // فحص صارع لملق الرد ومنع أي جملة أجنبية
-                if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
-                    return "قلبي الصغير لا يتحمل هذا الكلام الجميل يا عيوني 🥺💕 راني معاك!";
-                }
-                return reply;
-            } catch {
-                return "ما فهمتنيش مليح يا روحي، عاود قولي ولا علمني بـ teach 🥺";
-            }
-        };
+        const userReplyText = event.body?.trim() || "سلام";  
+        let botResponse = await getOpenAIResponse(userReplyText);  
 
-        const userReplyText = event.body?.toLowerCase() || "سلام";
-        let replyMessage = await getBotResponse(userReplyText, event.attachments || []);
+        if (!botResponse) {  
+            botResponse = "راك منورني بزاف يا عمري، قول لي واش راك حاب زيد نحكي معاك؟ 🥺🩵";  
+        }  
 
-        // تأكيد إضافي قبل الإرسال لمنع ظهور أي جملة غريبة نهائياً
-        if (!replyMessage || replyMessage.includes("Amake teach") || replyMessage.includes("oi Mama") || replyMessage.includes("kora")) {
-            replyMessage = "راك منورني بزاف يا عمري، قول لي واش راك حابزيد نحكي معاك؟ 🥺🩵";
-        }
-
-        api.sendMessage(replyMessage, event.threadID, (err, info) => {
-            if (!err) {
-                global.GoatBot.onReply.set(info.messageID, {
-                   commandName: this.config.name,
-                   type: "reply",
-                   messageID: info.messageID,
-                   author: event.senderID,
-                   text: replyMessage
-                });
-            }
-        }, event.messageID);
-    } catch (err) {
-        console.error(err);
+        api.sendMessage(botResponse, event.threadID, (err, info) => {  
+            if (!err) {  
+                global.GoatBot.onReply.set(info.messageID, {  
+                   commandName: this.config.name,  
+                   type: "reply",  
+                   messageID: info.messageID,  
+                   author: event.senderID,  
+                   text: botResponse  
+                });  
+            }  
+        }, event.messageID);  
+    } catch (err) {  
+        console.error(err);  
     }
 };
 
@@ -153,68 +152,54 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.toLowerCase() || "";
         const attachments = event.attachments || [];
 
-        const matchedPrefix = mahmud.find(word => message.startsWith(word));
+        const matchedPrefix = mahmud.find(word => message.startsWith(word));  
 
-        if (event.type !== "message_reply" && matchedPrefix) {
-            api.setMessageReaction("🇩🇿", event.messageID, () => { }, true);
-            api.sendTypingIndicator(event.threadID, true);
+        if (event.type !== "message_reply" && matchedPrefix) {  
+            api.setMessageReaction("🇩🇿", event.messageID, () => { }, true);  
+            api.sendTypingIndicator(event.threadID, true);  
 
-            const getBotResponse = async (text, attachments) => {
-                try {
-                    const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { 
-                        text: `تحدث باللهجة الجزائرية الدارجة والعامية فقط وبدلع لطيف: ${text}`, 
-                        style: 3, 
-                        attachments 
-                    });
-                    let reply = res.data.message;
-                    if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
-                        return "نموت عليك يا قلبي، واش راك حاب نحكي معاك اليوم؟ 🥺✨";
-                    }
-                    return reply;
-                } catch {
-                    return "عذراً يا عمري، صرا مشكل صغير 🥺";
-                }
-            };
+            let userText = message.substring(matchedPrefix.length).trim();  
 
-            let userText = message.substring(matchedPrefix.length).trim();
+            const randomMessage = [  
+                "راني هنا يا غالي، واش راك حاب نحكي معاك اليوم؟ 🇩🇿✨",  
+                "أهلا بيكم يا ناس الخير، واش راكم دايرين؟ 🥺🩵",  
+                "عيوني ليك يا عيوني، تفضل واش خصك؟ ✨",  
+                "نعم يا روحي، راني نسمع فيك، قل لي واش كاين؟ 🍓"  
+            ];  
 
-            const randomMessage = [
-                "رااني هنا يا غالي، واش راك حاب نحكي معاك اليوم؟ 🇩🇿✨",
-                "أهلا بيكم يا ناس الخير، واش راكم دايرين؟ 🥺🩵",
-                "عيوني ليك يا عيوني، تفضل واش خصك؟ ✨",
-                "نعم يا روحي، راني نسمع فيك، قل لي واش كاين؟ 🍓"
-            ];
+            if (!userText && attachments.length === 0) {  
+                const hinataMessage = randomMessage[Math.floor(Math.random() * randomMessage.length)];  
+                return api.sendMessage(hinataMessage, event.threadID, (err, info) => {  
+                    if (!err) {  
+                        global.GoatBot.onReply.set(info.messageID, {  
+                           commandName: this.config.name,  
+                           type: "reply",  
+                           messageID: info.messageID,  
+                           author: event.senderID,  
+                           text: hinataMessage  
+                        });  
+                    }  
+                }, event.messageID);  
+            }  
 
-            if (!userText && attachments.length === 0) {
-                const hinataMessage = randomMessage[Math.floor(Math.random() * randomMessage.length)];
-                return api.sendMessage(hinataMessage, event.threadID, (err, info) => {
-                    if (!err) {
-                        global.GoatBot.onReply.set(info.messageID, {
-                           commandName: this.config.name,
-                           type: "reply",
-                           messageID: info.messageID,
-                           author: event.senderID,
-                           text: hinataMessage
-                        });
-                    }
-                }, event.messageID);
+            let botResponse = await getOpenAIResponse(userText || message); 
+            if (!botResponse) {
+                botResponse = "نموت عليك يا قلبي، واش راك حاب نحكي معاك اليوم؟ 🥺✨";
             }
 
-            let botResponse = await getBotResponse(userText || message, attachments);
-
-            api.sendMessage(botResponse, event.threadID, (err, info) => {
-                if (!err) {
-                    global.GoatBot.onReply.set(info.messageID, {
-                       commandName: this.config.name,
-                       type: "reply",
-                       messageID: info.messageID,
-                       author: event.senderID,
-                       text: botResponse
-                    });
-                }
-            }, event.messageID);
-        }
-    } catch (err) {
-        console.error(err);
+            api.sendMessage(botResponse, event.threadID, (err, info) => {  
+                if (!err) {  
+                    global.GoatBot.onReply.set(info.messageID, {  
+                       commandName: this.config.name,  
+                       type: "reply",  
+                       messageID: info.messageID,  
+                       author: event.senderID,  
+                       text: botResponse  
+                    });  
+                }  
+            }, event.messageID);  
+        }  
+    } catch (err) {  
+        console.error(err);  
     }
 };
