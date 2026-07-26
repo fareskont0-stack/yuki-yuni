@@ -1,44 +1,46 @@
 const axios = require("axios");
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const mahmud = [
+    "baby",
+    "bby",
+    "babu",
+    "bbu",
+    "jan",
+    "bot",
+    "wifey",
+    "hina",
+    "hinata",
+    "هاي",
+    "عمري",
+    "حبي",
+    "صفا",
+    "يا قلبي",
+    "عيوني",
+    "حنون",
+    "صحيت",
+    "وينك",
+    "سلام",
+    "روحي",
+    "غالي",
+    "ماما",
+    "عزيزي",
+    "بوت",
+    "نحبك"
+];
 
-// دالة الاتصال المباشر بـ OpenAI GPT
-async function getOpenAIResponse(promptText) {
+const baseApiUrl = async () => {
     try {
-        const response = await axios.post(
-            "https://api.openai.com/v1/chat/completions",
-            {
-                model: "gpt-4o-mini",
-                messages: [
-                    {
-                        role: "system",
-                        content: "أنت مساعد ذكي لطيف تتحدث حصرياً باللهجة الجزائرية الصافية والدافئة مع استخدام الكلمات اللطيفة (مثل: عمري، روحي، عيوني)."
-                    },
-                    {
-                        role: "user",
-                        content: promptText
-                    }
-                ],
-                temperature: 0.7
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API_KEY}`
-                }
-            }
-        );
-        return response.data.choices[0].message.content.trim();
-    } catch (error) {
-        console.error("OpenAI API Error:", error.response?.data || error.message);
-        return null;
+        const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
+        return base.data.mahmud;
+    } catch {
+        return "https://hinata-api.replit.app"; // رابط بداحتياطي في حال توقف الـ raw
     }
-}
+};
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.6",
+    version: "2.7",
     author: "MahMUD",
     countDown: 0,
     role: 0,
@@ -54,12 +56,25 @@ module.exports.config = {
     }
 };
 
-module.exports.onStart = async ({ api, event, args }) => {
-    const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
-    if (module.exports.config.author !== obfuscatedAuthor) {
-        return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
+async function fetchBotResponse(text, attachments = []) {
+    try {
+        const baseUrl = await baseApiUrl();
+        const res = await axios.post(`${baseUrl}/api/hinata`, {
+            text: `تحدث باللهجة الجزائرية الدارجة والعامية فقط وبدلع لطيف: ${text}`,
+            style: 3,
+            attachments
+        });
+        let reply = res.data.message;
+        if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
+            return "عيوني ليك يا غالي، راك منورنا اليوم 🥺🩵";
+        }
+        return reply;
+    } catch {
+        return "ما فهمتكش مليح يا عمري، عاود قولي واش راك حاب 🥺";
     }
+}
 
+module.exports.onStart = async ({ api, event, args }) => {
     const msg = args.join(" ").trim();  
     const uid = event.senderID;  
 
@@ -69,10 +84,7 @@ module.exports.onStart = async ({ api, event, args }) => {
             return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);  
         }  
 
-        let botResponse = await getOpenAIResponse(msg);
-        if (!botResponse) {
-            botResponse = "ما فهمتكش مليح يا عمري، عاود قولي واش راك حاب 🥺";
-        }
+        const botResponse = await fetchBotResponse(msg, event.attachments || []);
 
         api.sendMessage(botResponse, event.threadID, (err, info) => {  
             if (!err) {  
@@ -97,11 +109,7 @@ module.exports.onReply = async ({ api, event }) => {
     
     try {
         const userReplyText = event.body?.trim() || "سلام";  
-        let botResponse = await getOpenAIResponse(userReplyText);  
-
-        if (!botResponse) {  
-            botResponse = "راك منورني بزاف يا عمري، قول لي واش راك حاب زيد نحكي معاك؟ 🥺🩵";  
-        }  
+        let botResponse = await fetchBotResponse(userReplyText, event.attachments || []);  
 
         api.sendMessage(botResponse, event.threadID, (err, info) => {  
             if (!err) {  
@@ -127,26 +135,29 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.trim() || "";
         if (!message || message.startsWith(".")) return; 
 
-        api.setMessageReaction("🇩🇿", event.messageID, () => {}, true);
-        api.sendTypingIndicator(event.threadID, true);
+        const matchedPrefix = mahmud.find(word => message.toLowerCase().startsWith(word));
 
-        let botResponse = await getOpenAIResponse(message); 
-        if (!botResponse) {
-            botResponse = "راني معاك يا قلبي، واش راك حاب زيد نحكي؟ 🥺✨";
+        if (matchedPrefix) {
+            api.setMessageReaction("🌸", event.messageID, () => {}, true);
+            api.sendTypingIndicator(event.threadID, true);
+
+            let userText = message.substring(matchedPrefix.length).trim();
+            if (!userText) userText = message;
+
+            let botResponse = await fetchBotResponse(userText, event.attachments || []); 
+
+            api.sendMessage(botResponse, event.threadID, (err, info) => {  
+                if (!err) {  
+                    global.GoatBot.onReply.set(info.messageID, {  
+                       commandName: this.config.name,  
+                       type: "reply",  
+                       messageID: info.messageID,  
+                       author: event.senderID,  
+                       text: botResponse  
+                    });  
+                }  
+            }, event.messageID);  
         }
-
-        api.sendMessage(botResponse, event.threadID, (err, info) => {  
-            if (!err) {  
-                global.GoatBot.onReply.set(info.messageID, {  
-                   commandName: this.config.name,  
-                   type: "reply",  
-                   messageID: info.messageID,  
-                   author: event.senderID,  
-                   text: botResponse  
-                });  
-            }  
-        }, event.messageID);  
-
     } catch (err) {  
         console.error(err);  
     }
