@@ -25,7 +25,7 @@ module.exports = {
     config: {
         name: "تفاعل",
         aliases: ["ايقاف", "تشغيل_تفاعل"],
-        version: "3.2",
+        version: "3.3",
         author: "MahMUD & Fares",
         countDown: 1,
         role: 1,
@@ -41,8 +41,8 @@ module.exports = {
     langs: {
         ar: {
             usageError: "⚠️ | الاستخدام الخاطئ!\n• للكتابة: تفاعل تشغيل 💖\n• للإيقاف: تفاعل ايقاف",
-            enabled: "✅ | تم تفعيل بنجاح ",
-            disabled: "🛑 | تم ايقاف بنجاح "
+            enabled: "✅ | تم التفعيل بنجاح بالإيموجي: %1",
+            disabled: "🛑 | تم إيقاف التفاعل بنجاح."
         }
     },
 
@@ -59,7 +59,7 @@ module.exports = {
                 emoji: emojiArg
             };
             saveConfig(config);
-            return api.sendMessage(getLang("enabled", emojiArg), threadID, messageID);
+            return api.sendMessage(getLang("enabled").replace("%1", emojiArg), threadID, messageID);
         } 
         else if (subAction === "ايقاف" || subAction === "إيقاف") {
             if (config[threadID]) {
