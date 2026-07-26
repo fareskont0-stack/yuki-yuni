@@ -40,7 +40,7 @@ const baseApiUrl = async () => {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.8",
+    version: "2.9",
     author: "MahMUD",
     countDown: 0,
     role: 0,
@@ -60,19 +60,18 @@ async function fetchBotResponse(text, attachments = []) {
     try {
         const baseUrl = await baseApiUrl();
         const res = await axios.post(`${baseUrl}/api/hinata`, {
-            text: `أنت مساعد ذكي يتحدث حصرياً باللغة العربية واللهجة الجزائرية فقط. أجب على هذا الكلام بلغة عربية صحيحة وبطريقة لطيفة وودودة: ${text}`,
+            text: `أنت مساعد ذكي يتحدث حصرياً باللغة العربية واللهجة الجزائرية. أجب على هذا الكلام بلغة عربية وبطريقة لطيفة: ${text}`,
             style: 3,
             attachments
         });
         let reply = res.data.message;
 
-        // التحقق من خلو الرد من الكلمات الأجنبية أو الغير عربية واستبدالها بردود محلية صحيحة
         if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora") || reply.toLowerCase().includes("sokale") || reply.toLowerCase().includes("wa alaikumus") || reply.toLowerCase().includes("khaicho")) {
-            return "أهلاً بك يا غالي، أنا هنا معك بكل سرور. كيف يمكنني مساعدتك اليوم؟ 🥺🩵";
+            return "أهلاً بك يا غالي، أنا هنا معك. كيف يمكنني مساعدتك اليوم؟ 🥺🩵";
         }
         return reply;
     } catch {
-        return "عذراً يا عمري، حدث خطأ بسيط، عاود قولي واش راك حاب 🥺";
+        return "عذراً يا عمري، عاود قولي واش راك حاب 🥺";
     }
 }
 
@@ -102,7 +101,6 @@ module.exports.onStart = async ({ api, event, args }) => {
 
     } catch (err) {  
         console.error(err);  
-        api.sendMessage(`Error: ${err.message}`, event.threadID, event.messageID);  
     }
 };
 
@@ -141,7 +139,6 @@ module.exports.onChat = async ({ api, event }) => {
 
         if (matchedPrefix) {
             api.setMessageReaction("🌸", event.messageID, () => {}, true);
-            api.sendTypingIndicator(event.threadID, true);
 
             let userText = message.substring(matchedPrefix.length).trim();
             if (!userText) userText = message;
