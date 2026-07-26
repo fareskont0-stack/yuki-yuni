@@ -9,9 +9,9 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "فيديو",
+                name: "يوتيوب",
                 aliases: ["ভিডিও"],
-                version: "1.7",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
@@ -33,27 +33,27 @@ module.exports = {
         langs: {
                 ar: {
                         noInput: "× يا عمري، عطيني اسم الفيديو ولا الرابط باش نحمله! 📺🥺",
-                        noResult: "× عذراً يا قلبي، ما لقيت حتى نتيجة.",
-                        success: "✅ هاو ليك الفيديو تاعك يا عيوني\n\n• 𝐓𝐢𝐭𝐥𝐞: %1",
-                        error: "× صرا مشكل يا قلبي: %1. عيط لـ MahMUD يعاونك."
+                        noResult: "× عذراً يا قلبي، ما لقيت حتى نتيجة لهذا البحث.",
+                        success: "✅ هاو ليك الفيديو تاعك يا عيوني مريقل 100/100\n\n• 𝐓𝐢𝐭𝐥𝐞: %1",
+                        error: "× سامحني يا غالي، الرابط راه ثقيل ولا السيرفر ما ردش عليها.. عاود جرب فيديو واحد اخر!"
                 },
                 bn: {
                         noInput: "× বেবি, ভিডিওর নাম বা লিঙ্ক তো দাও! 📺",
                         noResult: "× কোনো রেজাল্ট পাওয়া যায়নি।",
                         success: "✅ 𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙫𝙞𝙙𝙚𝙤 𝙗𝙖𝙗𝙮\n\n• 𝐓𝐢𝐭𝐥𝐞: %1",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× সমস্যা হয়েছে!"
                 },
                 en: {
                         noInput: "× Baby, please provide a video name or link! 📺",
                         noResult: "× No results found.",
                         success: "✅ 𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙫𝙞𝙙𝙚𝙤 𝙗𝙖𝙗𝙮\n\n• 𝐓𝐢𝐭𝐥𝐞: %1",
-                        error: "× API error: %1. Contact MahMUD for help."
+                        error: "× API error!"
                 },
                 vi: {
                         noInput: "× Cưng ơi, vui lòng cung cấp tên hoặc liên kết video! 📺",
                         noResult: "× Không tìm thấy kết quả.",
-                        success: "✅ Video của cưng đây <😘\n\n• 𝐓𝐢êu đề: %1",
-                        error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                        success: "✅ Video của cưng đây <😘\n\n• 𝐓Iêu đề: %1",
+                        error: "× Lỗi!"
                 }
         },
 
@@ -66,7 +66,7 @@ module.exports = {
                 if (!args[0]) return message.reply(getLang("noInput"));
 
                 try {
-                        api.setMessageReaction("🧼", event.messageID, () => {}, true);
+                        await new Promise((resolve) => api.setMessageReaction("⌛", event.messageID, resolve, true));
                         
                         const apiUrl = await baseApiUrl();
                         const checkurl = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
@@ -76,36 +76,44 @@ module.exports = {
                                 videoID = args[0].match(checkurl)[1];
                         } else {
                                 const keyWord = args.join(" ");
-                                const searchRes = await axios.get(`${apiUrl}/api/video/search?songName=${encodeURIComponent(keyWord)}`);
+                                const searchRes = await axios.get(`${apiUrl}/api/video/search?songName=${encodeURIComponent(keyWord)}`, { timeout: 10000 });
                                 if (!searchRes.data || searchRes.data.length === 0) {
-                                        api.setMessageReaction("🥹", event.messageID, () => {}, true);
+                                        await new Promise((resolve) => api.setMessageReaction("❌", event.messageID, resolve, true));
                                         return message.reply(getLang("noResult"));
                                 }
                                 videoID = searchRes.data[0].id;
                         }
 
                         const cacheDir = path.join(__dirname, "cache");
-                        if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
-                        const filePath = path.join(cacheDir, `video_${videoID}.mp4`);
+                        if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+                        const filePath = path.join(cacheDir, `video_${videoID}_${Date.now()}.mp4`);
 
-                        const res = await axios.get(`${apiUrl}/api/video/download?link=${videoID}&format=mp4`);
+                        const res = await axios.get(`${apiUrl}/api/video/download?link=${videoID}&format=mp4`, { timeout: 15000 });
                         const { title, downloadLink } = res.data;
 
-                        const videoBuffer = (await axios.get(downloadLink, { responseType: "arraybuffer" })).data;
+                        if (!downloadLink) {
+                                throw new Error("Download link is missing from API response");
+                        }
+
+                        const videoBuffer = (await axios.get(downloadLink, { 
+                                responseType: "arraybuffer",
+                                timeout: 60000 // وقت إضافي لتحميل الفيديوهات الكبيرة
+                        })).data;
+                        
                         fs.writeFileSync(filePath, Buffer.from(videoBuffer));
 
                         return message.reply({
-                                body: getLang("success", title),
+                                body: getLang("success", title || "فيديو بدون عنوان"),
                                 attachment: fs.createReadStream(filePath)
-                        }, () => {
-                                api.setMessageReaction("🧼", event.messageID, () => {}, true);
+                        }, async () => {
+                                await new Promise((resolve) => api.setMessageReaction("✅", event.messageID, resolve, true));
                                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         });
 
                 } catch (err) {
-                        console.error("Video Download Error:", err);
-                        api.setMessageReaction("❌", event.messageID, () => {}, true);
-                        return message.reply(getLang("error", err.message));
+                        console.error("Video Download Error:", err.message);
+                        await new Promise((resolve) => api.setMessageReaction("❌", event.messageID, resolve, true));
+                        return message.reply(getLang("error"));
                 }
         }
 };
