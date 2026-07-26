@@ -5,12 +5,12 @@ module.exports = {
     aliases: ["biography", "bio"],
     category: "سير ذاتية",
     shortDescription: {
-      en: "إرسال سيرة ذاتية عشوائية.",
-      tl: "Magpadala ng random na bio."
+      en: "إرسال سيرة ذاتية مع فيديو.",
+      tl: "Magpadala ng bio na may video."
     },
     longDescription: {
-      en: "سيرسل هذا الأمر سيرة ذاتية إنجليزية مزخرفة مع شرحها بالعربية وصورة فخمة.",
-      tl: "Magpapadala ito ng bold styled english bio na قدوة."
+      en: "سيرسل هذا الأمر سيرة ذاتية إنجليزية مزخرفة مع شرحها بالعربية وفيديو مميز.",
+      tl: "Magpapadala ito ng bold styled english bio na may video."
     },
     guide: {
       en: "{p}سيرة",
@@ -19,26 +19,25 @@ module.exports = {
   },
   onStart: async function ({ message, api, event }) {
     try {
-      const dataList = [
-        {
-          bio: "𝗣𝗲𝗼𝗽𝗹𝗲 𝘄𝗶𝗹𝗹 𝗳𝗼𝗿𝗴𝗲𝘁 𝘄𝗵𝗮𝘁 𝘆𝗼𝘂 𝘀𝗮𝗶𝗱, 𝗯𝘂𝘁 𝘁𝗵𝗲𝘆 𝘄𝗶𝗹𝗹 𝗻𝗲𝘃𝗲𝗿 𝗳𝗼𝗿𝗴𝗲𝘁 𝗵𝗼𝘄 𝘆𝗼𝘂 𝗺𝗮𝗱𝗲 𝘁𝗵𝗲𝗺 𝗳𝗲𝗲𝗹 🍓✨🩵\n▪️ المعنى: سيقصد الناس ما قلت، لكنهم لن ينسا أبداً شعورهم معك.\n▪️ الشرح: الأثر الطيب والأخلاق الحسنة هما ما يبقى خالداً في قلوب الآخرين.",
-          link: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809"
-        }
-      ];
+      const bioText = "𝗧𝗿𝗮𝗶𝗻 𝗛𝗮𝗿𝗱 • 𝗦𝘁𝗮𝘆 𝗛𝘂𝗺𝗯𝗹𝗲 🍓✨🩵\n▪️ المعنى: تدرب بجد وابق متواضعاً.\n▪️ الشرح: أهمية الاجتهاد المستمر مع الحفاظ على تواضع النفس مهما بلغت من إنجازات.";
+      
+      // رابط الفيديو المباشر الذي طلبته
+      const videoLink = "https://i.imgur.com/POXbk84.mp4";
 
-      const randomItem = dataList[Math.floor(Math.random() * dataList.length)];
-
+      // وضع تفاعل لإعلامك ببدء التنفيذ
       api.setMessageReaction("💖", event.messageID, () => {}, true);
     
-      const stream = await global.utils.getStreamFromURL(randomItem.link);
+      // جلب الفيديو كـ Stream (يعمل بنفس كفاءة الصور تماماً مع الـ mp4)
+      const stream = await global.utils.getStreamFromURL(videoLink);
 
+      // إرسال النص مع الفيديو في رسالة واحدة
       return message.reply({
-        body: randomItem.bio,
+        body: bioText,
         attachment: stream
       });
 
     } catch (error) {
-      console.error("خطأ في أمر سيرة:", error);
+      console.error("خطأ في أمر سيرة (فيديو):", error);
       return message.reply("حدث خطأ أثناء تنفيذ الأمر، يرجى المحاولة لاحقاً.");
     }
   }
