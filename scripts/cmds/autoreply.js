@@ -2,20 +2,24 @@ const replies = require("../data/replies.json");
 
 module.exports = {
   config: {
-  name: "autoreply",
-  version: "1.0.0",
-  author: "Fares",
-  role: 0,
-  countDown: 0,
-  category: "chat",
-  noPrefix: true
-},
-      ar: "الردود التلقائية"
+    name: "autoreply",
+    version: "1.0.0",
+    author: "Fares",
+    role: 0,
+    countDown: 0,
+    category: "chat",
+    description: {
+      ar: "الردود التلقائية",
+      en: "Auto reply"
     }
   },
 
-  onChat: async function ({ api, event }) {
-    console.log("[AUTOREPLY]", event.body);
+  onLoad({ commandName }) {
+    if (!global.GoatBot.onChat.includes(commandName))
+      global.GoatBot.onChat.push(commandName);
+  },
+
+  async onChat({ api, event }) {
     if (!event.body) return;
 
     const message = event.body.trim().toLowerCase();
@@ -27,8 +31,7 @@ module.exports = {
         if (!Array.isArray(answers) || answers.length === 0)
           return;
 
-        const random =
-          answers[Math.floor(Math.random() * answers.length)];
+        const random = answers[Math.floor(Math.random() * answers.length)];
 
         return api.sendMessage(
           random,
