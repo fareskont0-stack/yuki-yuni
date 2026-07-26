@@ -29,7 +29,8 @@ module.exports = {
         "https://stream.vidhosting.in/videos/c2daec84.mp4",
         "https://stream.vidhosting.in/videos/c7794e4f.mp4",
         "https://stream.vidhosting.in/videos/070e8890.mp4",
-        "https://stream.vidhosting.in/videos/c016baf2.mp4"
+        "https://stream.vidhosting.in/videos/c016baf2.mp4",
+        "https://stream.vidhosting.in/videos/e656c2b9.mp4"
       ];
 
       // اختيار فيديو عشوائي تماماً في كل مرة يتم فيها استخدام الأمر
