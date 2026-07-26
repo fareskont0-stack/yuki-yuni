@@ -19,11 +19,17 @@ module.exports = {
   },
   onStart: async function ({ message, api, event }) {
     try {
-      const bioText = "𝗧𝗿𝗮𝗶𝗻 𝗛𝗮𝗿𝗱 • 𝗦𝘁𝗮𝘆 𝗛𝘂𝗺𝗯𝗹𝗲 🍓✨🩵\n▪️ المعنى: تدرب بجد وابق متواضعاً.\n▪️ الشرح: أهمية الاجتهاد المستمر مع الحفاظ على تواضع النفس مهما بلغت من إنجازات.";
+      const bioText = "تفضل ياعمري 💖";
       
-      // رابط فيديو مباشر وصحيح 100% يعمل كـ Stream
-      const videoLink = "https://stream.vidhosting.in/videos/6cc8c91f.mp4",
-                         "https://stream.vidhosting.in/videos/b0ea160c.mp4";
+      // قائمة الروابط الصحيحة داخل مصفوفة لضمان عدم حدوث خطأ برمجي
+      const videos = [
+        "https://stream.vidhosting.in/videos/6cc8c91f.mp4",
+        "https://stream.vidhosting.in/videos/b0ea160c.mp4"
+        // يمكنك إضافة باقي الروابط هنا لاحقاً بنفس الطريقة بين علامتي التنصيص وتفصل بينها بفاصلة
+      ];
+
+      // اختيار فيديو عشوائي تلقائياً في كل مرة يعمل فيها الأمر
+      const videoLink = videos[Math.floor(Math.random() * videos.length)];
 
       // وضع تفاعل لإعلامك ببدء التنفيذ
       api.setMessageReaction("💖", event.messageID, () => {}, true);
