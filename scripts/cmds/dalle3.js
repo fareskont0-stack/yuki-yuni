@@ -9,18 +9,20 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "dalle3",
-                version: "1.7",
+                name: "رسم",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 15,
                 role: 0,
                 description: {
+                        ar: "توليد صور ذكاء اصطناعي باستخدام نموذج DALL-E 3",
                         bn: "DALL-E 3 মডেল দিয়ে এআই ছবি তৈরি করুন",
                         en: "Generate AI images using DALL-E 3 model",
                         vi: "Tạo hình ảnh AI bằng mô hình DALL-E 3"
                 },
                 category: "image gen",
                 guide: {
+                        ar: '   {pn} <الوصف>: اكتب وصف الصورة التي تريد توليدها',
                         bn: '   {pn} <prompt>: ছবি তৈরি করতে বর্ণনা দিন',
                         en: '   {pn} <prompt>: Provide a description to generate image',
                         vi: '   {pn} <prompt>: Cung cấp mô tả để tạo hình ảnh'
@@ -28,6 +30,12 @@ module.exports = {
         },
 
         langs: {
+                ar: {
+                        noPrompt: "× يا غالي، يرجى كتابة وصف للصورة التي تريد توليدها 🥺",
+                        wait: "🔄 | جاري توليد الصورة بواسطة DALL-E 3، انتظر قليلاً يا عمري...",
+                        success: "ها هي صورتك الذكية جاهزة يا غالي <😘",
+                        error: "× حدث خطأ: %1. للتواصل مع المطور MahMUD.\n•WhatsApp: 01836298139"
+                },
                 bn: {
                         noPrompt: "× বেবি, ছবি তৈরি করার জন্য কিছু তো লেখো",
                         wait: "🔄 | DALL-E 3 ছবি তৈরি হচ্ছে, একটু অপেক্ষা করো বেবি...",
