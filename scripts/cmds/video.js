@@ -3,15 +3,20 @@ const fs = require('fs');
 const path = require('path');
 
 const baseApiUrl = async () => {
-        const base = await axios.get(`https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json`);
+        const base = await axios.get(`https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json`, { timeout: 10000 });
+        // التحقق من أن مصفوفة mahmud موجودة وليست فارغة
+        const apis = base.data.mahmud;
+        if (Array.isArray(apis) && apis.length > 0) {
+                return apis[0];
+        }
         return base.data.mahmud; 
 };
 
 module.exports = {
         config: {
                 name: "يوتيوب",
-                aliases: ["ভিডিও"],
-                version: "1.8",
+                aliases: ["ভিডিও", "video"],
+                version: "1.9",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
@@ -39,7 +44,7 @@ module.exports = {
                 },
                 bn: {
                         noInput: "× বেবি, ভিডিওর নাম বা লিঙ্ক তো দাও! 📺",
-                        noResult: "× কোনো রেজাল্ট পাওয়া যায়নি।",
+                        noResult: "× কোনো রেজাল্ট পাওয়া যায়নি۔",
                         success: "✅ 𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙫𝙞𝙙𝙚𝙤 𝙗𝙖𝙗𝙮\n\n• 𝐓𝐢𝐭𝐥𝐞: %1",
                         error: "× সমস্যা হয়েছে!"
                 },
@@ -65,6 +70,8 @@ module.exports = {
 
                 if (!args[0]) return message.reply(getLang("noInput"));
 
+                let filePath = null;
+
                 try {
                         await new Promise((resolve) => api.setMessageReaction("⌛", event.messageID, resolve, true));
                         
@@ -77,19 +84,25 @@ module.exports = {
                         } else {
                                 const keyWord = args.join(" ");
                                 const searchRes = await axios.get(`${apiUrl}/api/video/search?songName=${encodeURIComponent(keyWord)}`, { timeout: 10000 });
-                                if (!searchRes.data || searchRes.data.length === 0) {
+                                if (!searchRes.data || (Array.isArray(searchRes.data) && searchRes.data.length === 0)) {
                                         await new Promise((resolve) => api.setMessageReaction("❌", event.messageID, resolve, true));
                                         return message.reply(getLang("noResult"));
                                 }
-                                videoID = searchRes.data[0].id;
+                                videoID = Array.isArray(searchRes.data) ? searchRes.data[0].id : searchRes.data.id;
+                        }
+
+                        if (!videoID) {
+                                await new Promise((resolve) => api.setMessageReaction("❌", event.messageID, resolve, true));
+                                return message.reply(getLang("noResult"));
                         }
 
                         const cacheDir = path.join(__dirname, "cache");
                         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
-                        const filePath = path.join(cacheDir, `video_${videoID}_${Date.now()}.mp4`);
+                        filePath = path.join(cacheDir, `video_${videoID}_${Date.now()}.mp4`);
 
                         const res = await axios.get(`${apiUrl}/api/video/download?link=${videoID}&format=mp4`, { timeout: 15000 });
-                        const { title, downloadLink } = res.data;
+                        const downloadLink = res.data.downloadLink || res.data.url || res.data.link;
+                        const title = res.data.title || "فيديو بدون عنوان";
 
                         if (!downloadLink) {
                                 throw new Error("Download link is missing from API response");
@@ -97,21 +110,28 @@ module.exports = {
 
                         const videoBuffer = (await axios.get(downloadLink, { 
                                 responseType: "arraybuffer",
-                                timeout: 60000 // وقت إضافي لتحميل الفيديوهات الكبيرة
+                                timeout: 60000 
                         })).data;
                         
+                        if (!videoBuffer || videoBuffer.length === 0) {
+                                throw new Error("Downloaded video buffer is empty");
+                        }
+
                         fs.writeFileSync(filePath, Buffer.from(videoBuffer));
 
                         return message.reply({
-                                body: getLang("success", title || "فيديو بدون عنوان"),
+                                body: getLang("success", title),
                                 attachment: fs.createReadStream(filePath)
                         }, async () => {
                                 await new Promise((resolve) => api.setMessageReaction("✅", event.messageID, resolve, true));
-                                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                                if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         });
 
                 } catch (err) {
                         console.error("Video Download Error:", err.message);
+                        if (filePath && fs.existsSync(filePath)) {
+                                try { fs.unlinkSync(filePath); } catch(e) {}
+                        }
                         await new Promise((resolve) => api.setMessageReaction("❌", event.messageID, resolve, true));
                         return message.reply(getLang("error"));
                 }
