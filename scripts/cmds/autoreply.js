@@ -2,13 +2,14 @@ const replies = require("../data/replies.json");
 
 module.exports = {
   config: {
-    name: "autoreply",
-    version: "1.0.0",
-    author: "Fares",
-    role: 0,
-    countDown: 0,
-    category: "chat",
-    description: {
+  name: "autoreply",
+  version: "1.0.0",
+  author: "Fares",
+  role: 0,
+  countDown: 0,
+  category: "chat",
+  noPrefix: true
+},
       ar: "الردود التلقائية"
     }
   },
