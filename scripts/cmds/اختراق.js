@@ -1,6 +1,11 @@
 const fs = "fs-extra" in global ? global["fs-extra"] : require("fs-extra");
 const axios = require("axios");
-const { loadImage, createCanvas } = require("canvas");
+const { loadImage, createCanvas, registerFont } = require("canvas");
+
+// محاولة تسجيل خط يدعم العربية إن توفر في السيرفر
+try {
+  registerFont(__dirname + '/Cairo-Regular.ttf', { family: 'Cairo' });
+} catch (e) {}
 
 const TOP_BAR_URL = "https://i.ibb.co/5bqFx6C/2d96e52b17d7.jpg";
 const BOTTOM_BAR_URL = "https://i.ibb.co/ccnk9pMq/81194654b06f.jpg";
@@ -9,15 +14,15 @@ module.exports = {
   config: {
     name: "اختراق",
     aliases: ["fchat", "تحدث"],
-    version: "2.5.0",
+    version: "2.8.0",
     author: "SIFAT",
     countDown: 5,
     role: 0,
     description: {
-      ar: "صنع صورة محادثة ماسنجر وهمية احترافية"
+      ar: "صنع صورة محادثة ماسنجر وهمية احترافية داعمة للعربية"
     },
     category: "ترفيه",
-    guide: { ar: "اكتب الأمر هكذا:\n.اختراق كلام الشخص | كلامك أنت" }
+    guide: { ar: "اكتب الأمر هكذا:\n.اختراق النص الأول | النص الثاني" }
   },
 
   onStart: async function ({ event, message, usersData, args }) {
@@ -25,7 +30,7 @@ module.exports = {
       const fullText = args.join(" ");
 
       if (!fullText.includes("|")) {
-        return message.reply("❌ | يرجى استخدام الفاصل (|) بين كلام الشخص وكلامك.\nمثال:\n.اختراق مرحباً بك | أهلاً يا صديقي");
+        return message.reply("❌ | يرجى استخدام الفاصل (|) بين النصين.\nمثال:\n.اختراق مرحباً | أهلاً بك");
       }
 
       const parts = fullText.split("|").map(item => item.trim());
@@ -37,7 +42,7 @@ module.exports = {
         return message.reply("❌ | يرجى كتابة النصين بشكل صحيح قبل وبعد الفاصل (|).");
       }
 
-      const friendName = await usersData.getName(targetID).catch(() => "صديق");
+      const friendName = await usersData.getName(targetID).catch(() => "User");
 
       const ts = Date.now();
       const topBarPath = __dirname + "/cache/fc_top_" + ts + ".jpg";
@@ -70,9 +75,11 @@ module.exports = {
       const fontSize = 26;
       const lineHeight = 34;
 
+      const fontfamily = "Cairo, Noto Sans Arabic, sans-serif";
+
       const measureCanvas = createCanvas(10, 10);
       const mctx = measureCanvas.getContext("2d");
-      mctx.font = fontSize + "px Sans";
+      mctx.font = fontSize + "px " + fontfamily;
 
       const friendLines = wrapTextByWidth(mctx, friendText, maxBubbleWidth - bubblePadX * 2);
       const myLines = wrapTextByWidth(mctx, myText, maxBubbleWidth - bubblePadX * 2);
@@ -99,9 +106,10 @@ module.exports = {
       const now = new Date();
       const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 20px Sans";
-      ctx.textAlign = "left";
-      ctx.fillText(timeStr, 24, 44);
+      ctx.font = "bold 20px " + fontfamily;
+      ctx.textAlign = "right";
+      ctx.direction = "rtl";
+      ctx.fillText(timeStr, W - 24, 44);
 
       const headerAvtSize = 56;
       const headerAvtX = 86;
@@ -129,19 +137,22 @@ module.exports = {
       const nameX = headerAvtX + headerAvtSize + 14;
       const nameMaxWidth = 290;
       ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "left";
-      const fittedName = fitTextToWidth(ctx, friendName, nameMaxWidth, "bold 28px Sans");
-      ctx.font = "bold 28px Sans";
-      ctx.fillText(fittedName, nameX, headerAvtY + 8);
+      ctx.textAlign = "right";
+      ctx.direction = "rtl";
+      const fittedName = fitTextToWidth(ctx, friendName, nameMaxWidth, "bold 28px " + fontfamily);
+      ctx.font = "bold 28px " + fontfamily;
+      ctx.fillText(fittedName, nameX + nameMaxWidth, headerAvtY + 8);
 
       let curY = topBarH + chatPaddingTop;
 
       const friendBubbleX = 40 + avatarSize + 12;
       drawBubble(ctx, friendBubbleX, curY, friendBubbleW, friendBubbleH, "#3a3b3c");
       ctx.fillStyle = "#ffffff";
-      ctx.font = fontSize + "px Sans";
+      ctx.font = fontSize + "px " + fontfamily;
+      ctx.textAlign = "right";
+      ctx.direction = "rtl";
       friendLines.forEach((line, i) => {
-        ctx.fillText(line, friendBubbleX + bubblePadX, curY + bubblePadY + (i + 1) * lineHeight - 8);
+        ctx.fillText(line, friendBubbleX + friendBubbleW - bubblePadX, curY + bubblePadY + (i + 1) * lineHeight - 8);
       });
 
       ctx.save();
@@ -163,9 +174,11 @@ module.exports = {
       const myBubbleX = W - 40 - myBubbleW;
       drawBubble(ctx, myBubbleX, curY, myBubbleW, myBubbleH, "#0084ff");
       ctx.fillStyle = "#ffffff";
-      ctx.font = fontSize + "px Sans";
+      ctx.font = fontSize + "px " + fontfamily;
+      ctx.textAlign = "right";
+      ctx.direction = "rtl";
       myLines.forEach((line, i) => {
-        ctx.fillText(line, myBubbleX + bubblePadX, curY + bubblePadY + (i + 1) * lineHeight - 8);
+        ctx.fillText(line, myBubbleX + myBubbleW - bubblePadX, curY + bubblePadY + (i + 1) * lineHeight - 8);
       });
 
       ctx.drawImage(bottomBarImg, 0, H - bottomBarH, W, bottomBarH);
