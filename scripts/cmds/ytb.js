@@ -9,15 +9,16 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "ytb",
-                aliases: ["youtube", "yt"],
-                version: "2.7",
+                name: "تنزيل",
+                aliases: ["youtube", "yt", "ytb"],
+                version: "2.8",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
                 description: {
                         vi: "Tải video, audio hoặc xem thông tin video trên YouTube",
-                        en: "Download video, audio or view video information on YouTube"
+                        en: "Download video, audio or view video information on YouTube",
+                        ar: "تحميل الفيديو أو الصوت أو عرض معلومات فيديو من يوتيوب"
                 },
                 category: "media",
                 guide: {
@@ -34,7 +35,14 @@ module.exports = {
                                 + "\n   Example:"
                                 + "\n    {pn} -v Mood Lo-Fi"
                                 + "\n    {pn} -a Mood Lo-Fi"
-                                + "\n    {pn} -i Mood Lo-Fi"
+                                + "\n    {pn} -i Mood Lo-Fi",
+                        ar: "   {pn} [video|-v] [<اسم الفيديو>|<رابط الفيديو>]: لتحميل الفيديو من يوتيوب."
+                                + "\n   {pn} [audio|-a] [<اسم الفيديو>|<رابط الفيديو>]: لتحميل الصوت من يوتيوب"
+                                + "\n   {pn} [info|-i] [<اسم الفيديو>|<رابط الفيديو>]: لعرض معلومات الفيديو من يوتيوب"
+                                + "\n   أمثلة:"
+                                + "\n    {pn} -v قران كريم"
+                                + "\n    {pn} -a انشودة"
+                                + "\n    {pn} -i مقطع",
                 }
         },
 
@@ -60,6 +68,17 @@ module.exports = {
                         noVideo: "⭕ Sorry, no video was found",
                         noAudio: "⭕ Sorry, no audio was found",
                         info: "💠 Title: %1\n🏪 Channel: %2\n👨‍👩‍👧‍👦 Subscriber: %3\n⏱ Video duration: %4\n👀 View count: %5\n👍 Like count: %6\n🆙 Upload date: %7\n🔠 ID: %8\n🔗 Link: %9"
+                },
+                ar: {
+                        error: "× خطأ في الـ API: %1. تواصل مع المطور للمساعدة.\n•واتساب: 01836298139",
+                        noResult: "⭕ لا توجد نتائج بحث مطابقة للكلمة المفتاحية %1",
+                        choose: "%1رد على هذه الرسالة برقم الفيديو للاختيار أو أي محتوى للإلغاء",
+                        video: "فيديو",
+                        audio: "صوت",
+                        downloading: "⬇️ جاري تحميل %1 \"%2\"",
+                        noVideo: "⭕ عذراً، لم يتم العثور على أي فيديو صالح",
+                        noAudio: "⭕ عذراً، لم يتم العثور على أي صوت صالح",
+                        info: "💠 العنوان: %1\n🏪 القناة: %2\n👨‍👩‍👧‍👦 المشتركون: %3\n⏱ المدة: %4\n👀 المشاهدات: %5\n👍 الإعجابات: %6\n🆙 تاريخ الرفع: %7\n🔠 المعرف: %8\n🔗 الرابط: %9"
                 }
         },
 
@@ -116,7 +135,7 @@ module.exports = {
                         if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
                         for (let i = 0; i < results.length; i++) {
-                                msg += `${i + 1}. ${results[i].title}\nTime: ${results[i].time}\nChannel: ${results[i].channel.name || results[i].channel}\n\n`;
+                                msg += `${i + 1}. ${results[i].title}\n⏱ الوقت: ${results[i].time}\n🏪 القناة: ${results[i].channel.name || results[i].channel}\n\n`;
                                 const thumbPath = path.join(cacheDir, `thumb_${senderID}_${Date.now()}_${i}.jpg`);
                                 const thumbRes = await axios.get(results[i].thumbnail, { responseType: 'arraybuffer' });
                                 fs.writeFileSync(thumbPath, Buffer.from(thumbRes.data));
@@ -226,4 +245,4 @@ async function fetchInfo(api, threadID, messageID, videoID, apiUrl, getLang) {
         } catch (e) {
                 api.sendMessage(getLang("error", e.message), threadID, messageID);
         }
-                        }
+}
