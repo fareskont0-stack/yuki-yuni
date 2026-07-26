@@ -1,46 +1,7 @@
-const axios = require("axios");
-
-const mahmud = [
-    "baby",
-    "bby",
-    "babu",
-    "bbu",
-    "jan",
-    "bot",
-    "wifey",
-    "hina",
-    "hinata",
-    "هاي",
-    "عمري",
-    "حبي",
-    "صفا",
-    "يا قلبي",
-    "عيوني",
-    "حنون",
-    "صحيت",
-    "وينك",
-    "سلام",
-    "روحي",
-    "غالي",
-    "ماما",
-    "عزيزي",
-    "بوت",
-    "نحبك"
-];
-
-const baseApiUrl = async () => {
-    try {
-        const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
-        return base.data.mahmud;
-    } catch {
-        return "https://hinata-api.replit.app"; 
-    }
-};
-
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.9",
+    version: "3.0",
     author: "MahMUD",
     countDown: 0,
     role: 0,
@@ -56,23 +17,25 @@ module.exports.config = {
     }
 };
 
-async function fetchBotResponse(text, attachments = []) {
-    try {
-        const baseUrl = await baseApiUrl();
-        const res = await axios.post(`${baseUrl}/api/hinata`, {
-            text: `أنت مساعد ذكي يتحدث حصرياً باللغة العربية واللهجة الجزائرية. أجب على هذا الكلام بلغة عربية وبطريقة لطيفة: ${text}`,
-            style: 3,
-            attachments
-        });
-        let reply = res.data.message;
+const algerianReplies = [
+    "راني معاك يا قلبي، واش راك حاب نحكيوا اليوم؟ 🥺🩵",
+    "عري عيونك يا غالي، أنا هنا لخدمتك ✨",
+    "قولي يا عمري، نسمعك بكل سرور 🥺🍓",
+    "راك منورني بزاف اليوم، واش راك تمبرمد؟ 😂💙",
+    "يا هلا بيك يا روحي، تفضل واش خصك؟ ✨",
+    "والله غير فرحت كي هضرت معايا، قول لي واش كاين جديد؟ 🌸"
+];
 
-        if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora") || reply.toLowerCase().includes("sokale") || reply.toLowerCase().includes("wa alaikumus") || reply.toLowerCase().includes("khaicho")) {
-            return "أهلاً بك يا غالي، أنا هنا معك. كيف يمكنني مساعدتك اليوم؟ 🥺🩵";
-        }
-        return reply;
-    } catch {
-        return "عذراً يا عمري، عاود قولي واش راك حاب 🥺";
+function getLocalResponse(text) {
+    const lower = text.toLowerCase();
+    if (lower.includes("كيفك") || lower.includes("راك") || lower.includes("واش راك")) {
+        return "الحمد لله يا عمري، راني مليح مادامني معاك 🥺🩵";
+    } else if (lower.includes("شكون") || lower.includes("من أنت")) {
+        return "أنا البوت الخاص بك، المخلص لعيونك يا غالي ✨";
+    } else if (lower.includes("صباح") || lower.includes("سلام")) {
+        return "وعليكم السلام ورحمة الله يا روحي، صباح النور والسرور 🌸";
     }
+    return algerianReplies[Math.floor(Math.random() * algerianReplies.length)];
 }
 
 module.exports.onStart = async ({ api, event, args }) => {
@@ -85,7 +48,7 @@ module.exports.onStart = async ({ api, event, args }) => {
             return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);  
         }  
 
-        const botResponse = await fetchBotResponse(msg, event.attachments || []);
+        const botResponse = getLocalResponse(msg);
 
         api.sendMessage(botResponse, event.threadID, (err, info) => {  
             if (!err) {  
@@ -109,7 +72,7 @@ module.exports.onReply = async ({ api, event }) => {
     
     try {
         const userReplyText = event.body?.trim() || "سلام";  
-        let botResponse = await fetchBotResponse(userReplyText, event.attachments || []);  
+        let botResponse = getLocalResponse(userReplyText);  
 
         api.sendMessage(botResponse, event.threadID, (err, info) => {  
             if (!err) {  
@@ -135,6 +98,7 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.trim() || "";
         if (!message || message.startsWith(".")) return; 
 
+        const mahmud = ["baby", "bby", "bot", "ومري", "عمري", "حبي", "صفا", "يا قلبي", "عيوني", "سلام", "روحي", "غالي", "بوت"];
         const matchedPrefix = mahmud.find(word => message.toLowerCase().startsWith(word));
 
         if (matchedPrefix) {
@@ -143,7 +107,7 @@ module.exports.onChat = async ({ api, event }) => {
             let userText = message.substring(matchedPrefix.length).trim();
             if (!userText) userText = message;
 
-            let botResponse = await fetchBotResponse(userText, event.attachments || []); 
+            let botResponse = getLocalResponse(userText); 
 
             api.sendMessage(botResponse, event.threadID, (err, info) => {  
                 if (!err) {  
