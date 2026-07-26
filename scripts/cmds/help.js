@@ -96,19 +96,8 @@ function getAllCommands() {
   );
 }
 
-/*
-  Messenger لا يملك خاصية توسيط حقيقية.
-  لذلك نستعمل مسافات ثابتة.
-
-  إذا أردت تحريك كل القائمة:
-  زد أو أنقص الرقم هنا.
-*/
 const CENTER_SPACES = "        ";
 
-/*
-  هذه الدالة تجعل العنوان ورقم الصفحة
-  في وسط القائمة بشكل ثابت.
-*/
 function centerMenuText(text) {
   return CENTER_SPACES + String(text || "");
 }
@@ -130,16 +119,10 @@ function createPageMessage(
 
   let msg = "";
 
-  /*
-    عنوان القائمة في الوسط.
-  */
   msg +=
     centerMenuText("commands list") +
     "\n\n";
 
-  /*
-    الأوامر في الوسط.
-  */
   for (const command of pageCommands) {
     msg +=
       centerMenuText(
@@ -148,9 +131,6 @@ function createPageMessage(
       "\n";
   }
 
-  /*
-    رقم الصفحة في الوسط.
-  */
   msg +=
     "\n" +
     centerMenuText(
@@ -357,14 +337,6 @@ module.exports = {
         commandName || ""
       ).toLowerCase();
 
-    /*
-      يدعم:
-
-      /help
-      /help 2
-      /help2
-      /help15
-    */
     if (
       /^help\d+$/.test(
         usedCommand
@@ -390,12 +362,6 @@ module.exports = {
       );
     }
 
-    /*
-      تفاصيل أمر:
-
-      /help ai
-      /help music
-    */
     if (
       query &&
       !/^\d+$/.test(query)
@@ -539,10 +505,6 @@ function downloadFile(
         https.get(
           url,
           response => {
-
-            /*
-              دعم روابط التحويل.
-            */
             if (
               response.statusCode >= 300 &&
               response.statusCode < 400 &&
