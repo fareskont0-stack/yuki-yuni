@@ -13,7 +13,7 @@ module.exports = {
       tl: "Magpapadala ito ng bold styled english bio na may video."
     },
     guide: {
-      en: "{p}سيرة",
+      en: "{p}تصميم",
       tl: "{p}bio"
     }
   },
@@ -21,16 +21,15 @@ module.exports = {
     try {
       const bioText = "تفضل ياعمري 💖";
       
-      // قائمة الروابط الصحيحة داخل مصفوفة لضمان عدم حدوث خطأ برمجي
+      // قائمة الفيديوهات (يمكنك إضافة حتى 100 فيديو هنا بنفس الطريقة)
       const videos = [
         "https://stream.vidhosting.in/videos/6cc8c91f.mp4",
         "https://stream.vidhosting.in/videos/b0ea160c.mp4",
         "https://stream.vidhosting.in/videos/f58342d2.mp4",
         "https://stream.vidhosting.in/videos/c2daec84.mp4"
-        // يمكنك إضافة باقي الروابط هنا لاحقاً بنفس الطريقة بين علامتي التنصيص وتفصل بينها بفاصلة
       ];
 
-      // اختيار فيديو عشوائي تلقائياً في كل مرة يعمل فيها الأمر
+      // اختيار فيديو عشوائي تماماً في كل مرة يتم فيها استخدام الأمر
       const videoLink = videos[Math.floor(Math.random() * videos.length)];
 
       // وضع تفاعل لإعلامك ببدء التنفيذ
@@ -46,7 +45,7 @@ module.exports = {
       });
 
     } catch (error) {
-      console.error("خطأ في أمر سيرة (فيديو):", error);
+      console.error("خطأ في أمر تصميم (فيديو):", error);
       return message.reply("حدث خطأ أثناء تنفيذ الأمر، يرجى المحاولة لاحقاً.");
     }
   }
