@@ -34,13 +34,13 @@ const baseApiUrl = async () => {
 
 module.exports.config = {
     name: "baby",
-    aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.1",
+    aliases: ["bby", "بوت", "يوكي", "janu", "wifey", "bot", "hinata", "hina"],
+    version: "2.2",
     author: "MahMUD",
     countDown: 0,
     role: 0,
     description: {
-        ar: "بوت ذكاء اصطناعي يتحدث باللهجة الجزائرية ويبدأ الحوار تلقائياً ✨🩵",
+        ar: "بوت ذكاء اصطناعي يتحدث باللهجة الجزائرية الصافية ✨🩵",
         en: "Algerian AI Chatbot",
         bn: "Algerian AI Chatbot"
     },
@@ -62,7 +62,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
 
     try {
         if (!args[0]) {
-            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي، واش خصك؟ ✨", "هيا نهضرو يا روحي 🥺🍓"];
+            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي، قولي واش خصك ✨", "هيا نهدرو يا روحي 🥺🍓"];
             return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);
         }
 
@@ -75,7 +75,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
                 });
                 return res.data.message;
             } catch {
-                return "عذراً يا عمري، صرا مشكل صغير 🥺";
+                return "ما فهمتكش مليح يا عمري، قلي واش نجاوب بـ teach 🥺";
             }
         };
 
@@ -110,10 +110,19 @@ module.exports.onReply = async ({ api, event }) => {
                 });
                 return res.data.message;
             } catch {
-                return "عذراً يا روحي، صرا مشكل 🥺";
+                return "ما فهمتنيش مليح يا روحي، عاود قولي ولا علمني بـ teach 🥺";
             }
         };
-        const replyMessage = await getBotResponse(event.body?.toLowerCase() || "سلام", event.attachments || []);
+
+        // معالجة الرد ومنع ظهور أي لغة أجنبية في حال لم يفهم السيرفر الكلمة
+        const userReplyText = event.body?.toLowerCase() || "سلام";
+        let replyMessage = await getBotResponse(userReplyText, event.attachments || []);
+        
+        // التحقق إذا كانت رسالة الراجع تحتوي على لغة أجنبية قديمة واستبدالها باللهجة الجزائرية
+        if (!replyMessage || replyMessage.includes("Amake teach") || replyMessage.includes("oi Mama")) {
+            replyMessage = "ما علمتنيش هذه الكلمة يا عمري، اكتب teach [سؤال] - [الرد] باش نتعلمها 🥺🩵";
+        }
+
         api.sendMessage(replyMessage, event.threadID, (err, info) => {
             if (!err) {
                 global.GoatBot.onReply.set(info.messageID, {
@@ -135,11 +144,10 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.toLowerCase() || "";
         const attachments = event.attachments || [];
 
-        // التحقق مما إذا كانت الرسالة تبدأ بإحدى كلماتك المفتاحية
         const matchedPrefix = mahmud.find(word => message.startsWith(word));
 
         if (event.type !== "message_reply" && matchedPrefix) {
-            api.setMessageReaction("🇩🇿", event.messageID, () => { }, true);
+            api.setMessageReaction("🌸", event.messageID, () => { }, true);
             api.sendTypingIndicator(event.threadID, true);
 
             const getBotResponse = async (text, attachments) => {
@@ -155,7 +163,6 @@ module.exports.onChat = async ({ api, event }) => {
                 }
             };
 
-            // استخراج النص بعد الكلمة المفتاحية (مثلاً لو كتب "بوت واش راك" سيأخذ "واش راك")
             let userText = message.substring(matchedPrefix.length).trim();
 
             const randomMessage = [
@@ -165,7 +172,6 @@ module.exports.onChat = async ({ api, event }) => {
                 "نعم يا روحي، راني نسمع فيك، قل لي واش كاين؟ 🍓"
             ];
 
-            // إذا كتب الكلمة لوحدها تماماً (مثل "بوت" فقط)
             if (!userText && attachments.length === 0) {
                 const hinataMessage = randomMessage[Math.floor(Math.random() * randomMessage.length)];
                 return api.sendMessage(hinataMessage, event.threadID, (err, info) => {
@@ -181,8 +187,11 @@ module.exports.onChat = async ({ api, event }) => {
                 }, event.messageID);
             }
 
-            // إذا كتب رسالة مع الكلمة المفتاحية (مثل "بوت شراك")
-            const botResponse = await getBotResponse(userText || message, attachments);
+            let botResponse = await getBotResponse(userText || message, attachments);
+            if (!botResponse || botResponse.includes("Amake teach") || botResponse.includes("oi Mama")) {
+                botResponse = "ما فهمتش هذه الكلمة يا عمري، تقدر تعلمهالي بـ teach 🥺🩵";
+            }
+
             api.sendMessage(botResponse, event.threadID, (err, info) => {
                 if (!err) {
                     global.GoatBot.onReply.set(info.messageID, {
