@@ -15,6 +15,7 @@ module.exports = {
   },
 
   onChat: async function ({ api, event }) {
+    console.log("[AUTOREPLY]", event.body);
     if (!event.body) return;
 
     const message = event.body.trim().toLowerCase();
