@@ -1,6 +1,6 @@
 module.exports = {
   config: {
-    name: "سيرة",
+    name: "تصميم",
     author: "حسين يعقوبي",
     aliases: ["biography", "bio"],
     category: "سير ذاتية",
@@ -22,7 +22,8 @@ module.exports = {
       const bioText = "𝗧𝗿𝗮𝗶𝗻 𝗛𝗮𝗿𝗱 • 𝗦𝘁𝗮𝘆 𝗛𝘂𝗺𝗯𝗹𝗲 🍓✨🩵\n▪️ المعنى: تدرب بجد وابق متواضعاً.\n▪️ الشرح: أهمية الاجتهاد المستمر مع الحفاظ على تواضع النفس مهما بلغت من إنجازات.";
       
       // رابط فيديو مباشر وصحيح 100% يعمل كـ Stream
-      const videoLink = "https://stream.vidhosting.in/videos/6cc8c91f.mp4";
+      const videoLink = "https://stream.vidhosting.in/videos/6cc8c91f.mp4",
+                         "https://stream.vidhosting.in/videos/b0ea160c.mp4";
 
       // وضع تفاعل لإعلامك ببدء التنفيذ
       api.setMessageReaction("💖", event.messageID, () => {}, true);
