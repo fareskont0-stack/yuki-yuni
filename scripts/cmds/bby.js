@@ -1,9 +1,9 @@
-const axios = require("axios");
+Const axios = require("axios");
 
 const mahmud = [
-    "baby",
-    "bby",
-    "babu",
+    "بيبي",
+    "عينيا",
+    "بوت",
     "bbu",
     "jan",
     "bot",
@@ -23,7 +23,8 @@ const mahmud = [
     "روحي",
     "غالي",
     "ماما",
-    "عزيزي"
+    "عزيزي",
+    "بوت" // أضفنا كلمة "بوت" لتكون الكلمة الأساسية لبدء الحوار
 ];
 
 const baseApiUrl = async () => {
@@ -33,20 +34,20 @@ const baseApiUrl = async () => {
 
 module.exports.config = {
     name: "baby",
-    aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina", "عمري", "حبي", "صفا", "يا قلبي", "عيوني", "روحي"],
-    version: "1.9",
+    aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina", "عمري", "حبي", "صفا", "يا قلبي", "عيوني", "روحي", "بوت"],
+    version: "2.0",
     author: "MahMUD",
     countDown: 0,
     role: 0,
     description: {
-        ar: "أسرع وأفضل بوت ذكاء اصطناعي وتحدث بكل حب ودلع جزائري ✨🩵",
-        en: "better then all sim simi & most fastest",
-        bn: "better then all sim simi & most fastest"
+        ar: "بوت ذكاء اصطناعي ذكي يتحدث باللهجة الجزائرية ويبدأ الحوار بكلمة بوت ✨🩵",
+        en: "Algerian AI Chatbot",
+        bn: "Algerian AI Chatbot"
     },
     category: "chat",
     guide: {
-        ar: '   {pn} [أي رسالة] - لهضرة مع البوت\n   {pn} teach [سؤال] - [رد1, رد2...] - لتعليم البوت\n   {pn} remove [سؤال] - [رقم] - لحذف رد\n   {pn} list / list all - لعرض قائمة المعلمين\n   {pn} edit [سؤال] - [رد جديد] - لتعديل رد يا عمري 🥺🍓',
-        en: "{pn} [anyMessage] OR\nteach [YourMessage] - [Reply1], [Reply2], [Reply3]... OR\nremove [YourMessage] OR\nrm [YourMessage] - [indexNumber] OR\nmsg [YourMessage] OR\nlist OR \nall OR\nedit [YourMessage] - [NeWMessage]\nNote: The most updated and fastest all-in-one Simi Chat"
+        ar: '   {pn} [أي رسالة] - للحديث مع البوت\n   {pn} teach [سؤال] - [رد1, رد2...] - لتعليم البوت\n   {pn} remove [سؤال] - [رقم] - لحذف رد\n   {pn} list / list all - لعرض قائمة المعلمين\n   {pn} edit [سؤال] - [رد جديد] - لتعديل رد يا عمري 🥺🍓',
+        en: "{pn} [anyMessage] OR\nteach [YourMessage] - [Reply1], [Reply2], [Reply3]..."
     }
 };
 
@@ -61,7 +62,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
 
     try {
         if (!args[0]) {
-            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي ✨", "هيا نهضرو يا روحي 🥺🍓"];
+            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي، واش خصك؟ ✨", "هيا نهضرو يا روحي 🥺🍓"];
             return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);
         }
 
@@ -119,7 +120,11 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
 
         const getBotResponse = async (text, attachments) => {
             try {
-            const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { text, style: 3, attachments });
+            const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { 
+                text: `تحدث باللهجة الجزائرية فقط وبطريقة لطيفة ودلوعة: ${text}`, 
+                style: 3, 
+                attachments 
+            });
             return res.data.message;
           } catch {
             return "عذراً يا عمري، صرا مشكل صغير 🥺";
@@ -150,13 +155,17 @@ module.exports.onReply = async ({ api, event }) => {
     try {
         const getBotResponse = async (text, attachments) => {
             try {
-            const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { text, style: 3, attachments });
+            const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { 
+                text: `تحدث باللهجة الجزائرية فقط وبطريقة لطيفة: ${text}`, 
+                style: 3, 
+                attachments 
+            });
             return res.data.message;
             } catch {
             return "عذراً يا روحي، صرا مشكل 🥺";
             }
         };
-        const replyMessage = await getBotResponse(event.body?.toLowerCase() || "meow", event.attachments || []);
+        const replyMessage = await getBotResponse(event.body?.toLowerCase() || "سلام", event.attachments || []);
         api.sendMessage(replyMessage, event.threadID, (err, info) => {
             if (!err) {
             global.GoatBot.onReply.set(info.messageID, {
@@ -178,37 +187,38 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.toLowerCase() || "";
         const attachments = event.attachments || [];
 
+        // إذا بدأت الرسالة بكلمة "بوت" أو أي كلمة مفتاحية من القائمة
         if (event.type !== "message_reply" && mahmud.some(word => message.startsWith(word))) {
-            api.setMessageReaction("✨", event.messageID, () => { }, true);
+            api.setMessageReaction("🇩🇿", event.messageID, () => { }, true);
             api.sendTypingIndicator(event.threadID, true);
             
             const messageParts = message.trim().split(/\s+/);
             const getBotResponse = async (text, attachments) => {
                 try {
-                    const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { text, style: 3, attachments });
+                    const res = await axios.post(`${await baseApiUrl()}/api/hinata`, { 
+                        text: `تحدث باللهجة الجزائرية الدارجة والعامية فقط وبدلع لطيف: ${text}`, 
+                        style: 3, 
+                        attachments 
+                    });
                     return res.data.message;
                 } catch {
                     return "عذراً يا عمري، صرا مشكل 🥺";
                 }
             };
 
-                const randomMessage = [
-                                "يا روحي، واش راك حاب تقول لي؟ 🥺🩵",
-                                "أنت عمري وقلبي، ما تقلقش مني يا عيوني ✨",
-                                "نموت عليك يا قلبي، ديما منورنا 💕",
-                                "راكي منورتنا يا الغالي، عيطلي كي تحتاجني 🥺🍓",
-                                "قلبي الصغير لا يتحمل هذا الدلع يا عيوني 🩵",
-                                "مكاش كيفك يا الغالي، راك عسل ✨",
-                                "أنت عمري، واش راك حاب ندير لك اليوم؟ 🥺",
-                                "بزاف راك تحوس عليا يا عمري، نحبك بزاف 💕",
-                                "يا حنون، راني هنا غير لعيونك 🩵",
-                                "نعم تفضل ياحبي 🥺"
-                                 
-                             ];
+            const randomMessage = [
+                "رااني هنا يا غالي، واش راك حاب نحكي معاك اليوم؟ 🇩🇿✨",
+                "أهلا بيكم يا ناس الخير، واش راكم دايرين؟ 🥺🩵",
+                "عيوني ليك يا عيوني، تفضل واش خصك؟ ✨",
+                "نعم يا روحي، راني نسمع فيك، قل لي واش كاين؟ 🍓",
+                "هيا نحكيو، واش جديدك اليوم يا الغالي؟ 🇩🇿",
+                "راكي منورتنا يا الحنون، تفضل قول لي واش تحوس؟ 🤍"
+            ];
 
-             const hinataMessage = randomMessage[Math.floor(Math.random() * randomMessage.length)];
-               if (messageParts.length === 1 && attachments.length === 0) {
-               api.sendMessage(hinataMessage, event.threadID, (err, info) => {
+            const hinataMessage = randomMessage[Math.floor(Math.random() * randomMessage.length)];
+            
+            if (messageParts.length === 1 && attachments.length === 0) {
+                api.sendMessage(hinataMessage, event.threadID, (err, info) => {
                     if (!err) {
                     global.GoatBot.onReply.set(info.messageID, {
                            commandName: this.config.name,
@@ -222,7 +232,7 @@ module.exports.onChat = async ({ api, event }) => {
             } else {
                 let userText = message;
                 for (const prefix of mahmud) {
-                if (message.startsWith(prefix)) {
+                    if (message.startsWith(prefix)) {
                         userText = message.substring(prefix.length).trim();
                         break;
                     }
