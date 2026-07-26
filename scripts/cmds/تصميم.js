@@ -26,7 +26,7 @@ module.exports = {
         "https://stream.vidhosting.in/videos/6cc8c91f.mp4",
         "https://stream.vidhosting.in/videos/b0ea160c.mp4",
         "https://stream.vidhosting.in/videos/f58342d2.mp4",
-        "
+        "https://stream.vidhosting.in/videos/c2daec84.mp4"
         // يمكنك إضافة باقي الروابط هنا لاحقاً بنفس الطريقة بين علامتي التنصيص وتفصل بينها بفاصلة
       ];
 
