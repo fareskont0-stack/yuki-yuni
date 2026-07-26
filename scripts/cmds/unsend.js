@@ -21,7 +21,7 @@ module.exports = {
 
 	langs: {
 		ar: {
-			syntaxError: "× يا غالي، دير (ريبلاي) على رسالة البوت اللي حاب تحذفها! ⚠️"
+			syntaxError: "رد على رسالة بوت واكتب امر حذف 💖"
 		},
 		vi: {
 			syntaxError: "Vui lòng reply tin nhắn muốn gỡ của bot"
