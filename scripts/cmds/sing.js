@@ -7,18 +7,21 @@ const mahmud = async () => {
 
 module.exports = {
         config: {
-                name: "sing",
-                version: "1.7",
+                name: "غنية",
+                aliases: ["sing", "صوت", "غناء"],
+                version: "2.0",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
                 description: {
+                        ar: "ابحث عن أي أغنية وحملها بصيغة صوتية يا غالي",
                         bn: "যেকোনো গান সার্চ করে অডিও ফাইল ডাউনলোড করুন",
                         en: "Search and download any song as an audio file",
                         vi: "Tìm kiếm và tải xuống bất kỳ bài hát nào dưới dạng tệp âm thanh"
                 },
                 category: "music",
                 guide: {
+                        ar: '   {pn} <اسم الأغنية>: اكتب اسم الأغنية باش تحبطها\n   مثال: {pn} ayman serhani',
                         bn: '   {pn} <গানের নাম>: গান ডাউনলোড করতে নাম লিখুন',
                         en: '   {pn} <song name>: Enter song name to download',
                         vi: '   {pn} <tên bài hát>: Nhập tên bài hát để tải xuống'
@@ -26,6 +29,11 @@ module.exports = {
         },
 
         langs: {
+                ar: {
+                        noInput: "× يا عُمري، اكتب اسم الأغنية والا ما نقدرش نبحث عليها! 🎵\n• مثال: `{pn} cheb mami`",
+                        success: "✅ | ها هي الأغنية تاعك يا غالي مريقلة 100/100 <😘\n• 𝐒𝐨𝐧𝐠: %1",
+                        error: "× سامحني يا غالي، صرا مشكل مع السيرفر: %1.. عاود جرب بعد شوية برك!"
+                },
                 bn: {
                         noInput: "× বেবি, গানের নাম তো দাও! 🎵\nউদাহরণ: {pn} shape of you",
                         success: "✅ | এই নাও তোমার গান বেবি <😘\n• 𝐒𝐨𝐧𝐠: %1",
@@ -53,7 +61,7 @@ module.exports = {
                 if (!query) return message.reply(getLang("noInput"));
 
                 try {
-                        api.setMessageReaction("⌛", event.messageID, () => {}, true);
+                        await new Promise((resolve) => api.setMessageReaction("⌛", event.messageID, resolve, true));
 
                         const baseUrl = await mahmud();
                         const apiUrl = `${baseUrl}/api/song/mahmud?query=${encodeURIComponent(query)}`;
@@ -67,13 +75,13 @@ module.exports = {
                         return message.reply({
                                 body: getLang("success", query),
                                 attachment: response.data
-                        }, () => {
-                                api.setMessageReaction("🪽", event.messageID, () => {}, true);
+                        }, async () => {
+                                await new Promise((resolve) => api.setMessageReaction("💋", event.messageID, resolve, true));
                         });
 
                 } catch (err) {
                         console.error("Sing Error:", err);
-                        api.setMessageReaction("❌", event.messageID, () => {}, true);
+                        await new Promise((resolve) => api.setMessageReaction("❌", event.messageID, resolve, true));
                         return message.reply(getLang("error", err.message));
                 }
         }
