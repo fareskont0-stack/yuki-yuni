@@ -1,47 +1,55 @@
+const cooldownUsers = new Map();
+
 module.exports = {
     config: {
         name: "autojoin",
-        version: "2.0",
+        version: "3.1",
         author: "Fares Kouachi",
         category: "events",
-        description: "إعادة العضو تلقائياً وفوراً للمجموعة عند مغادرته مع نظام معالجة الأخطاء الذكي ⚡"
+        description: "إعادة العضو تلقائياً عند المغادرة مع رسالة تنبيه مخصصة ⚡"
     },
 
     onStart: async function ({ api, event, usersData }) {
         try {
-            // التحقق أن الحدث هو مغادرة شخص للمجموعة
             if (event.logMessageType === "log:unsubscribe") {
                 const { leftParticipantFbId } = event.logMessageData;
                 const botID = api.getCurrentUserID();
                 const threadID = event.threadID;
 
-                // تجاهل إذا كان الشخص الذي غادر هو البوت نفسه
+                // 1. تجاهل إذا كان الشخص المغادر هو البوت نفسه
                 if (!leftParticipantFbId || leftParticipantFbId === botID) return;
 
-                // جلب معلومات البوت في المجموعة للتحقق من الصلاحيات (Admin)
+                // 2. التحقق من صلاحيات الأدمن للبوت
                 const threadInfo = await api.getThreadInfo(threadID);
                 const botIsAdmin = threadInfo.adminIDs.some(admin => admin.id === botID);
+                if (!botIsAdmin) return;
 
-                if (!botIsAdmin) {
-                    console.log(`[AutoJoin Warning] Bot must be an admin in thread ${threadID} to re-add users.`);
+                // 3. التحقق هل العضو غادر بنفسه أم تم طرده
+                const isSelfLeave = (leftParticipantFbId === event.author);
+                if (!isSelfLeave) return; // إذا تم طرده من مشرف لا يتم إرجاعه
+
+                // 4. حماية من التكرار لمدة 30 ثانية
+                const cooldownKey = `${threadID}_${leftParticipantFbId}`;
+                const now = Date.now();
+                if (cooldownUsers.has(cooldownKey) && now - cooldownUsers.get(cooldownKey) < 30000) {
                     return;
                 }
+                cooldownUsers.set(cooldownKey, now);
 
-                // محاولة إضافة العضو للمجموعة فوراً
+                // 5. إعادة العضو للمجموعة وإرسال الرسالة المطلوبة
                 api.addUserToGroup(leftParticipantFbId, threadID, async (err) => {
-                    if (err) {
-                        // أسباب الفشل غالباً: العضو قام بحظر البوت أو تفعيل ميزة عدم السماح بإضافته
-                        console.log(`[AutoJoin] Failed to re-add user ${leftParticipantFbId}:`, err.error || err);
-                    } else {
-                        // جلب اسم العضو لإرسال رسالة ترحيبية احترافية بعد عودته
+                    if (!err) {
                         try {
                             const userName = await usersData.getName(leftParticipantFbId);
-                            api.sendMessage(
-                                `⚠️ | وين رايح يا ${userName}؟ ممنوع الخروج من المجموعة 🌸😂`,
-                                threadID
-                            );
+                            api.sendMessage({
+                                body: `@${userName} لا يمكنك خروج من مجموعة 🎀`,
+                                mentions: [{
+                                    tag: `@${userName}`,
+                                    id: leftParticipantFbId
+                                }]
+                            }, threadID);
                         } catch (e) {
-                            api.sendMessage(`⚠️ | وين رايح؟ ممنوع الخروج من المجموعة 🌸😂`, threadID);
+                            api.sendMessage("لا يمكنك خروج من مجموعة 🎀", threadID);
                         }
                     }
                 });
