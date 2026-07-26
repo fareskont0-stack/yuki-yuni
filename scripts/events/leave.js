@@ -32,9 +32,9 @@ module.exports = {
 			session2: "وقت الظهيرة ☀️",
 			session3: "العشية 🌇",
 			session4: "الليل 🌙",
-			leaveType1: "خرج وحدو 🚶‍♂️",
-			leaveType2: "علاش خرجتو رجعو 🥺",
-			defaultLeaveMessage: "🥺 يا قلبي، خونا {userName} {type}... حرام عليكم علاش خرجتو رجعو 😭💔"
+			leaveType1: "",
+			leaveType2: "",
+			defaultLeaveMessage: "المجموعة 🌸 {userName} {type}... لقد غادر"
 		}
 	},
 
