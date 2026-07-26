@@ -3,14 +3,16 @@ const fs = require('fs-extra');
 const path = require('path');
 
 const baseApiUrl = async () => {
-        const base = await axios.get(`https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json`);
-        return base.data.mahmud;
+        const base = await axios.get(`https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json`, { timeout: 10000 });
+        const apis = base.data.mahmud || base.data.ytb;
+        if (Array.isArray(apis) && apis.length > 0) return apis[0];
+        return typeof apis === 'string' ? apis : base.data.mahmud;
 };
 
 module.exports = {
         config: {
                 name: "اغنية",
-                version: "1.7",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
@@ -31,25 +33,25 @@ module.exports = {
 
         langs: {
                 ar: {
-                        error:  "حدث خطأ تواصل معا المطور Fares kouachi رقم وانساب 0793229194 اخبره انه حدث خطأ في هذا الامر 🍓",
+                        error:  "حدث خطأ يا غالي.. عاود المحاولة لاحقاً 🍓",
                         noResult: "⭕ | معليش يا عمري، ما لقيت حتى نتيجة لـ \"%1\" 🥺",
-                        noInput: "• يا روحي، عطينا اسم الأغنية باش نقدر نطلعها في فوكال وتسمعها وتعطيني رايك  🥺🍓",
+                        noInput: "• يا روحي، عطينا اسم الأغنية باش نقدر نطلعها وتسمعها وتعطيني رايك  🥺🍓",
                         success: "✅ | تفضل يا عيوني هاذي هي الأغنية تاعك: %1 ✨🩵"
                 },
                 bn: {
-                        error: "❌ An error occurred: contact MahMUD to help %1",
+                        error: "❌ An error occurred!",
                         noResult: "⭕ | দুঃখিত বেবি, \"%1\" এর জন্য কিছু খুঁজে পাইনি।",
                         noInput: "• Baby, please provide a song name.",
                         success: "✅ | এই নাও তোমার গান: %1"
                 },
                 en: {
-                        error: "❌ An error occurred: contact MahMUD to help %1",
+                        error: "❌ An error occurred!",
                         noResult: "⭕ | Sorry baby, I couldn't find anything for \"%1\"",
                         noInput: "• Baby, please provide a song name.",
                         success: "✅ | Here is your song: %1"
                 },
                 vi: {
-                        error: "❌ Đã xảy ra lỗi: liên hệ MahMUD để được hỗ trợ %1",
+                        error: "❌ Đã xảy ra lỗi!",
                         noResult: "⭕ | Xin lỗi bé, không tìm thấy kết quả cho \"%1\"",
                         noInput: "• Baby, please provide a song name.",
                         success: "✅ | Đây là bài hát của bạn: %1"
@@ -67,68 +69,67 @@ module.exports = {
 
                 if (!input) return api.sendMessage(getLang("noInput"), threadID, messageID);
 
+                let filePath = null;
+
                 try {
                         const apiUrl = await baseApiUrl();
-                        api.setMessageReaction("⏳", messageID, () => { }, true);
+                        await new Promise((resolve) => api.setMessageReaction("⏳", messageID, resolve, true));
 
-                        const res = await axios.get(`${apiUrl}/api/ytb/search?q=${encodeURIComponent(input)}`);
-                        const results = res.data.results;
+                        // البحث عن الأغنية
+                        const searchRes = await axios.get(`${apiUrl}/api/ytb/search?q=${encodeURIComponent(input)}`, { timeout: 10000 });
+                        const results = searchRes.data.results || searchRes.data;
 
                         if (!results || results.length === 0) {
-                                api.setMessageReaction("❌", messageID, () => { }, true);
+                                await new Promise((resolve) => api.setMessageReaction("❌", messageID, resolve, true));
                                 return api.sendMessage(getLang("noResult", input), threadID, messageID);
                         }
 
                         const videoID = results[0].id;
-                        const title = results[0].title;
+                        const title = results[0].title || "أغنية بدون عنوان";
 
-                        api.setMessageReaction("⌛", messageID, () => { }, true);
-                        await handleDownload(api, threadID, messageID, videoID, apiUrl, title, getLang);
+                        await new Promise((resolve) => api.setMessageReaction("⌛", messageID, resolve, true));
+
+                        // جلب رابط التحميل
+                        const downloadRes = await axios.get(`${apiUrl}/api/ytb/get?id=${videoID}&type=audio`, { timeout: 15000 });
+                        const downloadLink = downloadRes.data.data?.downloadLink || downloadRes.data.downloadLink || downloadRes.data.url;
+
+                        if (!downloadLink) {
+                                throw new Error("Download link missing from API");
+                        }
+
+                        // إنشاء مجلد الكاش وتحميل الملف كـ Buffer لضمان الاستقرار
+                        const cacheDir = path.join(__dirname, 'cache');
+                        if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+                        filePath = path.join(cacheDir, `music_${videoID}_${Date.now()}.mp3`);
+
+                        const audioBuffer = (await axios.get(downloadLink, { 
+                                responseType: 'arraybuffer',
+                                timeout: 60000,
+                                headers: { 'User-Agent': 'Mozilla/5.0' }
+                        })).data;
+
+                        if (!audioBuffer || audioBuffer.length === 0) {
+                                throw new Error("Downloaded audio buffer is empty");
+                        }
+
+                        fs.writeFileSync(filePath, Buffer.from(audioBuffer));
+
+                        return api.sendMessage({
+                                body: getLang("success", title),
+                                attachment: fs.createReadStream(filePath)
+                        }, threadID, async (err) => {
+                                await new Promise((resolve) => api.setMessageReaction("💟", messageID, resolve, true));
+                                if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                                if (err) console.error("Send Audio Error:", err);
+                        }, messageID);
 
                 } catch (e) {
-                        api.setMessageReaction("❌", messageID, () => { }, true);
-                        return api.sendMessage(getLang("error", e.message), threadID, messageID);
+                        console.error("Music Download Error:", e.message);
+                        if (filePath && fs.existsSync(filePath)) {
+                                try { fs.unlinkSync(filePath); } catch(err) {}
+                        }
+                        await new Promise((resolve) => api.setMessageReaction("❌", messageID, resolve, true));
+                        return api.sendMessage(getLang("error"), threadID, messageID);
                 }
         }
 };
-
-async function handleDownload(api, threadID, messageID, videoID, apiUrl, title, getLang) {
-        const cacheDir = path.join(__dirname, 'cache');
-        if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
-        const filePath = path.join(cacheDir, `music_${Date.now()}.mp3`);
-
-        try {
-                const res = await axios.get(`${apiUrl}/api/ytb/get?id=${videoID}&type=audio`);
-                const { downloadLink } = res.data.data;
-
-                const response = await axios({ 
-                        url: downloadLink, 
-                        method: 'GET', 
-                        responseType: 'stream',
-                        headers: { 'User-Agent': 'Mozilla/5.0' }
-                });
-
-                const writer = fs.createWriteStream(filePath);
-                response.data.pipe(writer);
-
-                writer.on('finish', () => {
-                        api.sendMessage({
-                                body: getLang("success", title),
-                                attachment: fs.createReadStream(filePath)
-                        }, threadID, (err) => {
-                                if (err) api.sendMessage(getLang("error", "File too large!"), threadID, messageID);
-                                api.setMessageReaction("💟", messageID, () => { }, true);
-                                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-                        }, messageID);
-                });
-
-                writer.on('error', (e) => {
-                        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-                        api.sendMessage(getLang("error", e.message), threadID, messageID);
-                });
-
-        } catch (e) {
-                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-                api.sendMessage(getLang("error", "Download failed!"), threadID, messageID);
-        }
-}
