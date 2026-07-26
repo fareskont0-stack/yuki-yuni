@@ -8,46 +8,34 @@ const BOTTOM_BAR_URL = "https://i.ibb.co/ccnk9pMq/81194654b06f.jpg";
 module.exports = {
  config: {
  name: "اختراق",
- aliases: ["fchat"],
- version: "2.2.0",
+ aliases: ["fchat", "تحدث"],
+ version: "2.3.0",
  author: "SIFAT",
  countDown: 5,
  role: 0,
  description: {
- en: "Fake Messenger chat screenshot",
- bn: "ফেক মেসেঞ্জার চ্যাট স্ক্রিনশট"
+ ar: "صنع صورة محادثة ماسنجر وهمية احترافية"
  },
- category: "fun",
- guide: { en: "Reply to a message with {pn} <your reply>" }
- },
-
- langs: {
- en: { noReply: "❌ | Reply to a message to use this!", error: "❌ | Failed to generate. Try again." },
- bn: { noReply: "❌ | একটা মেসেজে reply করে কমান্ড দিন!", error: "❌ | তৈরি করতে সমস্যা হয়েছে।" },
- hi: { noReply: "❌ | Kisi message ko reply karein!", error: "❌ | Banana fail hua." },
- tl: { noReply: "❌ | Mag-reply sa isang message!", error: "❌ | Hindi nagawa." },
- ar: { noReply: "❌ | رد على رسالة لاستخدام هذا!", error: "❌ | فشل الإنشاء." }
+ category: "ترفيه",
+ guide: { ar: "قم بالرد على رسالة شخص واكتب: .اختراق <رسالتك>" }
  },
 
- onStart: async function ({ event, message, getLang, usersData, args }) {
+ onStart: async function ({ event, message, usersData, args }) {
  try {
- const _zx1 = require("crypto");
- const _zx2 = "40a1d8c607bcb8020c6fb8c7e1a1853a088aaba2ae04a22c008ca835721e3438";
- const _zx3 = _zx1.createHash("sha256").update(module.exports.config.author || "").digest("hex");
- if (_zx3 !== _zx2) return message.reply("⚠️ Unauthorized Modification Detected\n\nAuthor information has been changed.\n\nRestore the original SIFAT author to continue.");
-
- if (!event.messageReply) return message.reply(getLang("noReply"));
+ // التحقق مما إذا كان المستخدم قد قام بالرد على رسالة
+ if (!event.messageReply) {
+ return message.reply("❌ | يرجى الرد على رسالة الشخص لاستخدام هذا الأمر وتوليد المحادثة!");
+ }
 
  const friendID = event.messageReply.senderID;
  const friendText = event.messageReply.body;
  const myText = args.join(" ");
 
- if (!friendText || !myText) return message.reply(getLang("noReply"));
+ if (!friendText || !myText) {
+ return message.reply("❌ | يرجى كتابة النص الخاص بك بعد الأمر أثناء الرد على الرسالة.\nمثال: .اختراق مرحبا كيف حالك");
+ }
 
- const friendName = await usersData.getName(friendID).catch(() => "Friend");
-
- const _qw9 = require("crypto").createHash("md5").update(module.exports.config.author || "").digest("hex");
- if (_qw9 !== "05c5d53c95ed0bcd42ce9acdcf9c7208") return message.reply("⚠️ Unauthorized Modification Detected\n\nAuthor information has been changed.\n\nRestore the original SIFAT author to continue.");
+ const friendName = await usersData.getName(friendID).catch(() => "صديق");
 
  const ts = Date.now();
  const topBarPath = __dirname + "/cache/fc_top_" + ts + ".jpg";
@@ -61,8 +49,6 @@ module.exports = {
  axios.get("https://graph.facebook.com/" + friendID + "/picture?height=200&width=200&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662", { responseType: "arraybuffer" })
  ]);
 
- console.log("[fakechat] topRes bytes:", topRes.data.length, "bottomRes bytes:", bottomRes.data.length, "friendRes bytes:", friendRes.data.length);
-
  fs.writeFileSync(topBarPath, Buffer.from(topRes.data));
  fs.writeFileSync(bottomBarPath, Buffer.from(bottomRes.data));
  fs.writeFileSync(friendAvtPath, Buffer.from(friendRes.data));
@@ -70,8 +56,6 @@ module.exports = {
  const topBarImg = await loadImage(topBarPath);
  const bottomBarImg = await loadImage(bottomBarPath);
  const friendImg = await loadImage(friendAvtPath);
-
- console.log("[fakechat] friendImg loaded:", friendImg.width, "x", friendImg.height);
 
  const W = 720;
  const topBarH = Math.round(topBarImg.height * (W / topBarImg.width));
@@ -105,16 +89,13 @@ module.exports = {
  const canvas = createCanvas(W, H);
  const ctx = canvas.getContext("2d");
 
- const _mk5 = Buffer.from(module.exports.config.author || "").toString("base64");
- if (_mk5 !== "U0lGQVQ=") return message.reply("⚠️ Unauthorized Modification Detected\n\nAuthor information has been changed.\n\nRestore the original SIFAT author to continue.");
-
  ctx.fillStyle = "#000000";
  ctx.fillRect(0, 0, W, H);
 
  ctx.drawImage(topBarImg, 0, 0, W, topBarH);
 
  const now = new Date();
- const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" });
+ const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
  ctx.fillStyle = "#ffffff";
  ctx.font = "bold 20px Sans";
  ctx.textAlign = "left";
@@ -177,11 +158,9 @@ module.exports = {
 
  curY += friendBubbleH + gapBetween;
 
- const _pl2 = (module.exports.config.author || "").split("").reverse().join("");
- if (_pl2 !== "TAFIS") return message.reply("⚠️ Unauthorized Modification Detected\n\nAuthor information has been changed.\n\nRestore the original SIFAT author to continue.");
-
- const myBubbleX = W - 40 - myBubbleW;
- drawBubble(ctx, myBubbleX, curY, myBubbleW, myBubbleH, "#0084ff");
+ const myBubbleW_val = myBubbleW;
+ const myBubbleX = W - 40 - myBubbleW_val;
+ drawBubble(ctx, myBubbleX, curY, myBubbleW_val, myBubbleH, "#0084ff");
  ctx.fillStyle = "#ffffff";
  ctx.font = fontSize + "px Sans";
  myLines.forEach((line, i) => {
@@ -189,9 +168,6 @@ module.exports = {
  });
 
  ctx.drawImage(bottomBarImg, 0, H - bottomBarH, W, bottomBarH);
-
- const _rt8 = (module.exports.config.author || "").length === 5 && (module.exports.config.author || "").charCodeAt(0) === 83;
- if (!_rt8) return message.reply("⚠️ Unauthorized Modification Detected\n\nAuthor information has been changed.\n\nRestore the original SIFAT author to continue.");
 
  fs.writeFileSync(outputPath, canvas.toBuffer("image/jpeg", { quality: 0.92 }));
 
@@ -201,7 +177,7 @@ module.exports = {
 
  } catch (err) {
  console.error("Fakechat Error:", err);
- message.reply(getLang("error"));
+ message.reply("❌ | حدث خطأ أثناء إنشاء الصورة، يرجى المحاولة لاحقاً.");
  }
  }
 };
@@ -214,7 +190,7 @@ function drawBubble(ctx, x, y, w, h, color) {
  ctx.arcTo(x + w, y, x + w, y + h, r);
  ctx.arcTo(x + w, y + h, x, y + h, r);
  ctx.arcTo(x, y + h, x, y, r);
- ctx.arcTo(x, y + w, y, r);
+ ctx.arcTo(x, y, x + w, y, r);
  ctx.closePath();
  ctx.fill();
 }
