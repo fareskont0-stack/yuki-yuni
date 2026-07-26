@@ -9,7 +9,7 @@ module.exports = {
   config: {
     name: "اختراق",
     aliases: ["fchat", "تحدث"],
-    version: "2.4.0",
+    version: "2.5.0",
     author: "SIFAT",
     countDown: 5,
     role: 0,
@@ -17,29 +17,24 @@ module.exports = {
       ar: "صنع صورة محادثة ماسنجر وهمية احترافية"
     },
     category: "ترفيه",
-    guide: { ar: "قم بالرد على رسالة شخص واكتب: .اختراق <رسالتك>\nأو اكتب: .اختراق كلام الشخص | كلامك أنت" }
+    guide: { ar: "اكتب الأمر هكذا:\n.اختراق كلام الشخص | كلامك أنت" }
   },
 
   onStart: async function ({ event, message, usersData, args }) {
     try {
-      let friendText = "";
-      let myText = "";
-      let targetID = "";
+      const fullText = args.join(" ");
 
-      // التحقق من طريقة الرد أو الفصل بعلامة |
-      if (event.messageReply && event.messageReply.body) {
-        friendText = event.messageReply.body;
-        targetID = event.messageReply.senderID;
-        myText = args.join(" ");
-      } else if (args.join(" ").includes("|")) {
-        const parts = args.join(" ").split("|").map(item => item.trim());
-        friendText = parts[0];
-        myText = parts[1];
-        targetID = event.senderID; // افتراضي في حال كتابة النصين يدوياً
+      if (!fullText.includes("|")) {
+        return message.reply("❌ | يرجى استخدام الفاصل (|) بين كلام الشخص وكلامك.\nمثال:\n.اختراق مرحباً بك | أهلاً يا صديقي");
       }
 
+      const parts = fullText.split("|").map(item => item.trim());
+      const friendText = parts[0];
+      const myText = parts[1];
+      const targetID = event.senderID;
+
       if (!friendText || !myText) {
-        return message.reply("❌ | يرجى إما:\n1. الرد على رسالة شخص وكتابة: .اختراق <رسالتك>\n2. أو الكتابة هكذا: .اختراق كلام الشخص | كلامك أنت");
+        return message.reply("❌ | يرجى كتابة النصين بشكل صحيح قبل وبعد الفاصل (|).");
       }
 
       const friendName = await usersData.getName(targetID).catch(() => "صديق");
