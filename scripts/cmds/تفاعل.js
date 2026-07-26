@@ -1,72 +1,86 @@
 const fs = require('fs');
 const path = require('path');
 
-// مسار حفظ الإعدادات الخاص بالتفاعل التلقائي لكل مجموعة
 const configPath = path.join(__dirname, 'cache', 'autoReactionConfig.json');
 
-// دالة لجلب الإعدادات المخزنة
+let memoryCache = null;
+let lastLoaded = 0;
+
 const getConfig = () => {
-    try {
-        if (fs.existsSync(configPath)) {
-            return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const now = Date.now();
+    if (!memoryCache || now - lastLoaded > 3000) {
+        try {
+            if (fs.existsSync(configPath)) {
+                memoryCache = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            } else {
+                memoryCache = {};
+            }
+        } catch (e) {
+            memoryCache = {};
         }
-    } catch (e) {}
-    return {};
+        lastLoaded = now;
+    }
+    return memoryCache;
 };
 
-// دالة لحفظ الإعدادات
 const saveConfig = (data) => {
     try {
+        memoryCache = data;
+        lastLoaded = Date.now();
         const dir = path.dirname(configPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(configPath, JSON.stringify(data, null, 4), 'utf8');
+        fs.writeFileSync(configPath, JSON.stringify(data), 'utf8');
     } catch (e) {}
 };
 
 module.exports = {
     config: {
         name: "تفاعل",
-        version: "1.0",
+        version: "3.0",
         author: "MahMUD",
-        countDown: 3,
-        role: 1, // مخصص للمشرفين أو المطورين لضبطه في المجموعة
+        countDown: 2,
+        role: 1, // للمشرفين
         description: {
-            ar: "تشغيل أو إيقاف التفاعل التلقائي برمز تعبيري (إيموجي) في المجموعة ✨"
+            ar: "تشغيل أو إيقاف التفاعل التلقائي السريع برمز تعبيري في المجموعة ⚡"
         },
         category: "box",
         guide: {
-            ar: '   {pn} تشغيل <الإيموجي>\n   {pn} ايقاف'
+            ar: '   {pn} تشغيل تفاعل تلقائي <الإيموجي>\n   {pn} ايقاف تفاعل تلقائي'
         }
     },
 
     langs: {
         ar: {
-            missingAction: "× يا غالي، استعمل الأمر هكذا:\n• تشغيل تفاعل تلقائي ❤️\n• أو ايقاف تفاعل تلقائي",
-            missingEmoji: "× يا عيوني، لازم تحدد الإيموجي لي حاب يتفاعل به البوت!\n• مثال: .تفاعل تشغيل 🔥",
-            enabled: "✅ | تم **تشغيل** التفاعل التلقائي بنجاح بهذا الإيموجي: %1 ✨",
-            disabled: "🛑 | تم **إيقاف** التفاعل التلقائي في هذه المجموعة."
+            usageError: "× يا غالي، استعمل الأمر هكذا:\n• .تشغيل تفاعل تلقائي 💖\n• .ايقاف تفاعل تلقائي",
+            enabled: "✅ | تم **تشغيل التفاعل التلقائي** بنجاح بهذا الإيموجي: %1 ⚡",
+            disabled: "🛑 | تم **إيقاف التفاعل التلقائي** في هذه المجموعة بنجاح."
         }
     },
 
     onStart: async function ({ api, event, args, getLang }) {
         const { threadID, messageID } = event;
         const action = args[0] ? args[0].toLowerCase() : "";
-        const emoji = args[1];
-
+        const subAction = args[1] ? args[1].toLowerCase() : "";
+        
         const config = getConfig();
 
-        if (action === "تشغيل" || action === "on") {
-            if (!emoji) return api.sendMessage(getLang("missingEmoji"), threadID, messageID);
+        // دعم .تشغيل تفاعل تلقائي 💖
+        if (action === "تشغيل" && (subAction === "تفاعل" || subAction === "تفاعل تلقائي")) {
+            // البحث عن الإيموجي في الكلمات المتبقية بعد الكلمات المفتاحية
+            const emoji = args[3] || args[2] !== "تفاعل" && args[2] !== "تفاعل تلقائي" ? args[2] : "💖";
+            // استخلاص الإيموجي بدقة
+            const finalEmoji = args.slice(2).find(arg => arg !== "تفاعل" && arg !== "تفاعل تلقائي") || "💖";
 
             config[threadID] = {
                 status: true,
-                emoji: emoji
+                emoji: finalEmoji
             };
             saveConfig(config);
 
-            return api.sendMessage(getLang("enabled", emoji), threadID, messageID);
+            return api.sendMessage(getLang("enabled", finalEmoji), threadID, messageID);
         } 
-        else if (action === "ايقاف" || action === "off" || action === "إيقاف") {
+        // دعم .ايقاف تفاعل تلقائي
+        else if ((action === "ايقاف" || action === "إيقاف") && (subAction === "تفاعل" || subAction === "تفاعل تلقائي")) {
             if (config[threadID]) {
                 config[threadID].status = false;
                 saveConfig(config);
@@ -75,17 +89,21 @@ module.exports = {
             return api.sendMessage(getLang("disabled"), threadID, messageID);
         } 
         else {
-            return api.sendMessage(getLang("missingAction"), threadID, messageID);
+            return api.sendMessage(getLang("usageError"), threadID, messageID);
         }
     },
 
-    // دالة الحدث لتطبيق التفاعل تلقائياً على كل رسالة جديدة في المجموعة
+    // تفاعل تلقائي فوري بسرعة البرق
     onChat: async function ({ api, event }) {
-        const { threadID, messageID } = event;
         try {
+            const { threadID, messageID, senderID } = event;
+            if (senderID === api.getCurrentUserID()) return;
+
             const config = getConfig();
-            if (config[threadID] && config[threadID].status && config[threadID].emoji) {
-                api.setMessageReaction(config[threadID].emoji, messageID, () => {}, true);
+            const threadConfig = config[threadID];
+
+            if (threadConfig && threadConfig.status && threadConfig.emoji) {
+                api.setMessageReaction(threadConfig.emoji, messageID, () => {}, true);
             }
         } catch (e) {}
     }
