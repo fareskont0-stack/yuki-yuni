@@ -42,14 +42,14 @@ module.exports = {
                         try {
                             const userName = await usersData.getName(leftParticipantFbId);
                             api.sendMessage({
-                                body: `@${userName} لا يمكنك خروج من مجموعة 🎀`,
+                                body: `@${userName} 💖 ارجع وين راك رايح`,
                                 mentions: [{
                                     tag: `@${userName}`,
                                     id: leftParticipantFbId
                                 }]
                             }, threadID);
                         } catch (e) {
-                            api.sendMessage("لا يمكنك خروج من مجموعة 🎀", threadID);
+                            api.sendMessage("💖 ارجع وين راك رايح ", threadID);
                         }
                     }
                 });
