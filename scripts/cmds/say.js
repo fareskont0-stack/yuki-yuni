@@ -22,18 +22,18 @@ const LANG_ALIASES = {
 module.exports = {
 	config: {
 		name: "قول",
-		aliases: ["say", "speak", "tts"],
-		version: "2.1.0",
+		aliases: ["اهدر", "speak", "tts"],
+		version: "2.3.0",
 		author: "SIFAT",
 		countDown: 5,
 		role: 0,
-		description: { ar: "تحويل النص إلى صوت مسموع" },
+		description: { ar: "تحويل النص إلى صوت مسموع باحترافية" },
 		category: "خدمات",
-		guide: { ar: "{pn} <النص> — نطق باللغة الإنجليزية افتراضياً\n{pn} <النص> | <اللغة> — لتحديد اللغة (مثال: ar للعربية)\n◈ قم بالرد على أي رسالة لقراءتها صوتياً\n◈ اللغات المدعومة: ar, en, fr, de, hi..." }
+		guide: { ar: "{pn} <النص> — نطق باللغة العربية افتراضياً\n{pn} <النص> | <اللغة> — لتحديد اللغة (مثال: en للإنجليزية)\n✦ قم بالرد على أي رسالة لقراءتها صوتياً" }
 	},
 
-	onStart: async function ({ args, message, event }) {
-		let text, lang = "ar"; // جعل اللغة الافتراضية العربية لتناسب طلبك
+	onStart: async function ({ args, message, event, api }) {
+		let text, lang = "ar";
 
 		if (event.type === "message_reply") {
 			text = event.messageReply.body;
@@ -42,7 +42,7 @@ module.exports = {
 				lang = LANG_ALIASES[lcode] || lcode;
 			}
 		} else {
-			if (!args.length) return message.reply("⌀ يرجى كتابة نص أو الرد على رسالة لترجمتها إلى صوت.");
+			if (!args.length) return message.reply("⚠️ يرجى كتابة نص أو الرد على رسالة لترجمتها إلى صوت.");
 			if (args.includes("|")) {
 				const parts = args.join(" ").split("|").map(a => a.trim());
 				text = parts[0];
@@ -53,8 +53,11 @@ module.exports = {
 			}
 		}
 
-		if (!text || !text.trim()) return message.reply("⌀ لم يتم العثور على أي نص.");
+		if (!text || !text.trim()) return message.reply("⚠️ لم يتم العثور على أي نص.");
 		if (text.length > 500) text = text.slice(0, 500);
+
+		// تفاعل احترافي وفخم عند البدء
+		api.setMessageReaction("💖", event.messageID, () => {}, true);
 
 		const tmpPath = `${__dirname}/tmp/tts_${Date.now()}.mp3`;
 		await fs.ensureDir(`${__dirname}/tmp`);
@@ -71,11 +74,11 @@ module.exports = {
 				res.data.pipe(writer);
 				await new Promise(resolve => writer.on("finish", resolve));
 			}
-			await message.reply({ body: `🔊 اللغة: ${lang}`, attachment: fs.createReadStream(tmpPath) });
+			await message.reply({ body: ` 🥰 تم توليد الصوت بنجاح\n✦ اللغة: ${lang} 🍓✨🩵`, attachment: fs.createReadStream(tmpPath) });
 			setTimeout(() => fs.remove(tmpPath).catch(() => {}), 60000);
 		} catch {
 			fs.remove(tmpPath).catch(() => {});
-			return message.reply("⌀ فشل في توليد الملف الصوتي، يرجى المحاولة لاحقاً.");
+			return message.reply("❌ فشل في توليد الملف الصوتي، يرجى المحاولة لاحقاً.");
 		}
 	}
 };
