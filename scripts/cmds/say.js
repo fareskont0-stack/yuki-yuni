@@ -1,86 +1,81 @@
 const axios = require("axios");
+const fs = require("fs-extra");
 
-const baseApiUrl = async () => {
-        const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
-        return base.data.mahmud;
+const LANG_ALIASES = {
+	en: "en", english: "en",
+	bn: "bn", bengali: "bn", bangla: "bn",
+	hi: "hi", hindi: "hi",
+	ar: "ar", arabic: "ar", ع: "ar", عربي: "ar", العربية: "ar",
+	fr: "fr", french: "fr",
+	de: "de", german: "de",
+	es: "es", spanish: "es",
+	ja: "ja", japanese: "ja",
+	ko: "ko", korean: "ko",
+	zh: "zh", chinese: "zh",
+	ru: "ru", russian: "ru",
+	pt: "pt", portuguese: "pt",
+	tr: "tr", turkish: "tr",
+	vi: "vi", vietnamese: "vi",
+	id: "id", indonesian: "id",
 };
 
 module.exports = {
-        config: {
-                name: "قول",
-                version: "1.7",
-                author: "MahMUD",
-                countDown: 5,
-                role: 0,
-                description: {
-                        bn: "যেকোনো লেখাকে অডিও বা ভয়েস মেসেজে রূপান্তর করুন",
-                        en: "Convert any text into an audio or voice message",
-                        vi: "Chuyển đổi bất kỳ văn bản nào thành tin nhắn âm thanh hoặc giọng nói",
-                        ar: "تحويل أي نص إلى رسالة صوتية بلهجة جزائرية وبكل حب 🤍"
-                },
-                category: "media",
-                guide: {
-                        bn: '   {pn} <লেখা>: (অথবা কোনো মেসেজে রিপ্লাই দিন)',
-                        en: '   {pn} <text>: (or reply to a message)',
-                        vi: '   {pn} <văn bản>: (hoặc trả lời tin nhắn)',
-                        ar: '   {pn} <النص>: (أو دير ريبلاي على رسالة باش يحولها صوت)'
-                }
-        },
+	config: {
+		name: "قول",
+		aliases: ["say", "speak", "tts"],
+		version: "2.1.0",
+		author: "SIFAT",
+		countDown: 5,
+		role: 0,
+		description: { ar: "تحويل النص إلى صوت مسموع" },
+		category: "خدمات",
+		guide: { ar: "{pn} <النص> — نطق باللغة الإنجليزية افتراضياً\n{pn} <النص> | <اللغة> — لتحديد اللغة (مثال: ar للعربية)\n◈ قم بالرد على أي رسالة لقراءتها صوتياً\n◈ اللغات المدعومة: ar, en, fr, de, hi..." }
+	},
 
-        langs: {
-                bn: {
-                        noInput: "× বেবি, কিছু তো লেখো অথবা মেসেজে রিপ্লাই দাও",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
-                },
-                en: {
-                        noInput: "× Baby, please write something or reply to a message",
-                        error: "× API error: %1. Contact MahMUD for help."
-                },
-                vi: {
-                        noInput: "× Cưng ơi, hãy viết gì đó hoặc phản hồi tin nhắn",
-                        error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
-                },
-                ar: {
-                        noInput: "× يا عُمري، اكتب حاجة والا دير ريبلاي على رسالة باش نقدر نحولها لك صوت 🌸",
-                        error: "حدث خطأ برمجي تكلم معا مطور fares kouachi رقم واتساب 0793229194"
-                }
-        },
+	onStart: async function ({ args, message, event }) {
+		let text, lang = "ar"; // جعل اللغة الافتراضية العربية لتناسب طلبك
 
-        onStart: async function ({ api, event, args, message, getLang }) {
-                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68);
-                if (this.config.author !== authorName) {
-                        return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
-                }
+		if (event.type === "message_reply") {
+			text = event.messageReply.body;
+			if (args[0]) {
+				const lcode = (args[0] || "").toLowerCase();
+				lang = LANG_ALIASES[lcode] || lcode;
+			}
+		} else {
+			if (!args.length) return message.reply("⌀ يرجى كتابة نص أو الرد على رسالة لترجمتها إلى صوت.");
+			if (args.includes("|")) {
+				const parts = args.join(" ").split("|").map(a => a.trim());
+				text = parts[0];
+				const lcode = (parts[1] || "ar").toLowerCase();
+				lang = LANG_ALIASES[lcode] || lcode;
+			} else {
+				text = args.join(" ");
+			}
+		}
 
-                let text = args.join(" ");
-                if (event.type === "message_reply" && event.messageReply.body) {
-                        text = event.messageReply.body;
-                }
+		if (!text || !text.trim()) return message.reply("⌀ لم يتم العثور على أي نص.");
+		if (text.length > 500) text = text.slice(0, 500);
 
-                if (!text) return message.reply(getLang("noInput"));
+		const tmpPath = `${__dirname}/tmp/tts_${Date.now()}.mp3`;
+		await fs.ensureDir(`${__dirname}/tmp`);
 
-                try {
-                        api.setMessageReaction("⏳", event.messageID, () => {}, true);
-
-                        const baseUrl = await baseApiUrl();
-                        const response = await axios.get(`${baseUrl}/api/say`, {
-                                params: { text },
-                                headers: { "Author": authorName },
-                                responseType: "stream"
-                        });
-
-                        return message.reply({
-                                body: "",
-                                attachment: response.data
-                        }, () => {
-                                api.setMessageReaction("🩵", event.messageID, () => {}, true);
-                        });
-
-                } catch (err) {
-                        console.error("Say Error:", err);
-                        api.setMessageReaction("❌", event.messageID, () => {}, true);
-                        const errorMsg = err.response?.data?.error || err.message;
-                        return message.reply(getLang("error", errorMsg));
-                }
-        }
+		try {
+			const chunks = text.match(/.{1,150}/g) || [text];
+			for (let i = 0; i < chunks.length; i++) {
+				const res = await axios({
+					method: "get",
+					url: `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunks[i])}`,
+					responseType: "stream"
+				});
+				const writer = fs.createWriteStream(tmpPath, { flags: i === 0 ? "w" : "a" });
+				res.data.pipe(writer);
+				await new Promise(resolve => writer.on("finish", resolve));
+			}
+			await message.reply({ body: `🔊 اللغة: ${lang}`, attachment: fs.createReadStream(tmpPath) });
+			setTimeout(() => fs.remove(tmpPath).catch(() => {}), 60000);
+		} catch {
+			fs.remove(tmpPath).catch(() => {});
+			return message.reply("⌀ فشل في توليد الملف الصوتي، يرجى المحاولة لاحقاً.");
+		}
+	}
 };
