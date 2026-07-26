@@ -1,86 +1,48 @@
-const axios = require("axios");
-
+const { getStreamFromURL } = global.utils;
 module.exports = {
   config: {
     name: "زواج",
-    version: "1.7.0",
-    author: "Fares",
-    countDown: 5,
-    role: 0,
+    version: "1.0",
+    author: "Rulex-al LOUFI",
     shortDescription: {
-      ar: "عقد زواج وتوافق بين شخصين"
+      ar: "قم بالزواج مع أشخاص عشوائيين 😗",
+      vi: ""
     },
-    longDescription: {
-      ar: "يقوم بعمل عقد زواج افتراضي وحساب نسبة التوافق بالصور"
-    },
-    category: "تسلية",
-    guide: {
-      ar: "{p}زواج"
-    }
+    category: "متعة",
+    guide: "{prefix}أنثى عشوائية"
   },
 
-  onStart: async function ({ api, event, message }) {
-    try {
-      let user1ID = event.senderID;
-      let user2ID = "";
+  onStart: async function({ event, threadsData, message, usersData }) {
+    const uidI = event.senderID;
+    const avatarUrl1 = await usersData.getAvatarUrl(uidI);
+    const name1 = await usersData.getName(uidI);
+    const threadData = await threadsData.get(event.threadID);
+    const members = threadData.members.filter(member => member.inGroup);
+    const senderGender = threadData.members.find(member => member.userID === uidI)?.gender;
 
-      // إذا قمت بالرد على رسالة (سواء للبوت أو لعضو)
-      if (event.type === "message_reply" && event.messageReply) {
-        const replySenderID = event.messageReply.senderID;
-        const botID = api.getCurrentUserID();
+    if (members.length === 0) return message.reply('لا يوجد أعضاء في المجموعة ☹️💕😢');
 
-        // إذا كانت رسالة البوت، نحاول معرفة إذا كان هناك شخص آخر مذكور أو نأخذك أنت مع عضو عشوائي لتفادي التعليق
-        if (replySenderID === botID) {
-          user2ID = user1ID === event.threadID ? event.threadID : ""; 
-        } else {
-          user2ID = replySenderID;
-        }
-      }
+    const eligibleMembers = members.filter(member => member.gender !== senderGender);
+    if (eligibleMembers.length === 0) return message.reply('لا يوجد أعضاء ذكور / إناث في المجموعة ☹️💕😢');
 
-      // إذا لم يتم تحديد الشريك بالرد، نأخذ أول شخص من المنشن أو نختار صديقاً من الجروب
-      if (!user2ID && event.mentions && Object.keys(event.mentions).length > 0) {
-        user2ID = Object.keys(event.mentions)[0];
-      }
+    const randomIndex = Math.floor(Math.random() * eligibleMembers.length);
+    const randomMember = eligibleMembers[randomIndex];
+    const name2 = await usersData.getName(`${randomMember.userID}`);
+    const avatarUrl2 = await usersData.getAvatarUrl(`${randomMember.userID}`);
+    const randomNumber1 = Math.floor(Math.random() * 36) + 65;
+    const randomNumber2 = Math.floor(Math.random() * 36) + 65;
 
-      // حل احتياطي: إذا لم تحدد أحداً نهائياً، يتزوجك البوت مع صاحب أول رسالة في المحادثة أو تنبيه واضح
-      if (!user2ID) {
-        return message.reply("🥺 **يا زميلي، رد على رسالة صديقك مباشرة (وليس رسالة البوت) واكتب `.زواج`!**");
-      }
-
-      if (user1ID === user2ID) {
-        return message.reply("😂 **ما تقدرش تتزوج روحك يا زميلي!**");
-      }
-
-      if (message.react) message.react("⏳");
-
-      const avatar1 = encodeURIComponent(`https://graph.facebook.com/${user1ID}/picture?height=720&width=720&access_token=6628568379%7Cc154112c035045610b97d39103b994d8`);
-      const avatar2 = encodeURIComponent(`https://graph.facebook.com/${user2ID}/picture?height=720&width=720&access_token=6628568379%7Cc154112c035045610b97d39103b994d8`);
-
-      const apiUrl = `https://api.popcat.xyz/ship?user1=${avatar1}&user2=${avatar2}`;
-
-      const response = await axios.get(apiUrl, {
-        responseType: "stream",
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-      });
-
-      if (message.react) message.react("💍");
-
-      const msgText = 
-        `💍✨ **عقد زواج مبارك** ✨💍\n` +
-        `-------------------------\n` +
-        `💖 **ألف مبروك للعروسين، ربي يجمع بيناتكم بالخير!** 🌸✨`;
-
-      return message.reply({
-        body: msgText,
-        attachment: [response.data]
-      });
-
-    } catch (error) {
-      console.error("Marry Command Error:", error?.message || error);
-      if (message.react) message.react("🥺");
-      return message.reply("🥺 **حدث خطأ بسيط في السيرفر، عاود جرب بعد قليل!**");
-    }
+    message.reply({
+      body: `• الجميع يهنئ الزوج والزوجة الجديدين:
+        ❤️ ${name1} 💕 ${name2} ❤️
+        نسبة الحب: "${randomNumber1} % 🤭"
+        نسبة التوافق: "${randomNumber2} % 💕"
+        
+        تهانينا 💝`,
+      attachment: [
+        await getStreamFromURL(`${avatarUrl1}`),
+        await getStreamFromURL(`${avatarUrl2}`)
+      ]
+    });
   }
-};
+}; 
