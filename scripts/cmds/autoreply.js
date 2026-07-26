@@ -1,4 +1,4 @@
-const replies = require("./replies.json");
+const replies = require("../data/replies.json");
 
 module.exports = {
   config: {
