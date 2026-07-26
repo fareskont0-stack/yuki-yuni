@@ -33,14 +33,14 @@ const baseApiUrl = async () => {
         const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
         return base.data.mahmud;
     } catch {
-        return "https://hinata-api.replit.app"; // رابط بداحتياطي في حال توقف الـ raw
+        return "https://hinata-api.replit.app"; 
     }
 };
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bbu", "jan", "janu", "wifey", "bot", "hinata", "hina"],
-    version: "2.7",
+    version: "2.8",
     author: "MahMUD",
     countDown: 0,
     role: 0,
@@ -60,17 +60,19 @@ async function fetchBotResponse(text, attachments = []) {
     try {
         const baseUrl = await baseApiUrl();
         const res = await axios.post(`${baseUrl}/api/hinata`, {
-            text: `تحدث باللهجة الجزائرية الدارجة والعامية فقط وبدلع لطيف: ${text}`,
+            text: `أنت مساعد ذكي يتحدث حصرياً باللغة العربية واللهجة الجزائرية فقط. أجب على هذا الكلام بلغة عربية صحيحة وبطريقة لطيفة وودودة: ${text}`,
             style: 3,
             attachments
         });
         let reply = res.data.message;
-        if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora")) {
-            return "عيوني ليك يا غالي، راك منورنا اليوم 🥺🩵";
+
+        // التحقق من خلو الرد من الكلمات الأجنبية أو الغير عربية واستبدالها بردود محلية صحيحة
+        if (!reply || reply.includes("Amake teach") || reply.includes("oi Mama") || reply.includes("kora") || reply.toLowerCase().includes("sokale") || reply.toLowerCase().includes("wa alaikumus") || reply.toLowerCase().includes("khaicho")) {
+            return "أهلاً بك يا غالي، أنا هنا معك بكل سرور. كيف يمكنني مساعدتك اليوم؟ 🥺🩵";
         }
         return reply;
     } catch {
-        return "ما فهمتكش مليح يا عمري، عاود قولي واش راك حاب 🥺";
+        return "عذراً يا عمري، حدث خطأ بسيط، عاود قولي واش راك حاب 🥺";
     }
 }
 
