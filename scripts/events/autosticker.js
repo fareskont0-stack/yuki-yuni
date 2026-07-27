@@ -1,47 +1,42 @@
-const counter = {};
-
 const stickers = [
-  "1747085322269386",
-  // أضف المزيد هنا
-  // "1234567890123456",
-  // "9876543210987654"
+  "1747085322269386"
 ];
 
+const counter = {};
+
 module.exports = {
-  config: {
-    name: "autosticker",
-    version: "2.0",
-    author: "ChatGPT",
-    category: "events"
-  },
+	config: {
+		name: "autosticker",
+		version: "3.0",
+		author: "ChatGPT",
+		category: "events"
+	},
 
-  onStart: async function ({ api, event, threadsData }) {
-    try {
-      if (!event.body) return;
-      if (event.senderID == api.getCurrentUserID()) return;
+	onChat: async function ({ api, event, threadsData }) {
+		try {
+			if (!event.body) return;
+			if (event.senderID == api.getCurrentUserID()) return;
 
-      const enabled = await threadsData.get(event.threadID, "data.autosticker");
-      if (!enabled) return;
+			const enable = await threadsData.get(event.threadID, "data.autosticker");
+			if (!enable) return;
 
-      counter[event.threadID] ??= 0;
-      counter[event.threadID]++;
+			const needCount = await threadsData.get(event.threadID, "data.autostickerCount") || 2;
 
-      if (counter[event.threadID] < 2) return;
+			counter[event.threadID] ??= 0;
+			counter[event.threadID]++;
 
-      counter[event.threadID] = 0;
+			if (counter[event.threadID] < needCount)
+				return;
 
-      const randomSticker =
-        stickers[Math.floor(Math.random() * stickers.length)];
+			counter[event.threadID] = 0;
 
-      await api.sendMessage(
-        {
-          sticker: randomSticker
-        },
-        event.threadID
-      );
+			const random = stickers[Math.floor(Math.random() * stickers.length)];
 
-    } catch (err) {
-      console.log("[AutoSticker]", err);
-    }
-  }
+			api.sendSticker(random, event.threadID);
+
+		}
+		catch (e) {
+			console.log("[AutoSticker]", e);
+		}
+	}
 };
