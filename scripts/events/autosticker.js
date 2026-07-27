@@ -1,60 +1,47 @@
-const fs = require("fs-extra");
-const path = require("path");
-
 const counter = {};
 
+const stickers = [
+  "1747085322269386",
+  // أضف المزيد هنا
+  // "1234567890123456",
+  // "9876543210987654"
+];
+
 module.exports = {
-	config: {
-		name: "autosticker",
-		version: "1.0",
-		author: "ChatGPT",
-		category: "events",
-		description: "Send sticker every 2 messages"
-	},
+  config: {
+    name: "autosticker",
+    version: "2.0",
+    author: "ChatGPT",
+    category: "events"
+  },
 
-	onStart: async function ({ api, event, threadsData }) {
-		try {
-			if (event.type !== "message" || !event.body)
-				return;
+  onStart: async function ({ api, event, threadsData }) {
+    try {
+      if (!event.body) return;
+      if (event.senderID == api.getCurrentUserID()) return;
 
-			if (event.senderID == api.getCurrentUserID())
-				return;
+      const enabled = await threadsData.get(event.threadID, "data.autosticker");
+      if (!enabled) return;
 
-			const enable = await threadsData.get(event.threadID, "data.autosticker");
+      counter[event.threadID] ??= 0;
+      counter[event.threadID]++;
 
-			if (!enable)
-				return;
+      if (counter[event.threadID] < 2) return;
 
-			if (!counter[event.threadID])
-				counter[event.threadID] = 0;
+      counter[event.threadID] = 0;
 
-			counter[event.threadID]++;
+      const randomSticker =
+        stickers[Math.floor(Math.random() * stickers.length)];
 
-			if (counter[event.threadID] < 2)
-				return;
+      await api.sendMessage(
+        {
+          sticker: randomSticker
+        },
+        event.threadID
+      );
 
-			counter[event.threadID] = 0;
-
-			const folder = path.join(__dirname, "../../assets/stickers");
-
-			if (!fs.existsSync(folder))
-				return;
-
-			const stickers = fs.readdirSync(folder).filter(file =>
-				file.endsWith(".webp")
-			);
-
-			if (stickers.length == 0)
-				return;
-
-			const random = stickers[Math.floor(Math.random() * stickers.length)];
-
-			api.sendMessage({
-				sticker: fs.createReadStream(path.join(folder, random))
-			}, event.threadID);
-
-		} catch (e) {
-			console.log(e);
-		}
-	}
-};t 
+    } catch (err) {
+      console.log("[AutoSticker]", err);
+    }
+  }
+};
