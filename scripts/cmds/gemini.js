@@ -7,47 +7,37 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "جيميني",
-                version: "1.7",
-                author: "MahMUD",
-                countDown: 5,
+                name: "يوكي",
+                version: "3.0",
+                author: "MahMUD & Fares",
+                countDown: 2,
                 role: 0,
                 category: "ai",
                 guide: {
-                        bn: '   {pn} <প্রশ্ন>: যেকোনো কিছু জিজ্ঞাসা করুন\n   অথবা কোনো ছবিতে রিপ্লাই দিয়ে প্রশ্ন করুন',
-                        en: '   {pn} <prompt>: Ask anything to AI\n   Or reply to an image with a prompt',
-                        vi: '   {pn} <câu hỏi>: Hỏi bất cứ điều gì\n   Hoặc phản hồi một hình ảnh'
+                        ar: 'اكتب فقط في المحادثة وسأجيبك بحب 🤍'
                 }
         },
 
         langs: {
-                bn: {
-                        noPrompt: "⚠️ বেবি, কিছু তো জিজ্ঞাসা করো! উদাহরণ: {pn} তুমি কে?",
-                        noResponse: "× এআই থেকে কোনো উত্তর পাওয়া যায়নি।",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।\n•WhatsApp: 01836298139"
-                },
-                en: {
-                        noPrompt: "⚠️ Baby, please provide a question! Example: {pn} Who are you?",
-                        noResponse: "× No response received from AI.",
-                        error: "× API error: %1. Contact MahMUD for help.\n•WhatsApp: 01836298139"
-                },
-                vi: {
-                        noPrompt: "⚠️ Cưng ơi, vui lòng nhập câu hỏi! Ví dụ: {pn} Bạn là ai?",
-                        noResponse: "× Không nhận được phản hồi từ AI.",
-                        error: "× Lỗi API: %1. Liên hệ MahMUD để được trợ giúp.\n•WhatsApp: 01836298139"
+                ar: {
+                        noResponse: "يا عمري، الشبكة راهي ثقيلة شوية وما قدرت نخرج حتى إجابة، عاود حاول معايا فوتني عزيزي.",
+                        error: "أووoh يا قلبي صرا مشكل صغير برك: %1. تواصل مع الغالي MahMUD يعاونك:\n•WhatsApp: 01836298139"
                 }
         },
 
-        onStart: async function ({ api, event, args, message, getLang }) {
-                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68);
-                if (this.config.author !== authorName) {
-                        return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
-                }
+        // يعمل تلقائياً مع أي رسالة في المجموعة بدون الحاجة لأوامر
+        onChat: async function ({ api, event, getLang }) {
+                const { threadID, senderID, body, messageID } = event;
+                
+                // تجاهل رسائل البوت نفسه لكي لا يحدث تداخل أو ردود لا نهائية
+                if (!body || senderID === api.getCurrentUserID()) return;
 
-                const prompt = args.join(" ");
-                if (!prompt) return message.reply(getLang("noPrompt"));
+                // إضافة طابع شخصية "يوكي" البشرية والحنونة باللهجة الجزائرية
+                const humanizedPrompt = `[تعليمات النظام: أنتِ "يوكي" (Yuki)، إنسانة حنونة، لطيفة، قريبة للقلب، تتحدثين دائماً باللهجة الجزائرية الدافئة والجميلة مع الأصدقاء في المجموعة، تتفاعلين بمشاعر حقيقية وبدون أي طابع روبوتي أو رسمي. أجيبي على كلام الشخص التالي بكل لطافة وحب]: ${body}`;
 
-                let requestBody = { prompt };
+                let requestBody = { prompt: humanizedPrompt };
+
+                // إذا كانت الرسالة رد على صورة
                 if (event.type === "message_reply" && event.messageReply.attachments.length > 0) {
                         const attachment = event.messageReply.attachments[0];
                         if (attachment.type === "photo") {
@@ -55,41 +45,22 @@ module.exports = {
                         }
                 }
 
-                return await handleGemini(api, event, requestBody, this.config.name, getLang);
-        },
+                try {
+                        const baseUrl = await baseApiUrl();
+                        const response = await axios.post(`${baseUrl}/api/gemini`, requestBody, {
+                                headers: { 
+                                        "Content-Type": "application/json",
+                                        "author": "MahMUD"
+                                }
+                        });
 
-        onReply: async function ({ api, event, Reply, args, getLang }) {
-                if (Reply.author !== event.senderID) return;
-                const prompt = args.join(" ");
-                if (!prompt) return;
-                return await handleGemini(api, event, { prompt }, this.config.name, getLang);
+                        const replyText = response.data.response || getLang("noResponse");
+
+                        return api.sendMessage(replyText, threadID, messageID);
+
+                } catch (err) {
+                        // لا نريد إزعاج الأعضاء برسائل الخطأ التقنية في المحادثات التلقائية العادية
+                        console.error("Yuki AutoChat Error:", err.message);
+                }
         }
 };
-
-async function handleGemini(api, event, requestBody, commandName, getLang) {
-        try {
-                const baseUrl = await baseApiUrl();
-                const response = await axios.post(`${baseUrl}/api/gemini`, requestBody, {
-                        headers: { 
-                                "Content-Type": "application/json",
-                                "author": "MahMUD"
-                        }
-                });
-
-                const replyText = response.data.response || getLang("noResponse");
-
-                api.sendMessage(replyText, event.threadID, (error, info) => {
-                        if (!error) {
-                                global.GoatBot.onReply.set(info.messageID, {
-                                        commandName: commandName,
-                                        author: event.senderID,
-                                        messageID: info.messageID,
-                                        type: "reply"
-                                });
-                        }
-                }, event.messageID);
-
-        } catch (err) {
-                api.sendMessage(getLang("error", err.message), event.threadID, event.messageID);
-        }
-}
