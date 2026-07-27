@@ -1,6 +1,5 @@
 const axios = require("axios");
 
-// نظام تخزين مؤقت بسيط داخل الذاكرة لضمان عدم توقف العداد
 const counters = {};
 const statusMap = {};
 
@@ -8,7 +7,7 @@ module.exports = {
     config: {
         name: "ملصقات",
         aliases: ["ملصق", "autosticker"],
-        version: "3.0",
+        version: "3.1",
         author: "MahMUD & Fares",
         countDown: 1,
         role: 0,
@@ -23,7 +22,7 @@ module.exports = {
 
     langs: {
         ar: {
-            usageError: "⚠️ | الاستخدام الصحيح:\n• للتفعيل: تشغيل ملصقات\n• للإيقاف: ايقاف ملصقات",
+            usageError: "⚠️ | الاستخدام الصحيح:\n• تشغيل ملصقات\n• ايقاف ملصقات",
             enabled: "✅ | تم تفعيل إرسال ملصقات الكيوت التلقائي بنجاح!",
             disabled: "🛑 | تم إيقاف إرسال الملصقات التلقائي بنجاح."
         }
@@ -33,14 +32,14 @@ module.exports = {
         const { threadID, messageID } = event;
         const fullText = args.join(" ").toLowerCase();
 
-        if (fullText.includes("تشغيل") || fullText.includes("تفعيل") || fullText.includes("ملصقات تشغيل")) {
+        if (fullText.includes("تشغيل") || fullText.includes("تفعيل") || fullText.includes("ملصق تشغيل")) {
             statusMap[threadID] = true;
             counters[threadID] = 0;
             return api.sendMessage("✅ | تم تفعيل إرسال ملصقات الكيوت بنجاح!", threadID, messageID);
         } 
         else if (fullText.includes("ايقاف") || fullText.includes("إيقاف")) {
             statusMap[threadID] = false;
-            return api.sendMessage("🛑 | تم إيقاف إرسال الملصقات بنجاح.", threadID, messageID);
+            return api.sendMessage("🛑 | تم إيقاف إرسال الملصقات التلقائي بنجاح.", threadID, messageID);
         } 
         else {
             return api.sendMessage("⚠️ | الاستخدام الصحيح:\n• تشغيل ملصقات\n• ايقاف ملصقات", threadID, messageID);
@@ -52,7 +51,6 @@ module.exports = {
             const { threadID, senderID } = event;
             if (!threadID || senderID === api.getCurrentUserID()) return;
 
-            // التحقق هل الميزة مفعلة لهذه المجموعة
             if (!statusMap[threadID]) return;
 
             if (!counters[threadID]) {
@@ -61,21 +59,21 @@ module.exports = {
 
             counters[threadID] += 1;
 
-            // عندما يصل العداد إلى 4 رسائل
             if (counters[threadID] >= 4) {
                 counters[threadID] = 0; // تصفير العداد
 
-                // روابط صور متحركة (GIF) تظهر كملصقات كيوت
-                const cuteStickers = [
-                    "https://i.imgur.com/8Km9tLL.gif",
-                    "https://i.imgur.com/V32q3bb.gif"
+                // قائمة معرفات ملصقات فيسبوك الرسمية والجاهزة (Sticker IDs)
+                const stickerIDs = [
+                    "1253457311413151", 
+                    "1253457161413166", 
+                    "1253457491413133"
                 ];
 
-                const randomSticker = cuteStickers[Math.floor(Math.random() * cuteStickers.length)];
+                const randomStickerID = stickerIDs[Math.floor(Math.random() * stickerIDs.length)];
 
-                // إرسال الصورة المتحركة بشكل مباشر
+                // إرسال الملصق مباشرة عبر خاصية الـ sticker في الفايسبوك
                 return api.sendMessage({
-                    attachment: await global.utils.getStreamFromURL(randomSticker)
+                    sticker: randomStickerID
                 }, threadID);
             }
         } catch (e) {
