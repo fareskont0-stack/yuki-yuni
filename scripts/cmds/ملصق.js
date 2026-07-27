@@ -63,10 +63,10 @@ module.exports = {
 
                 // مجموعة جديدة ومضمونة من معرفات الملصقات الشائعة في ماسنجر
                 const validStickerIDs = [
-                    "",
-                    "369239426556139",
-                    "369239473222801",
-                    "761276037286438"
+                    "1747085322269386",
+                    "1747078988936686",
+                    
+                    
                 ];
 
                 const randomSticker = validStickerIDs[Math.floor(Math.random() * validStickerIDs.length)];
