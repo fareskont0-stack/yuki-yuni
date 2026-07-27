@@ -3,7 +3,6 @@ const path = require('path');
 
 const configPath = path.join(__dirname, 'cache', 'autoReactionConfig.json');
 
-// تحميل الإعدادات مباشرة وبشكل آمن
 const getConfig = () => {
     try {
         if (fs.existsSync(configPath)) {
@@ -24,13 +23,13 @@ const saveConfig = (data) => {
 module.exports = {
     config: {
         name: "تفاعل",
-        aliases: ["تشغيل", "ايقاف"],
-        version: "3.6",
+        aliases: ["تشغيل", "ايقاف", "تفاعل"],
+        version: "4.0",
         author: "MahMUD & Fares",
         countDown: 1,
-        role: 1,
+        role: 0,
         description: {
-            ar: "تشغيل أو إيقاف التفاعل التلقائي السريع برمز تعبيري لجميع أعضاء المجموعة ⚡"
+            ar: "تشغيل أو إيقاف التفاعل التلقائي السريع لجميع أعضاء المجموعة ⚡"
         },
         category: "box",
         guide: {
@@ -40,7 +39,7 @@ module.exports = {
 
     langs: {
         ar: {
-            usageError: "⚠️ | الاستخدام الخاطئ!\n• للتفعيل: .تشغيل تفاعل 💖\n• للإيقاف: .ايقاف تفاعل",
+            usageError: "⚠️ | الاستخدام الصحيح:\n• للتفعيل: تشغيل تفاعل 🌸\n• للإيقاف: ايقاف تفاعل",
             enabled: "✅ | تم تفعيل التفاعل التلقائي للجميع بنجاح بالإيموجي: %1",
             disabled: "🛑 | تم إيقاف التفاعل التلقائي بنجاح."
         }
@@ -48,22 +47,24 @@ module.exports = {
 
     onStart: async function ({ api, event, args, getLang }) {
         const { threadID, messageID } = event;
-        const subAction = args[0] ? args[0].toLowerCase() : "";
-        const secondArg = args[1] ? args[1].toLowerCase() : "";
-        
+        const fullText = args.join(" ").toLowerCase();
         const config = getConfig();
 
-        // دعم صيغة: .تشغيل تفاعل 💖
-        if ((subAction === "تشغيل" || subAction === "تفعيل") && secondArg === "تفاعل") {
+        // فحص مرن جداً لتشغيل التفاعل بغض النظر عن ترتيب الكلمات
+        if (fullText.includes("تشغيل") || fullText.includes("تفعيل")) {
+            // استخراج أول إيموجي يلاقيه المستخدم في رسالته، أو افتراضي 🌸
+            const emojiMatch = event.body.match(/[\p{Extended_Pictographic}]/u);
+            const selectedEmoji = emojiMatch ? emojiMatch[0] : "🌸";
+
             config[threadID] = {
                 status: true,
-                emoji: args[2] ? args[2] : "💖"
+                emoji: selectedEmoji
             };
             saveConfig(config);
-            return api.sendMessage(getLang("enabled").replace("%1", config[threadID].emoji), threadID, messageID);
+            return api.sendMessage(getLang("enabled").replace("%1", selectedEmoji), threadID, messageID);
         } 
-        // دعم صيغة: .ايقاف تفاعل
-        else if ((subAction === "ايقاف" || subAction === "إيقاف") && secondArg === "تفاعل") {
+        // فحص إيقاف التفاعل
+        else if (fullText.includes("ايقاف") || fullText.includes("إيقاف")) {
             if (config[threadID]) {
                 config[threadID].status = false;
                 saveConfig(config);
@@ -75,11 +76,9 @@ module.exports = {
         }
     },
 
-    // دالة تفاعل تلقائي لجميع الأعضاء في المجموعة
     onChat: async function ({ api, event }) {
         try {
             const { threadID, messageID, senderID } = event;
-            // يتجاهل فقط رسائل البوت نفسه لكي لا يحدث تكرار بالخطأ
             if (!threadID || senderID === api.getCurrentUserID()) return;
 
             const config = getConfig();
