@@ -5,7 +5,7 @@ module.exports = {
     config: {
         name: "ملصقات",
         aliases: ["ملصق", "autosticker"],
-        version: "3.2",
+        version: "4.0",
         author: "MahMUD & Fares",
         countDown: 1,
         role: 0,
@@ -61,19 +61,12 @@ module.exports = {
             if (counters[threadID] >= 4) {
                 counters[threadID] = 0; // تصفير العداد
 
-                // مجموعة جديدة ومضمونة من معرفات الملصقات الشائعة في ماسنجر
-                const validStickerIDs = [
-                    "369239383222810",
-                    "369239426556139",
-                    "369239473222801",
-                    "761276037286438"
-                ];
+                // رابط الصورة المباشر الذي طلبته
+                const stickerURL = "https://scontent.xx.fbcdn.net/v/t39.1997-6/17636530_1747081108936474_2091496026287374336_n.png?_nc_cat=104&ccb=1-7&_nc_sid=ba09c1&_nc_ohc=KBjm-gvRCGoQ7kNvwGc4zED&_nc_oc=Adqba2NZRq9ksyyBnn-Iir-i12ojODN7UajjfI4eyxHwkd503BjNqMXBvCBxRAP2lYc&_nc_ad=z-m&_nc_cid=0&_nc_zt=26&_nc_ht=scontent.xx&_nc_gid=uZYmTtOF-fhqugJgrmByvw&oh=00_AQBsKztqg_2wa9bhA77H_Cs6rG2AT9D_vU5rkwbK-mb-aA&oe=6A6D4345";
 
-                const randomSticker = validStickerIDs[Math.floor(Math.random() * validStickerIDs.length)];
-
-                // إرسال الملصق النشط
+                // إرسال الصورة مباشرة كـ attachment بدون أي مشاكل
                 return api.sendMessage({
-                    sticker: randomSticker
+                    attachment: await global.utils.getStreamFromURL(stickerURL)
                 }, threadID);
             }
         } catch (e) {
