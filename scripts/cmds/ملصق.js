@@ -1,48 +1,83 @@
-const counter = {};
-
-const stickers = [
-  "1747085322269386"
-];
+const counters = {};
+const statusMap = {};
 
 module.exports = {
-	config: {
-		name: "autosticker",
-		version: "1.0",
-		author: "ChatGPT",
-		role: 0,
-		countDown: 0,
-		category: "system"
-	},
+    config: {
+        name: "ملصقات",
+        aliases: ["ملصق", "autosticker"],
+        version: "3.2",
+        author: "MahMUD & Fares",
+        countDown: 1,
+        role: 0,
+        description: {
+            ar: "إرسال ملصقات تلقائياً بعد كل 4 رسائل في المجموعة 🖤"
+        },
+        category: "box",
+        guide: {
+            ar: '   {pn} تشغيل ملصقات\n   {pn} ايقاف ملصقات'
+        }
+    },
 
-	onChat: async function ({ api, event, threadsData }) {
-		try {
-			if (!event.body) return;
-			if (event.senderID == api.getCurrentUserID()) return;
+    langs: {
+        ar: {
+            usageError: "⚠️ | الاستخدام الصحيح:\n• تشغيل ملصقات\n• ايقاف ملصقات",
+            enabled: "✅ | تم تفعيل إرسال الملصقات التلقائي بنجاح!",
+            disabled: "🛑 | تم إيقاف إرسال الملصقات التلقائي بنجاح."
+        }
+    },
 
-			const enabled = await threadsData.get(event.threadID, "data.autosticker");
-			if (!enabled) return;
+    onStart: async function ({ api, event, args }) {
+        const { threadID, messageID } = event;
+        const fullText = args.join(" ").toLowerCase();
 
-			const limit = await threadsData.get(event.threadID, "data.autostickerCount") || 2;
+        if (fullText.includes("تشغيل") || fullText.includes("تفعيل") || fullText.includes("ملصق تشغيل")) {
+            statusMap[threadID] = true;
+            counters[threadID] = 0;
+            return api.sendMessage("✅ | تم تفعيل إرسال الملصقات التلقائي بنجاح!", threadID, messageID);
+        } 
+        else if (fullText.includes("ايقاف") || fullText.includes("إيقاف")) {
+            statusMap[threadID] = false;
+            return api.sendMessage("🛑 | تم إيقاف إرسال الملصقات التلقائي بنجاح.", threadID, messageID);
+        } 
+        else {
+            return api.sendMessage("⚠️ | الاستخدام الصحيح:\n• تشغيل ملصقات\n• ايقاف ملصقات", threadID, messageID);
+        }
+    },
 
-			counter[event.threadID] ??= 0;
-			counter[event.threadID]++;
+    onChat: async function ({ api, event }) {
+        try {
+            const { threadID, senderID } = event;
+            if (!threadID || senderID === api.getCurrentUserID()) return;
 
-			if (counter[event.threadID] < limit)
-				return;
+            if (!statusMap[threadID]) return;
 
-			counter[event.threadID] = 0;
+            if (!counters[threadID]) {
+                counters[threadID] = 0;
+            }
 
-			const stickerID = stickers[Math.floor(Math.random() * stickers.length)];
+            counters[threadID] += 1;
 
-			console.log("[AutoSticker] Sending:", stickerID);
+            // عندما يصل العداد إلى 4 رسائل
+            if (counters[threadID] >= 4) {
+                counters[threadID] = 0; // تصفير العداد
 
-			api.sendMessage({
-				sticker: stickerID
-			}, event.threadID);
+                // مجموعة جديدة ومضمونة من معرفات الملصقات الشائعة في ماسنجر
+                const validStickerIDs = [
+                    "",
+                    "369239426556139",
+                    "369239473222801",
+                    "761276037286438"
+                ];
 
-		}
-		catch (err) {
-			console.log("[AutoSticker Error]", err);
-		}
-	}
+                const randomSticker = validStickerIDs[Math.floor(Math.random() * validStickerIDs.length)];
+
+                // إرسال الملصق النشط
+                return api.sendMessage({
+                    sticker: randomSticker
+                }, threadID);
+            }
+        } catch (e) {
+            console.error("AutoSticker Error:", e);
+        }
+    }
 };
