@@ -7,14 +7,14 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "رين",
-                version: "3.1",
+                name: "يووكي",
+                version: "3.2",
                 author: "MahMUD & Fares",
                 countDown: 2,
                 role: 0,
                 category: "ai",
                 guide: {
-                        ar: 'اكتب اسم رين أو تحدث وسأرد عليك بحب 🤍'
+                        ar: 'تحدث معي بالرد على رسائلي أو باختصار اسمي وسأرد عليك بحب 🤍'
                 }
         },
 
@@ -34,11 +34,22 @@ module.exports = {
         },
 
         onChat: async function ({ api, event, getLang }) {
-                const { threadID, senderID, body, messageID } = event;
+                const { threadID, senderID, body, messageID, messageReply } = event;
                 if (!body || senderID === api.getCurrentUserID()) return;
 
-                // يستجيب فوراً إذا كانت الرسالة تحتوي على اسم يوكي أو تبدأ به
+                let shouldRespond = false;
+
+                // 1. إذا كتب اسم "يوكي" في الرسالة
                 if (body.toLowerCase().includes("يوكي")) {
+                        shouldRespond = true;
+                }
+
+                // 2. الجديد: إذا قام الشخص بالرد (Reply) على رسالة أرسلها البوت مسبقاً
+                if (messageReply && messageReply.senderID === api.getCurrentUserID()) {
+                        shouldRespond = true;
+                }
+
+                if (shouldRespond) {
                         return await processYuki(api, event, body, getLang);
                 }
         }
