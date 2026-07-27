@@ -24,44 +24,46 @@ const saveConfig = (data) => {
 module.exports = {
     config: {
         name: "تفاعل",
-        aliases: ["ايقاف", "تشغيل_تفاعل"],
-        version: "3.3",
+        aliases: ["تشغيل", "ايقاف"],
+        version: "3.6",
         author: "MahMUD & Fares",
         countDown: 1,
         role: 1,
         description: {
-            ar: "تشغيل أو إيقاف التفاعل التلقائي السريع برمز تعبيري في المجموعة بشكل دائم ⚡"
+            ar: "تشغيل أو إيقاف التفاعل التلقائي السريع برمز تعبيري لجميع أعضاء المجموعة ⚡"
         },
         category: "box",
         guide: {
-            ar: '   {pn} تفاعل تشغيل <الإيموجي>\n   {pn} تفاعل ايقاف'
+            ar: '   {pn} تشغيل تفاعل <الإيموجي>\n   {pn} ايقاف تفاعل'
         }
     },
 
     langs: {
         ar: {
-            usageError: "⚠️ | الاستخدام الخاطئ!\n• للكتابة: تفاعل تشغيل 💖\n• للإيقاف: تفاعل ايقاف",
-            enabled: "✅ | تم التفعيل بنجاح بالإيموجي: %1",
-            disabled: "🛑 | تم إيقاف التفاعل بنجاح."
+            usageError: "⚠️ | الاستخدام الخاطئ!\n• للتفعيل: .تشغيل تفاعل 💖\n• للإيقاف: .ايقاف تفاعل",
+            enabled: "✅ | تم تفعيل التفاعل التلقائي للجميع بنجاح بالإيموجي: %1",
+            disabled: "🛑 | تم إيقاف التفاعل التلقائي بنجاح."
         }
     },
 
     onStart: async function ({ api, event, args, getLang }) {
         const { threadID, messageID } = event;
         const subAction = args[0] ? args[0].toLowerCase() : "";
-        const emojiArg = args[1] ? args[1] : "💖";
+        const secondArg = args[1] ? args[1].toLowerCase() : "";
         
         const config = getConfig();
 
-        if (subAction === "تشغيل" || subAction === "تفعيل") {
+        // دعم صيغة: .تشغيل تفاعل 💖
+        if ((subAction === "تشغيل" || subAction === "تفعيل") && secondArg === "تفاعل") {
             config[threadID] = {
                 status: true,
-                emoji: emojiArg
+                emoji: args[2] ? args[2] : "💖"
             };
             saveConfig(config);
-            return api.sendMessage(getLang("enabled").replace("%1", emojiArg), threadID, messageID);
+            return api.sendMessage(getLang("enabled").replace("%1", config[threadID].emoji), threadID, messageID);
         } 
-        else if (subAction === "ايقاف" || subAction === "إيقاف") {
+        // دعم صيغة: .ايقاف تفاعل
+        else if ((subAction === "ايقاف" || subAction === "إيقاف") && secondArg === "تفاعل") {
             if (config[threadID]) {
                 config[threadID].status = false;
                 saveConfig(config);
@@ -73,10 +75,11 @@ module.exports = {
         }
     },
 
-    // دالة تفاعل تلقائي دائمة وفورية لكل رسالة جديدة في المجموعة
+    // دالة تفاعل تلقائي لجميع الأعضاء في المجموعة
     onChat: async function ({ api, event }) {
         try {
             const { threadID, messageID, senderID } = event;
+            // يتجاهل فقط رسائل البوت نفسه لكي لا يحدث تكرار بالخطأ
             if (!threadID || senderID === api.getCurrentUserID()) return;
 
             const config = getConfig();
