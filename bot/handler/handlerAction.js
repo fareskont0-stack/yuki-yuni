@@ -1,12 +1,9 @@
 const createFuncMessage = global.utils.message;
 const handlerCheckDB = require("./handlerCheckData.js");
 
-// استدعاء ملف الرسائل بالمسار الصحيح بناءً على هيكلة المشروع
- 
 const request = require("request");
 const axios = require("axios");
 const fs = require("fs-extra");
-
 
 module.exports = (api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData) => {
 	const handlerEvents = require(process.env.NODE_ENV == 'development' ? "./handlerEvents.dev.js" : "./handlerEvents.js")(api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData);
@@ -65,7 +62,12 @@ module.exports = (api, threadModel, userModel, dashBoardModel, globalModel, user
 		message.notFound = (text) =>
 			message.reply(text || messages.random(messages.notFound));
 
-		await handlerCheckDB(usersData, threadsData, event);
+		try {
+			await handlerCheckDB(usersData, threadsData, event);
+		} catch (err) {
+			console.error("Error in handlerCheckDB:", err);
+		}
+
 		const handlerChat = await handlerEvents(event, message);
 		if (!handlerChat)
 			return;
@@ -75,11 +77,17 @@ module.exports = (api, threadModel, userModel, dashBoardModel, globalModel, user
 		switch (event.type) {
 			case "message":
 			case "message_reply":
+				// تشغيل الأوامر أولاً، ثم الردود التلقائية، ثم الرد على الرسائل بشكل مرتب وآمن
+				if (typeof onStart === "function") await onStart();
+				if (typeof onChat === "function") await onChat();
+				if (typeof onReply === "function") await onReply();
+				break;
+
 			case "message_unsend":
-				onChat();
-				onStart();
-				onReply();
-				if (event.type == "message_unsend") {
+				if (typeof onChat === "function") await onChat();
+				if (typeof onReply === "function") await onReply();
+
+				try {
 					let resend = await threadsData.get(event.threadID, "settings.reSend");
 					if (resend == true && event.senderID !== api.getCurrentUserID()) {
 						if (global.reSend && global.reSend[event.threadID]) {
@@ -114,14 +122,18 @@ module.exports = (api, threadModel, userModel, dashBoardModel, globalModel, user
 							}
 						}
 					}
+				} catch (e) {
+					console.error("Error handling unsend message:", e);
 				}
 				break;
+
 			case "event":
-				handlerEvent();
-				onEvent();
+				if (typeof handlerEvent === "function") handlerEvent();
+				if (typeof onEvent === "function") onEvent();
 				break;
+
 			case "message_reaction":
-				onReaction();
+				if (typeof onReaction === "function") onReaction();
 				if (event.reaction == "❗") {
 					if (event.userID == "61589591233031") {
 						api.removeUserFromGroup(event.senderID, event.threadID, (err) => {
@@ -145,15 +157,19 @@ module.exports = (api, threadModel, userModel, dashBoardModel, globalModel, user
 					}
 				}
 				break;
+
 			case "typ":
-				typ();
+				if (typeof typ === "function") typ();
 				break;
+
 			case "presence":
-				presence();
+				if (typeof presence === "function") presence();
 				break;
+
 			case "read_receipt":
-				read_receipt();
+				if (typeof read_receipt === "function") read_receipt();
 				break;
+
 			default:
 				break;
 		}
