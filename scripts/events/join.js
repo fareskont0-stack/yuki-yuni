@@ -1,10 +1,10 @@
 module.exports = {
     config: {
         name: "join",
-        version: "2.0",
+        version: "3.1",
         author: "Fares Kouachi",
         category: "events",
-        description: "الرد على الشخص الذي أضاف البوت بطريقة Reply الذكية مع نظام البحث الاحترافي 🌸"
+        description: "تغيير كنية البوت تلقائياً إلى yuki [🍓] بالخط العريض والرد على الشخص الذي أضافه 🌸"
     },
 
     onStart: async function ({ api, event, usersData }) {
@@ -18,13 +18,21 @@ module.exports = {
                 const isBotAdded = addedParticipants.some(user => user.userFbId === botID);
 
                 if (isBotAdded) {
-                    let adderID = event.author; // الشخص مسجل كـ author للحدث غالباً
+                    // 1. تغيير كنية البوت تلقائياً بالخط العريض والاسم المطلوب
+                    const newNickname = "𝘆𝘂𝗸𝗶 [🍓]"; 
+                    
+                    try {
+                        await api.changeNickname(newNickname, threadID, botID);
+                    } catch (err) {
+                        console.log("[Join Event] Could not change bot nickname due to Facebook limits.");
+                    }
 
-                    // طريقة احتياطية ذكية: إذا لم يظهر الـ author، نبحث في سجل رسائل المجموعة لمعرفة من أضافه
+                    // 2. البحث عن الشخص الذي أضاف البوت للرد على رسالته (Reply)
+                    let adderID = event.author;
+
                     if (!adderID || adderID === botID) {
                         try {
                             const messages = await api.getThreadHistory(threadID, 10);
-                            // البحث عن رسالة النظام التي تدل على إضافة البوت لمعرفة صاحبها
                             const addEventMsg = messages.find(msg => 
                                 msg.logMessageType === "log:subscribe" && 
                                 msg.logMessageData.addedParticipants.some(p => p.userFbId === botID)
@@ -32,39 +40,18 @@ module.exports = {
                             if (addEventMsg && addEventMsg.senderID) {
                                 adderID = addEventMsg.senderID;
                             }
-                        } catch (err) {
-                            console.log("[Join Event] Could not fetch thread history:", err);
-                        }
+                        } catch (err) {}
                     }
 
-                    // في حال وجدنا ID الشخص الذي أضاف البوت، نقوم بالرد على رسالته مباشرة (Reply)
+                    // 3. الرد على الشخص (Reply) بعبارة الشكر
+                    const targetMessageID = event.messageID || null;
+
                     if (adderID && adderID !== botID) {
-                        try {
-                            const adderName = await usersData.getName(adderID);
-                            
-                            // محاولة إيجاد messageID للرد عليها، وإذا لمი توجد نرسل رسالة عادية في المحادثة
-                            const targetMessageID = event.messageID || null;
-
-                            api.sendMessage({
-                                body: `شكرا على اضافتي يا ${adderName} 🌸`
-                            }, threadID, (err, info) => {
-                                // إذا توفر رقم الرسالة يتم الرد عليها خصيصاً (Reply)
-                                if (!err && targetMessageID) {
-                                    // بعض إصدارات api تدعم الـ messageID مباشرة في الـ options أو نقوم بإرسالها كـ reply
-                                }
-                            }, targetMessageID);
-
-                            // طريقة مضمونة للـ Reply البرمجي في فريم وورك GoatBot
-                            return api.sendMessage({
-                                body: `شكرا على اضافتي 🌸`
-                            }, threadID, targetMessageID);
-
-                        } catch (e) {
-                            api.sendMessage("شكرا على اضافتي 🌸", threadID);
-                        }
+                        return api.sendMessage({
+                            body: `شكرا على اضافتي 🌸`
+                        }, threadID, targetMessageID);
                     } else {
-                        // كخيار أخير إذا لم يتم تحديد الشخص بدقة
-                        api.sendMessage("شكرا على اضافتي 🌸", threadID);
+                        return api.sendMessage("شكرا على اضافتي 🌸", threadID);
                     }
                 }
             }
