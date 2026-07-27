@@ -1,38 +1,60 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 
 const counter = {};
 
 module.exports = {
-  config: {
-    name: "autosticker",
-    version: "2.0",
-    author: "YourName",
-    role: 0
-  },
+	config: {
+		name: "autosticker",
+		version: "1.0",
+		author: "ChatGPT",
+		category: "events",
+		description: "Send sticker every 2 messages"
+	},
 
-  onChat: async ({ event, api }) => {
-    if (!event.body) return;
-    if (event.senderID == api.getCurrentUserID()) return;
+	onStart: async function ({ api, event, threadsData }) {
+		try {
+			if (event.type !== "message" || !event.body)
+				return;
 
-    const threadID = event.threadID;
+			if (event.senderID == api.getCurrentUserID())
+				return;
 
-    counter[threadID] ??= 0;
-    counter[threadID]++;
+			const enable = await threadsData.get(event.threadID, "data.autosticker");
 
-    if (counter[threadID] >= 2) {
-      counter[threadID] = 0;
+			if (!enable)
+				return;
 
-      const folder = path.join(__dirname, "../../assets/stickers");
-      const files = fs.readdirSync(folder).filter(f => f.endsWith(".webp"));
+			if (!counter[event.threadID])
+				counter[event.threadID] = 0;
 
-      if (!files.length) return;
+			counter[event.threadID]++;
 
-      const file = files[Math.floor(Math.random() * files.length)];
+			if (counter[event.threadID] < 2)
+				return;
 
-      api.sendMessage({
-        sticker: fs.createReadStream(path.join(folder, file))
-      }, threadID);
-    }
-  }
-};
+			counter[event.threadID] = 0;
+
+			const folder = path.join(__dirname, "../../assets/stickers");
+
+			if (!fs.existsSync(folder))
+				return;
+
+			const stickers = fs.readdirSync(folder).filter(file =>
+				file.endsWith(".webp")
+			);
+
+			if (stickers.length == 0)
+				return;
+
+			const random = stickers[Math.floor(Math.random() * stickers.length)];
+
+			api.sendMessage({
+				sticker: fs.createReadStream(path.join(folder, random))
+			}, event.threadID);
+
+		} catch (e) {
+			console.log(e);
+		}
+	}
+};t 
