@@ -12,12 +12,12 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.1.0",
+        version: "1.1.1",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
         description: {
-            ar: "تصميم منشور باسم مارك زوكربيرج مع النص الذي تكتبه بخط عريض وملتصق"
+            ar: "تصميم منشور باسم مارك زوكربيرج مع النص بخط عريض ومتصل صحيح"
         },
         category: "Edit-IMG",
         usages: {
@@ -50,26 +50,6 @@ module.exports = {
         return lines;
     },
 
-    // رسم النص مع تقارب الحروف لتصبح ملتصقة ببعضها بطابع عريض وثقيل (Impact Style)
-    drawTextTightly: function (ctx, text, x, y, isStroke = false) {
-        const letterSpacing = -1.5; // قيمة بالسالب لضمان التتصاق الحروف ببعضها بقوة
-        let currentX = x;
-
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-            if (char === ' ') {
-                currentX += 15; // مسافة الكلمات العادية
-                continue;
-            }
-            if (isStroke) {
-                ctx.strokeText(char, currentX, y);
-            } else {
-                ctx.fillText(char, currentX, y);
-            }
-            currentX += ctx.measureText(char).width + letterSpacing;
-        }
-    },
-
     onStart: async function ({ api, event, args, message }) {
         const { messageID, threadID } = event;
         const text = args.join(" ");
@@ -100,39 +80,39 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // خط عريض وثقيل جداً (Impact / Heavy Style)
-            ctx.font = "bold 54px Cairo";
+            // إعدادات خط عريض وثقيل (Bold Heavy) مع ضبط الاتجاه العربي الصحيح لتبقى الحروف متصلة
+            ctx.font = "bold 48px Cairo";
             ctx.fillStyle = "#050505"; 
             ctx.strokeStyle = "#050505";
-            ctx.lineWidth = 1.8; // سماكة قوية لإعطاء طابع عريض وبارز
+            ctx.lineWidth = 1.2; // سماكة مثالية لتظهر الحروف عريضة وبارزة
             
-            // ظل خفيف لزيادة الوضوح
-            ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+            // ظل نقي وخفيف لزيادة التباين
+            ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
             ctx.shadowBlur = 3;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
 
             ctx.textBaseline = "top";
-            ctx.direction = "ltr";
-            ctx.textAlign = "left";
+            ctx.direction = "rtl"; // اتجاه عربي صحيح لضمان اتصال الحروف
+            ctx.textAlign = "right"; // محاذاة لليمين
 
-            const startX = 90;
+            const startX = canvas.width - 90; // يبدأ من اليمين بشكل مرتب
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 75;
+            const lineHeight = 70;
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
             for (let i = 0; i < lines.length; i++) {
-                this.drawTextTightly(ctx, lines[i], startX, startY + (i * lineHeight), false);
-                this.drawTextTightly(ctx, lines[i], startX, startY + (i * lineHeight), true);
+                ctx.fillText(lines[i], startX, startY + (i * lineHeight));
+                ctx.strokeText(lines[i], startX, startY + (i * lineHeight));
             }
 
             const imageBuffer = canvas.toBuffer("image/png");
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو التصميم بخط عريض وملتصق ببعضه مثل طلبك يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بخط عريض وحروف متصلة وصحيحة يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
