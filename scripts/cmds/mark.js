@@ -1,111 +1,126 @@
-const { loadImage, createCanvas } = require("@napi-rs/canvas");
+const { createCanvas, loadImage, GlobalFonts } = require("@napi-rs/canvas");
 const fs = require("fs-extra");
 const axios = require("axios");
 const path = require("path");
 
+const fontPath = path.join(__dirname, "assets", "font", "Cairo-Regular.ttf");
+
+if (!GlobalFonts.has("Cairo")) {
+GlobalFonts.registerFromPath(fontPath, "Cairo");
+}
+
 module.exports = {
-    config: {
-        name: "مارك",
-        version: "1.0.0",
-        role: 0,
-        author: "Fares Kouachi",
-        aliases: ["mark"],
-        description: {
-            ar: "تصميم منشور باسم مارك زوكربيرج مع النص الذي تكتبه"
-        },
-        category: "Edit-IMG",
-        usages: {
-            ar: "مارك [اكتب النص هنا]"
-        },
-        countDown: 5,
-        dependencies: {
-            "@napi-rs/canvas": "",
-            "axios": "",
-            "fs-extra": ""
-        }
-    },
+config: {
+name: "مارك",
+version: "1.0.4",
+role: 0,
+author: "Fares Kouachi",
+aliases: ["mark"],
+description: {
+ar: "تصميم منشور باسم مارك زوكربيرج مع النص الذي تكتبه"
+},
+category: "Edit-IMG",
+usages: {
+ar: "مارك [النص]"
+},
+countDown: 5,
+dependencies: {
+"@napi-rs/canvas": "^0.1.3",
+"axios": "^1.6.0",
+"fs-extra": "^11.1.1"
+}
+},
 
-    wrapText: async function (ctx, text, maxWidth) {
-        return new Promise(resolve => {
-            if (ctx.measureText(text).width < maxWidth) return resolve([text]);
-            if (ctx.measureText('W').width > maxWidth) return resolve(null);
-            const words = text.split(' ');
-            const lines = [];
-            let line = '';
-            while (words.length > 0) {
-                let split = false;
-                while (ctx.measureText(words[0]).width >= maxWidth) {
-                    const temp = words[0];
-                    words[0] = temp.slice(0, -1);
-                    if (split) words[1] = `${temp.slice(-1)}${words[1]}`;
-                    else {
-                        split = true;
-                        words.splice(1, 0, temp.slice(-1));
-                    }
-                }
-                if (ctx.measureText(`${line}${words[0]}`).width < maxWidth) line += `${words.shift()} `;
-                else {
-                    lines.push(line.trim());
-                    line = '';
-                }
-                if (words.length === 0) lines.push(line.trim());
-            }
-            return resolve(lines);
-        });
-    },
+// دالة محسنة ومخصصة للالتفاف التلقائي للنصوص العربية  
+wrapText: function (ctx, text, maxWidth) {  
+    const words = text.split(' ');  
+    const lines = [];  
+    let currentLine = words[0];  
 
-    onStart: async function ({ api, event, args, message }) {
-        let { messageID } = event;
-        const text = args.join(" ");
-        if (!text) return message.reply("× يا غالي، اكتب النص الذي تريد أن يظهر في المنشور!\n• مثال: `مارك كيف حالك`");
+    for (let i = 1; i < words.length; i++) {  
+        const word = words[i];  
+        const width = ctx.measureText(currentLine + " " + word).width;  
+        if (width < maxWidth) {  
+            currentLine += " " + word;  
+        } else {  
+            lines.push(currentLine);  
+            currentLine = word;  
+        }  
+    }  
+    lines.push(currentLine);  
+    return lines;  
+},  
 
-        let pathImg = path.join(__dirname, 'cache', `mark_${Date.now()}.png`);
+onStart: async function ({ api, event, args, message }) {  
+    const { messageID, threadID } = event;  
+    const text = args.join(" ");  
 
-        try {
-            await new Promise((resolve) => api.setMessageReaction("🎨", messageID, resolve, true));
-            await fs.ensureDir(path.dirname(pathImg));
+    if (!text) {  
+        return message.reply("× يا غالي، اكتب النص الذي تريد أن يظهر في المنشور!\n• مثال: `مارك كيف حالك`");  
+    }  
 
-            // تحميل القالب من الرابط المباشر الذي أعطيته
-            const templateResponse = await axios.get("https://i.postimg.cc/SshySpjh/file-00000000850881f4a1225f4279ae841b.png", { responseType: 'arraybuffer' });
-            fs.writeFileSync(pathImg, Buffer.from(templateResponse.data));
+    const cacheDir = path.join(__dirname, 'cache');  
+    const pathImg = path.join(cacheDir, `mark_${threadID}_${Date.now()}.png`);  
 
-            let baseImage = await loadImage(pathImg);
-            let canvas = createCanvas(baseImage.width, baseImage.height);
-            let ctx = canvas.getContext("2d");
-            ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
-            
-            // خصائص الخط والتنسيق (متوافق مع العربية والإنجليزية)
-            ctx.font = "500 35px Arial";
-            ctx.fillStyle = "#050505";
-            ctx.direction = "ltr"; // أو rtl حسب رغبتك في اتجاه السطور
+    try {  
+        api.setMessageReaction("🎨", messageID, () => {}, true);  
+        await fs.ensureDir(cacheDir);  
 
-            // تحديد أقصى عرض مسموح به للنص داخل القالب
-            const lines = await this.wrapText(ctx, text, 1100);
-            if (lines && lines.length > 0) {
-                // إحداثيات مكان ظهور النص تحت اسم مارك في الصورة
-                let startX = 80;
-                let startY = 220;
-                let lineHeight = 45;
+        const templateResponse = await axios.get("https://i.postimg.cc/SshySpjh/file-00000000850881f4a1225f4279ae841b.png", {   
+            responseType: 'arraybuffer',  
+            timeout: 10000   
+        });  
+          
+        if (templateResponse.status !== 200) throw new Error("Failed to download image");  
+          
+        // تحميل الصورة مباشرة من الـ Buffer دون الحاجة لحفظها أولاً  
+        const imageBufferData = Buffer.from(templateResponse.data);  
+        const baseImage = await loadImage(imageBufferData);  
+          
+        const canvas = createCanvas(baseImage.width, baseImage.height);  
+        const ctx = canvas.getContext("2d");  
 
-                for (let i = 0; i < lines.length; i++) {
-                    ctx.fillText(lines[i], startX, startY + (i * lineHeight));
-                }
-            }
+        ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);  
+          
+        ctx.font = "38px Cairo";  
+        ctx.fillStyle = "#050505";  
+        ctx.textBaseline = "top";  
+        ctx.direction = "rtl";  
+        ctx.textAlign = "right";  
 
-            const imageBuffer = canvas.toBuffer("image/png");
-            fs.writeFileSync(pathImg, imageBuffer);
+        const startX = canvas.width - 90;  
+        const startY = 210;  
+        const maxWidth = canvas.width - 200;  
+        const lineHeight = 50;  
 
-            return message.reply({
-                body: `✅ | ها هو تصميم المنشور الخاص بـ "مارك" يا غالي <😘`,
-                attachment: fs.createReadStream(pathImg)
-            }, () => {
-                try { fs.unlinkSync(pathImg); } catch (e) {}
-            });
+        const lines = this.wrapText(ctx, text, maxWidth);  
 
-        } catch (err) {
-            console.error("Mark Command Error:", err.message);
-            try { fs.unlinkSync(pathImg); } catch (e) {}
-            return message.reply("× عذراً يا عُمري، حدث مشكل أثناء معالجة وتصميم الصورة.");
-        }
-    }
+        for (let i = 0; i < lines.length; i++) {  
+            ctx.fillText(lines[i], startX, startY + (i * lineHeight));  
+        }  
+
+        const imageBuffer = canvas.toBuffer("image/png");  
+        fs.writeFileSync(pathImg, imageBuffer);  
+
+        await message.reply({  
+            body: `✅ | ها هو تصميم المنشور الخاص بـ "مارك" يا غالي 🤍`,  
+            attachment: fs.createReadStream(pathImg)  
+        });  
+
+    } catch (err) {  
+        console.error("Mark Command Error:", err);  
+        let errorMsg = "× عذراً يا عُمري، حدث مشكل أثناء معالجة وتصميم الصورة.";  
+        if (err.code === 'ETIMEDOUT') errorMsg = "× انتهى وقت الاتصال أثناء تحميل القالب، الرجاء المحاولة لاحقاً.";  
+        message.reply(errorMsg);  
+    } finally {  
+        try {  
+            if (fs.existsSync(pathImg)) {  
+                fs.unlinkSync(pathImg);  
+            }  
+        } catch (e) {  
+            console.error("Failed to delete temp image:", e);  
+        }  
+    }  
+}
+
 };
