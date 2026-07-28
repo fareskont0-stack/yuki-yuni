@@ -1,7 +1,6 @@
 {
   "name": "hinata-bot-v3",
   "version": "1.6.00",
-  "type": "module",
   "description": "A simple Bot chat messenger using personal account.",
   "main": "index.js",
   "engines": {
@@ -74,9 +73,9 @@
     "1secmail-api": "^1.1.1"
   },
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
-    "dev": "NODE_ENV=development node index.js",
-    "prod": "NODE_ENV=production node index.js"
+    "start": "set NODE_ENV=&& node index.js",
+    "dev": "set NODE_ENV=development&& node index.js",
+    "prod": "set NODE_ENV=production&& node index.js"
   },
   "author": "MahMUD",
   "license": "MIT",
