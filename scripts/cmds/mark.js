@@ -12,7 +12,7 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.0.6",
+        version: "1.0.7",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
@@ -80,11 +80,18 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // تكبير الخط وجعله عريضاً وثقيلاً مع تفعيل السُمك الإضافي (Stroke)
-            ctx.font = "bold 45px Cairo";
-            ctx.fillStyle = "#050505";
-            ctx.strokeStyle = "#050505";
-            ctx.lineWidth = 1.2; // تحكم في سماكة الخط الإضافية
+            // إعدادات احترافية لزيادة التباين والوضوح العالي
+            ctx.font = "bold 44px Cairo";
+            ctx.fillStyle = "#1c1e21"; // لون أسود فيسبوكي داكن واحترافي
+            ctx.strokeStyle = "#1c1e21";
+            ctx.lineWidth = 0.8; // سماكة متوازنة لتعزيز الوضوح دون تشويه الحروف
+            
+            // إضافة ظل خفيف وناعم لزيادة التباين والبروز (Shadow)
+            ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+
             ctx.textBaseline = "top";
             ctx.direction = "ltr";
             ctx.textAlign = "left";
@@ -92,20 +99,20 @@ module.exports = {
             const startX = 90;
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 60; // زيادة المسافة بين السطور لتناسب حجم الخط الجديد
+            const lineHeight = 60;
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
             for (let i = 0; i < lines.length; i++) {
                 ctx.fillText(lines[i], startX, startY + (i * lineHeight));
-                ctx.strokeText(lines[i], startX, startY + (i * lineHeight)); // رسم طبقة إضافية لتثخين الخط
+                ctx.strokeText(lines[i], startX, startY + (i * lineHeight));
             }
 
             const imageBuffer = canvas.toBuffer("image/png");
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو تصميم المنشور الخاص بـ "مارك" بخط عريض وواضح يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بخط عريض، احترافي وعالي التباين يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
