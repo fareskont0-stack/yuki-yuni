@@ -1,6 +1,7 @@
 {
   "name": "hinata-bot-v3",
   "version": "1.6.00",
+  "type": "module",
   "description": "A simple Bot chat messenger using personal account.",
   "main": "index.js",
   "engines": {
