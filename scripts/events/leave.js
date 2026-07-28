@@ -2,7 +2,7 @@ const { getTime, drive } = global.utils;
 
 module.exports = {
 	config: {
-		name: "leave",
+		name: "اخرج",
 		version: "1.5",
 		author: "NTKhang & Fares",
 		category: "events"
