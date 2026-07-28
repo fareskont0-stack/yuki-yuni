@@ -3,38 +3,65 @@
 const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
+const { createCanvas, loadImage, registerFont } = require("canvas");
 
-const {
-	createCanvas,
-	loadImage,
-	registerFont
-} = require("canvas");
-
-// تسجيل الخط العربي
-registerFont(
-	path.join(__dirname, "assets/font/Cairo-Regular.ttf"),
-	{
-		family: "Cairo"
-	}
+const FONT_PATH = path.join(
+	process.cwd(),
+	"assets",
+	"fonts",
+	"Cairo-Bold.ttf"
 );
+
+if (fs.existsSync(FONT_PATH)) {
+	registerFont(FONT_PATH, {
+		family: "Cairo"
+	});
+}
+
+function wrapText(ctx, text, maxWidth) {
+	const words = text.split(" ");
+	const lines = [];
+	let line = "";
+
+	for (const word of words) {
+		const test = line + word + " ";
+
+		if (ctx.measureText(test).width > maxWidth && line !== "") {
+			lines.push(line.trim());
+			line = word + " ";
+		}
+		else {
+			line = test;
+		}
+	}
+
+	if (line.trim())
+		lines.push(line.trim());
+
+	return lines;
+}
 
 module.exports = {
 	config: {
 		name: "منشور",
-		aliases: ["post", "fbpost"],
+		aliases: [
+			"post",
+			"fbpost"
+		],
+
 		version: "2.0.0",
 		author: "Fares",
-		countDown: 5,
 		role: 0,
+		countDown: 5,
 
 		description: {
-			ar: "إنشاء منشور فيسبوك بصورة بروفايلك"
+			ar: "إنشاء منشور فيسبوك بصورة البروفايل"
 		},
 
 		category: "image",
 
 		guide: {
-			ar: "{pn} [النص]"
+			ar: "{pn}منشور [النص]"
 		}
 	},
 
@@ -48,55 +75,69 @@ module.exports = {
 
 			const text = args.join(" ");
 
-			if (!text)
+			if (!text) {
 				return api.sendMessage(
-					"❌ | اكتب النص.\nمثال:\nمنشور مرحباً بكم",
+					"❌ | اكتب نص المنشور.",
 					event.threadID,
 					event.messageID
 				);
+			}
 
-			const cache = path.join(__dirname, "cache");
-			fs.ensureDirSync(cache);
-
-			const backgroundPath = path.join(cache, "facebook_bg.jpg");
-			const avatarPath = path.join(cache, `${event.senderID}.png`);
-			const outputPath = path.join(cache, `post_${Date.now()}.png`);
-
-			// تحميل الخلفية
-			const background = await axios.get(
-				"https://i.imgur.com/VrcriZF.jpg",
-				{
-					responseType: "arraybuffer"
-				}
+			const cache = path.join(
+				__dirname,
+				"cache"
 			);
 
+			fs.ensureDirSync(cache);
+
+			const bgPath = path.join(cache, "bg.jpg");
+			const avatarPath = path.join(
+				cache,
+				`${event.senderID}.png`
+			);
+
+			const outPath = path.join(
+				cache,
+				`post_${Date.now()}.png`
+			);
+
+			const background =
+				await axios.get(
+					"https://i.imgur.com/VrcriZF.jpg",
+					{
+						responseType: "arraybuffer"
+					}
+				);
+
 			fs.writeFileSync(
-				backgroundPath,
+				bgPath,
 				background.data
 			);
 
-			// تحميل صورة البروفايل
-			const avatar = await axios.get(
-				`https://graph.facebook.com/${event.senderID}/picture?width=512&height=512`,
-				{
-					responseType: "arraybuffer"
-				}
-			);
+			const avatar =
+				await axios.get(
+					`https://graph.facebook.com/${event.senderID}/picture?width=512&height=512`,
+					{
+						responseType: "arraybuffer"
+					}
+				);
 
 			fs.writeFileSync(
 				avatarPath,
 				avatar.data
 			);
 
-			const bg = await loadImage(backgroundPath);
-			const profile = await loadImage(avatarPath);
+			const bg = await loadImage(bgPath);
+			const avt = await loadImage(avatarPath);
 
-			const canvas = createCanvas(
-				bg.width,
-				bg.height
-			);
+			const canvas =
+				createCanvas(
+					bg.width,
+					bg.height
+				);
 
-			const ctx = canvas.getContext("2d");
+			const ctx =
+				canvas.getContext("2d");
 
 			ctx.drawImage(
 				bg,
@@ -106,10 +147,10 @@ module.exports = {
 				canvas.height
 			);
 
-			// رسم الصورة الدائرية
 			ctx.save();
 
 			ctx.beginPath();
+
 			ctx.arc(
 				69,
 				69,
@@ -119,10 +160,11 @@ module.exports = {
 			);
 
 			ctx.closePath();
+
 			ctx.clip();
 
 			ctx.drawImage(
-				profile,
+				avt,
 				17,
 				17,
 				104,
@@ -130,23 +172,21 @@ module.exports = {
 			);
 
 			ctx.restore();
-
-			let userName = "Facebook User";
+						let userName = "Facebook User";
 
 			try {
+				const info = await api.getUserInfo(event.senderID);
 
-				const info =
-					await api.getUserInfo(event.senderID);
+				if (info[event.senderID])
+					userName = info[event.senderID].name;
+			}
+			catch (e) {}
 
-				userName =
-					info[event.senderID].name;
+			ctx.fillStyle = "#000000";
 
-			} catch {}
-
-			ctx.fillStyle = "#000";
-			ctx.textAlign = "left";
-
-			ctx.font = "bold 32px Cairo";
+			ctx.font = fs.existsSync(FONT_PATH)
+				? "bold 32px Cairo"
+				: "bold 32px Arial";
 
 			ctx.fillText(
 				userName,
@@ -154,73 +194,57 @@ module.exports = {
 				55
 			);
 
-			ctx.font = "42px Cairo";
-			ctx.fillStyle = "#000";
+			ctx.fillStyle = "#000000";
 
-			const maxWidth = 650;
+			ctx.font = fs.existsSync(FONT_PATH)
+				? "42px Cairo"
+				: "42px Arial";
 
-			const words = text.split(" ");
-
-			let line = "";
-
-			let lines = [];
-						for (const word of words) {
-
-				const testLine =
-					line + word + " ";
-
-				if (
-					ctx.measureText(testLine).width >
-					maxWidth
-				) {
-					lines.push(line);
-					line = word + " ";
-				}
-				else {
-					line = testLine;
-				}
-			}
-
-			lines.push(line);
+			const lines = wrapText(
+				ctx,
+				text,
+				650
+			);
 
 			let y = 180;
 
-			for (const txt of lines) {
-
+			for (const line of lines) {
 				ctx.fillText(
-					txt,
+					line,
 					20,
 					y
 				);
 
-				y += 55;
+				y += 50;
 			}
 
 			fs.writeFileSync(
-				outputPath,
+				outPath,
 				canvas.toBuffer("image/png")
 			);
 
 			await api.sendMessage(
 				{
-					attachment:
-						fs.createReadStream(outputPath)
+					attachment: fs.createReadStream(outPath)
 				},
 				event.threadID,
-				() => {
+								() => {
 
-					[
-						backgroundPath,
-						avatarPath,
-						outputPath
-					].forEach(file => {
+					try {
 
-						if (
-							fs.existsSync(file)
-						)
-							fs.unlinkSync(file);
+						if (fs.existsSync(bgPath))
+							fs.unlinkSync(bgPath);
 
-					});
+						if (fs.existsSync(avatarPath))
+							fs.unlinkSync(avatarPath);
+
+						if (fs.existsSync(outPath))
+							fs.unlinkSync(outPath);
+
+					}
+					catch (e) {
+						console.error(e);
+					}
 
 				},
 				event.messageID
@@ -231,8 +255,8 @@ module.exports = {
 
 			console.error(err);
 
-			api.sendMessage(
-				"❌ حدث خطأ أثناء إنشاء المنشور.",
+			return api.sendMessage(
+				"❌ | حدث خطأ أثناء إنشاء المنشور.",
 				event.threadID,
 				event.messageID
 			);
@@ -240,4 +264,5 @@ module.exports = {
 		}
 
 	}
+
 };
