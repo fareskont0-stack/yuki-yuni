@@ -9,28 +9,30 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "tiktok",
-                version: "1.7",
+                name: "تيكتوك",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
                         bn: "টিকটক থেকে এডিট করা ভিডিও সার্চ করে ডাউনলোড করুন",
                         en: "Search and download TikTok edit videos",
-                        vi: "Tìm kiếm và tải xuống các video chỉnh sửa TikTok"
+                        vi: "Tìm kiếm và tải xuống các video chỉnh sửa TikTok",
+                        ar: "البحث عن وتحميل فيديوهات التيك توك المعدلة (Edits)"
                 },
                 category: "media",
                 guide: {
                         bn: '   {pn} <কীওয়ার্ড>: ভিডিও সার্চ করতে নাম লিখুন (যেমন: {pn} naruto)',
                         en: '   {pn} <keyword>: Enter keyword to search (Ex: {pn} naruto)',
-                        vi: '   {pn} <từ khóa>: Nhập từ khóa để tìm kiếm (VD: {pn} naruto)'
+                        vi: '   {pn} <từ khóa>: Nhập từ khóa để tìm kiếm (VD: {pn} naruto)',
+                        ar: '   {pn} <الكلمة المفتاحية>: اكتب كلمة للبحث عن الفيديو (مثال: {pn} naruto)'
                 }
         },
 
         langs: {
                 bn: {
                         noInput: "× বেবি, কী সার্চ করতে চাও বলো! 🔍\nউদাহরণ: {pn} naruto",
-                        tooLarge: "× ভিডিওটি অনেক বড় (২৫ মেগাবাইটের বেশি)। অন্য কিছু সার্চ করো!",
+                        tooLarge: "× ভিডিওটি অনেক বড় (২৫ মেগাবাইটের বেশি)। অন্য কিছু সার্চ કરો!",
                         success: "• 𝐇𝐞𝐫𝐞'𝐬 𝐲𝐨𝐮𝐫 𝐓𝐢𝐤𝐓𝐨𝐤 𝐄𝐝𝐢𝐭 𝐕𝐢𝐝𝐞𝐨.\n• 𝐒𝐞𝐚𝐫𝐜𝐡: %1",
                         error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
                 },
@@ -45,6 +47,12 @@ module.exports = {
                         tooLarge: "× Video quá lớn (25MB+). Hãy thử từ khóa khác!",
                         success: "• 𝐕𝐢𝐝𝐞𝐨 𝐜𝐡𝐢̉𝐧𝐡 𝐬𝐮̛̉𝐚 𝐓𝐢𝐤𝐓𝐨𝐤 𝐜𝐮̉𝐚 𝐜𝐮̛𝐧𝐠 ᵭ𝐚̂𝐲.\n• 𝐓𝐢̀𝐦 𝐤𝐢𝐞̂́𝐦: %1",
                         error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                },
+                ar: {
+                        noInput: "× يا غالي، ماذا تريد أن تبحث عنه؟ 🔍\nمثال: {pn} naruto",
+                        tooLarge: "× الفيديو كبير جداً (أكثر من 25 ميغابايت). جرب كلمة بحث أخرى!",
+                        success: "• إليك فيديو التيك توك الخاص بك 🤍\n• البحث: %1",
+                        error: "× حدث خطأ: %1. تواصل مع المطور للدعم."
                 }
         },
 
