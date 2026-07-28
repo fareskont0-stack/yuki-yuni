@@ -103,7 +103,7 @@ module.exports = {
 
 			const background =
 				await axios.get(
-					"https://i.imgur.com/VrcriZF.jpg",
+					"https://i.postimg.cc/W45XWYsJ/Vrcri-ZF.jpg",
 					{
 						responseType: "arraybuffer"
 					}
