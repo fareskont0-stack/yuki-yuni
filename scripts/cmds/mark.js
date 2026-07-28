@@ -12,7 +12,7 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.0.9",
+        version: "1.0.7",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
@@ -50,22 +50,6 @@ module.exports = {
         return lines;
     },
 
-    // رسم النص مع مسافات متباعدة وسُمك عريض ليطابق كلمة Mark
-    drawTextWithLetterSpacing: function (ctx, text, x, y, isStroke = false) {
-        const letterSpacing = 3; // مسافة مريحة بين الحروف
-        let currentX = x;
-
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-            if (isStroke) {
-                ctx.strokeText(char, currentX, y);
-            } else {
-                ctx.fillText(char, currentX, y);
-            }
-            currentX += ctx.measureText(char).width + letterSpacing;
-        }
-    },
-
     onStart: async function ({ api, event, args, message }) {
         const { messageID, threadID } = event;
         const text = args.join(" ");
@@ -96,14 +80,14 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // خط عريض جداً وثقيل (Extra Bold) ليطابق سمك كلمة Mark تماماً
-            ctx.font = "bold 52px Cairo";
-            ctx.fillStyle = "#0a0a0a"; 
-            ctx.strokeStyle = "#0a0a0a";
-            ctx.lineWidth = 1.5; // سماكة قوية وبارزة للحروف
+            // إعدادات احترافية لزيادة التباين والوضوح العالي
+            ctx.font = "bold 44px Cairo";
+            ctx.fillStyle = "#1c1e21"; // لون أسود فيسبوكي داكن واحترافي
+            ctx.strokeStyle = "#1c1e21";
+            ctx.lineWidth = 0.8; // سماكة متوازنة لتعزيز الوضوح دون تشويه الحروف
             
-            // ظل خفيف لزيادة البروز والوضوح الفائق
-            ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
+            // إضافة ظل خفيف وناعم لزيادة التباين والبروز (Shadow)
+            ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
             ctx.shadowBlur = 4;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
@@ -115,20 +99,20 @@ module.exports = {
             const startX = 90;
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 75; // مسافة أكبر بين السطور لتناسب الحجم الضخم الجديد
+            const lineHeight = 60;
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
             for (let i = 0; i < lines.length; i++) {
-                this.drawTextWithLetterSpacing(ctx, lines[i], startX, startY + (i * lineHeight), false);
-                this.drawTextWithLetterSpacing(ctx, lines[i], startX, startY + (i * lineHeight), true);
+                ctx.fillText(lines[i], startX, startY + (i * lineHeight));
+                ctx.strokeText(lines[i], startX, startY + (i * lineHeight));
             }
 
             const imageBuffer = canvas.toBuffer("image/png");
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو التصميم بخط عريض وبارز مثل كلمة Mark يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بخط عريض، احترافي وعالي التباين يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
