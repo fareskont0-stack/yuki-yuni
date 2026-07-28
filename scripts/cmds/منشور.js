@@ -7,9 +7,11 @@ module.exports.config = {
     name: "منشور",
     version: "2.0.0",
     hasPermssion: 0,
+    hasPermission: 0,
     credits: "Fares Kouachi",
     description: "تصميم منشور تفاعلي مع صورة البروفايل والنص",
-    commandCategory: "Edit-img",
+    commandCategory: "تعديل الصور",
+    category: "تعديل الصور",
     usages: "[النص المراد كتابته]",
     cooldowns: 5,
     dependencies: {
@@ -63,8 +65,13 @@ module.exports.run = async function({ api, event, args }) {
         return api.sendMessage("❌ يرجى كتابة النص المراد وضعه في المنشور!\nمثال: منشور مرحباً بك يا زميلي", threadID, messageID);
     }
 
-    let avatarPath = __dirname + `/cache/avt_${senderID}.png`;
-    let outputPath = __dirname + `/cache/post_${senderID}_${Date.now()}.png`;
+    let cacheDir = __dirname + "/cache";
+    if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+    }
+
+    let avatarPath = `${cacheDir}/avt_${senderID}.png`;
+    let outputPath = `${cacheDir}/post_${senderID}_${Date.now()}.png`;
 
     try {
         let userName = "مستخدم فيسبوك";
