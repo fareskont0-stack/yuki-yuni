@@ -12,7 +12,7 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.0.7",
+        version: "1.0.8",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
@@ -31,6 +31,7 @@ module.exports = {
         }
     },
 
+    // دالة محسنة للالتفاف التلقائي مع دعم المسافات
     wrapText: function (ctx, text, maxWidth) {
         const words = text.split(' ');
         const lines = [];
@@ -48,6 +49,22 @@ module.exports = {
         }
         lines.push(currentLine);
         return lines;
+    },
+
+    // دالة لرسم النص مع مسافات متباعدة بين الحروف (Letter Spacing) على طراز الآيفون
+    drawTextWithLetterSpacing: function (ctx, text, x, y, isStroke = false) {
+        const letterSpacing = 2.5; // مسافة متباعدة ومريحة للقراءة بين الحروف
+        let currentX = x;
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (isStroke) {
+                ctx.strokeText(char, currentX, y);
+            } else {
+                ctx.fillText(char, currentX, y);
+            }
+            currentX += ctx.measureText(char).width + letterSpacing;
+        }
     },
 
     onStart: async function ({ api, event, args, message }) {
@@ -80,15 +97,15 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // إعدادات احترافية لزيادة التباين والوضوح العالي
+            // إعدادات خط عريض وبارز بطابع أجهزة أبل (آيفون)
             ctx.font = "bold 44px Cairo";
-            ctx.fillStyle = "#1c1e21"; // لون أسود فيسبوكي داكن واحترافي
-            ctx.strokeStyle = "#1c1e21";
-            ctx.lineWidth = 0.8; // سماكة متوازنة لتعزيز الوضوح دون تشويه الحروف
+            ctx.fillStyle = "#111111"; // لون أسود فاحم ونقي لزيادة الوضوح
+            ctx.strokeStyle = "#111111";
+            ctx.lineWidth = 0.6; 
             
-            // إضافة ظل خفيف وناعم لزيادة التباين والبروز (Shadow)
-            ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
-            ctx.shadowBlur = 4;
+            // تفعيل ظل نقي وخفيف لزيادة التباين
+            ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+            ctx.shadowBlur = 3;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
 
@@ -99,20 +116,20 @@ module.exports = {
             const startX = 90;
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 60;
+            const lineHeight = 65;
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
             for (let i = 0; i < lines.length; i++) {
-                ctx.fillText(lines[i], startX, startY + (i * lineHeight));
-                ctx.strokeText(lines[i], startX, startY + (i * lineHeight));
+                this.drawTextWithLetterSpacing(ctx, lines[i], startX, startY + (i * lineHeight), false);
+                this.drawTextWithLetterSpacing(ctx, lines[i], startX, startY + (i * lineHeight), true);
             }
 
             const imageBuffer = canvas.toBuffer("image/png");
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو التصميم بخط عريض، احترافي وعالي التباين يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بخط عريض ومرتب بطريقة تشبه خط الآيفون يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
