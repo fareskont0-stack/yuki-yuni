@@ -1,27 +1,51 @@
+"use strict";
+
 const axios = require("axios");
 const fs = require("fs-extra");
-const { createCanvas, loadImage } = require("canvas");
 const path = require("path");
+
+const {
+	createCanvas,
+	loadImage,
+	registerFont
+} = require("canvas");
+
+// تسجيل الخط العربي
+registerFont(
+	path.join(__dirname, "assets/font/Cairo-Regular.ttf"),
+	{
+		family: "Cairo"
+	}
+);
 
 module.exports = {
 	config: {
 		name: "منشور",
 		aliases: ["post", "fbpost"],
-		version: "1.0.0",
+		version: "2.0.0",
 		author: "Fares",
 		countDown: 5,
 		role: 0,
+
 		description: {
 			ar: "إنشاء منشور فيسبوك بصورة بروفايلك"
 		},
+
 		category: "image",
+
 		guide: {
 			ar: "{pn} [النص]"
 		}
 	},
 
-	onStart: async function ({ api, event, args }) {
+	onStart: async function ({
+		api,
+		event,
+		args
+	}) {
+
 		try {
+
 			const text = args.join(" ");
 
 			if (!text)
@@ -34,96 +58,186 @@ module.exports = {
 			const cache = path.join(__dirname, "cache");
 			fs.ensureDirSync(cache);
 
-			const bgPath = path.join(cache, "bg.jpg");
+			const backgroundPath = path.join(cache, "facebook_bg.jpg");
 			const avatarPath = path.join(cache, `${event.senderID}.png`);
-			const outPath = path.join(cache, `post_${Date.now()}.png`);
+			const outputPath = path.join(cache, `post_${Date.now()}.png`);
 
-			const background =
-				await axios.get(
-					"https://i.postimg.cc/W45XWYsJ/Vrcri-ZF.jpg",
-					{ responseType: "arraybuffer" }
-				);
+			// تحميل الخلفية
+			const background = await axios.get(
+				"https://i.imgur.com/VrcriZF.jpg",
+				{
+					responseType: "arraybuffer"
+				}
+			);
 
-			fs.writeFileSync(bgPath, background.data);
+			fs.writeFileSync(
+				backgroundPath,
+				background.data
+			);
 
-			const avatar =
-				await axios.get(
-					`https://graph.facebook.com/${event.senderID}/picture?width=512&height=512`,
-					{ responseType: "arraybuffer" }
-				);
+			// تحميل صورة البروفايل
+			const avatar = await axios.get(
+				`https://graph.facebook.com/${event.senderID}/picture?width=512&height=512`,
+				{
+					responseType: "arraybuffer"
+				}
+			);
 
-			fs.writeFileSync(avatarPath, avatar.data);
+			fs.writeFileSync(
+				avatarPath,
+				avatar.data
+			);
 
-			const bg = await loadImage(bgPath);
-			const avt = await loadImage(avatarPath);
+			const bg = await loadImage(backgroundPath);
+			const profile = await loadImage(avatarPath);
 
-			const canvas = createCanvas(bg.width, bg.height);
+			const canvas = createCanvas(
+				bg.width,
+				bg.height
+			);
+
 			const ctx = canvas.getContext("2d");
 
-			ctx.drawImage(bg, 0, 0);
+			ctx.drawImage(
+				bg,
+				0,
+				0,
+				canvas.width,
+				canvas.height
+			);
 
+			// رسم الصورة الدائرية
 			ctx.save();
+
 			ctx.beginPath();
-			ctx.arc(69, 69, 52, 0, Math.PI * 2);
+			ctx.arc(
+				69,
+				69,
+				52,
+				0,
+				Math.PI * 2
+			);
+
 			ctx.closePath();
 			ctx.clip();
-			ctx.drawImage(avt, 17, 17, 104, 104);
+
+			ctx.drawImage(
+				profile,
+				17,
+				17,
+				104,
+				104
+			);
+
 			ctx.restore();
 
-			let name = "Facebook User";
+			let userName = "Facebook User";
 
 			try {
-				const info = await api.getUserInfo(event.senderID);
-				name = info[event.senderID].name;
+
+				const info =
+					await api.getUserInfo(event.senderID);
+
+				userName =
+					info[event.senderID].name;
+
 			} catch {}
 
 			ctx.fillStyle = "#000";
-			ctx.font = "bold 32px Arial";
-			ctx.fillText(name, 135, 55);
+			ctx.textAlign = "left";
 
-			ctx.font = "42px Arial";
+			ctx.font = "bold 32px Cairo";
+
+			ctx.fillText(
+				userName,
+				135,
+				55
+			);
+
+			ctx.font = "42px Cairo";
 			ctx.fillStyle = "#000";
 
+			const maxWidth = 650;
+
 			const words = text.split(" ");
+
 			let line = "";
-			let y = 180;
 
-			for (const word of words) {
-				const test = line + word + " ";
+			let lines = [];
+						for (const word of words) {
 
-				if (ctx.measureText(test).width > 650) {
-					ctx.fillText(line, 20, y);
+				const testLine =
+					line + word + " ";
+
+				if (
+					ctx.measureText(testLine).width >
+					maxWidth
+				) {
+					lines.push(line);
 					line = word + " ";
-					y += 50;
-				} else {
-					line = test;
+				}
+				else {
+					line = testLine;
 				}
 			}
 
-			ctx.fillText(line, 20, y);
+			lines.push(line);
 
-			fs.writeFileSync(outPath, canvas.toBuffer());
+			let y = 180;
+
+			for (const txt of lines) {
+
+				ctx.fillText(
+					txt,
+					20,
+					y
+				);
+
+				y += 55;
+			}
+
+			fs.writeFileSync(
+				outputPath,
+				canvas.toBuffer("image/png")
+			);
 
 			await api.sendMessage(
 				{
-					attachment: fs.createReadStream(outPath)
+					attachment:
+						fs.createReadStream(outputPath)
 				},
 				event.threadID,
 				() => {
-					[bgPath, avatarPath, outPath].forEach(file => {
-						if (fs.existsSync(file)) fs.unlinkSync(file);
+
+					[
+						backgroundPath,
+						avatarPath,
+						outputPath
+					].forEach(file => {
+
+						if (
+							fs.existsSync(file)
+						)
+							fs.unlinkSync(file);
+
 					});
+
 				},
 				event.messageID
 			);
 
-		} catch (e) {
-			console.log(e);
+		}
+		catch (err) {
+
+			console.error(err);
+
 			api.sendMessage(
 				"❌ حدث خطأ أثناء إنشاء المنشور.",
 				event.threadID,
 				event.messageID
 			);
+
 		}
+
 	}
 };
