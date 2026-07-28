@@ -12,12 +12,12 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.0.9",
+        version: "1.1.0",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
         description: {
-            ar: "تصميم منشور باسم مارك زوكربيرج مع النص الذي تكتبه"
+            ar: "تصميم منشور باسم مارك زوكربيرج مع النص الذي تكتبه بخط عريض وملتصق"
         },
         category: "Edit-IMG",
         usages: {
@@ -50,13 +50,17 @@ module.exports = {
         return lines;
     },
 
-    // رسم النص مع مسافات متباعدة وسُمك عريض ليطابق كلمة Mark
-    drawTextWithLetterSpacing: function (ctx, text, x, y, isStroke = false) {
-        const letterSpacing = 3; // مسافة مريحة بين الحروف
+    // رسم النص مع تقارب الحروف لتصبح ملتصقة ببعضها بطابع عريض وثقيل (Impact Style)
+    drawTextTightly: function (ctx, text, x, y, isStroke = false) {
+        const letterSpacing = -1.5; // قيمة بالسالب لضمان التتصاق الحروف ببعضها بقوة
         let currentX = x;
 
         for (let i = 0; i < text.length; i++) {
             const char = text[i];
+            if (char === ' ') {
+                currentX += 15; // مسافة الكلمات العادية
+                continue;
+            }
             if (isStroke) {
                 ctx.strokeText(char, currentX, y);
             } else {
@@ -96,15 +100,15 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // خط عريض جداً وثقيل (Extra Bold) ليطابق سمك كلمة Mark تماماً
-            ctx.font = "bold 52px Cairo";
-            ctx.fillStyle = "#0a0a0a"; 
-            ctx.strokeStyle = "#0a0a0a";
-            ctx.lineWidth = 1.5; // سماكة قوية وبارزة للحروف
+            // خط عريض وثقيل جداً (Impact / Heavy Style)
+            ctx.font = "bold 54px Cairo";
+            ctx.fillStyle = "#050505"; 
+            ctx.strokeStyle = "#050505";
+            ctx.lineWidth = 1.8; // سماكة قوية لإعطاء طابع عريض وبارز
             
-            // ظل خفيف لزيادة البروز والوضوح الفائق
-            ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
-            ctx.shadowBlur = 4;
+            // ظل خفيف لزيادة الوضوح
+            ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+            ctx.shadowBlur = 3;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
 
@@ -115,20 +119,20 @@ module.exports = {
             const startX = 90;
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 75; // مسافة أكبر بين السطور لتناسب الحجم الضخم الجديد
+            const lineHeight = 75;
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
             for (let i = 0; i < lines.length; i++) {
-                this.drawTextWithLetterSpacing(ctx, lines[i], startX, startY + (i * lineHeight), false);
-                this.drawTextWithLetterSpacing(ctx, lines[i], startX, startY + (i * lineHeight), true);
+                this.drawTextTightly(ctx, lines[i], startX, startY + (i * lineHeight), false);
+                this.drawTextTightly(ctx, lines[i], startX, startY + (i * lineHeight), true);
             }
 
             const imageBuffer = canvas.toBuffer("image/png");
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو التصميم بخط عريض وبارز مثل كلمة Mark يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بخط عريض وملتصق ببعضه مثل طلبك يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
