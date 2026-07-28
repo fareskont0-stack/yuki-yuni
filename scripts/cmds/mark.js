@@ -12,7 +12,7 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.0.5",
+        version: "1.0.6",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
@@ -80,30 +80,32 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // جعل الخط عريضاً (Bold) واتجاه الكتابة من اليسار لليمين (ltr) مع محاذاة لليسار (left)
-            ctx.font = "bold 38px Cairo";
+            // تكبير الخط وجعله عريضاً وثقيلاً مع تفعيل السُمك الإضافي (Stroke)
+            ctx.font = "bold 45px Cairo";
             ctx.fillStyle = "#050505";
+            ctx.strokeStyle = "#050505";
+            ctx.lineWidth = 1.2; // تحكم في سماكة الخط الإضافية
             ctx.textBaseline = "top";
             ctx.direction = "ltr";
             ctx.textAlign = "left";
 
-            // نقطة البداية من جهة اليسار
             const startX = 90;
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 50;
+            const lineHeight = 60; // زيادة المسافة بين السطور لتناسب حجم الخط الجديد
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
             for (let i = 0; i < lines.length; i++) {
                 ctx.fillText(lines[i], startX, startY + (i * lineHeight));
+                ctx.strokeText(lines[i], startX, startY + (i * lineHeight)); // رسم طبقة إضافية لتثخين الخط
             }
 
             const imageBuffer = canvas.toBuffer("image/png");
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو تصميم المنشور الخاص بـ "مارك" يا غالي 🤍`,
+                body: `✅ | ها هو تصميم المنشور الخاص بـ "مارك" بخط عريض وواضح يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
