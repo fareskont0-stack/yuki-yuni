@@ -12,7 +12,7 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.1.1",
+        version: "1.1.2",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
@@ -55,7 +55,7 @@ module.exports = {
         const text = args.join(" ");
 
         if (!text) {
-            return message.reply("× يا غالي، اكتب النص الذي تريد أن يظهر في المنشور!\n• مثال: `مارك كيف حالك`");
+            return message.reply("× يا غالي، اكتب النص الذي تريد أن يظهر في المنشور!\n• مثال: `مارك نحبك عمري`");
         }
 
         const cacheDir = path.join(__dirname, 'cache');
@@ -65,7 +65,8 @@ module.exports = {
             api.setMessageReaction("🎨", messageID, () => {}, true);
             await fs.ensureDir(cacheDir);
 
-            const templateResponse = await axios.get("https://i.postimg.cc/SshySpjh/file-00000000850881f4a1225f4279ae841b.png", { 
+            // استخدام القالب الجديد الذي يحتوي على اسم Mark Zuckerberg الكامل وعلامة التوثيق
+            const templateResponse = await axios.get("https://i.postimg.cc/90912m67/file-00000000850881f4a1225f4279ae841b.png", { 
                 responseType: 'arraybuffer',
                 timeout: 10000 
             });
@@ -80,26 +81,25 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // إعدادات خط عريض وثقيل (Bold Heavy) مع ضبط الاتجاه العربي الصحيح لتبقى الحروف متصلة
-            ctx.font = "bold 48px Cairo";
-            ctx.fillStyle = "#050505"; 
-            ctx.strokeStyle = "#050505";
-            ctx.lineWidth = 1.2; // سماكة مثالية لتظهر الحروف عريضة وبارزة
+            // إعدادات خط عريض وثقيل يطابق نمط الصورة الجديدة تماماً
+            ctx.font = "bold 50px Cairo";
+            ctx.fillStyle = "#0a0a0a"; 
+            ctx.strokeStyle = "#0a0a0a";
+            ctx.lineWidth = 1.0; 
             
-            // ظل نقي وخفيف لزيادة التباين
-            ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
-            ctx.shadowBlur = 3;
+            ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+            ctx.shadowBlur = 2;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
 
             ctx.textBaseline = "top";
-            ctx.direction = "rtl"; // اتجاه عربي صحيح لضمان اتصال الحروف
-            ctx.textAlign = "right"; // محاذاة لليمين
+            ctx.direction = "rtl"; 
+            ctx.textAlign = "right"; 
 
-            const startX = canvas.width - 90; // يبدأ من اليمين بشكل مرتب
-            const startY = 210;
+            const startX = canvas.width - 90; 
+            const startY = 230; // تم ضبط الموقع بدقة ليناسب القالب الجديد
             const maxWidth = canvas.width - 200;
-            const lineHeight = 70;
+            const lineHeight = 75;
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
@@ -112,7 +112,7 @@ module.exports = {
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو التصميم بخط عريض وحروف متصلة وصحيحة يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بالخط العريض والنمط الجديد المطابق لطلبك يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
