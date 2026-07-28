@@ -1,5 +1,4 @@
 import { spawn } from "child_process";
-import log from "./logger/log.js";
 
 function startProject() {
 	const child = spawn("node", ["Hinata.js"], {
@@ -9,8 +8,8 @@ function startProject() {
 	});
 
 	child.on("close", (code) => {
-		if (code == 2) {
-			log.info("Restarting Project...");
+		if (code === 2) {
+			console.log("Restarting Project...");
 			startProject();
 		}
 	});
