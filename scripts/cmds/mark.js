@@ -12,7 +12,7 @@ if (!GlobalFonts.has("Cairo")) {
 module.exports = {
     config: {
         name: "مارك",
-        version: "1.0.8",
+        version: "1.0.9",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["mark"],
@@ -31,7 +31,6 @@ module.exports = {
         }
     },
 
-    // دالة محسنة للالتفاف التلقائي مع دعم المسافات
     wrapText: function (ctx, text, maxWidth) {
         const words = text.split(' ');
         const lines = [];
@@ -51,9 +50,9 @@ module.exports = {
         return lines;
     },
 
-    // دالة لرسم النص مع مسافات متباعدة بين الحروف (Letter Spacing) على طراز الآيفون
+    // رسم النص مع مسافات متباعدة وسُمك عريض ليطابق كلمة Mark
     drawTextWithLetterSpacing: function (ctx, text, x, y, isStroke = false) {
-        const letterSpacing = 2.5; // مسافة متباعدة ومريحة للقراءة بين الحروف
+        const letterSpacing = 3; // مسافة مريحة بين الحروف
         let currentX = x;
 
         for (let i = 0; i < text.length; i++) {
@@ -97,15 +96,15 @@ module.exports = {
 
             ctx.drawImage(baseImage, 0, 0, canvas.width, baseImage.height);
             
-            // إعدادات خط عريض وبارز بطابع أجهزة أبل (آيفون)
-            ctx.font = "bold 44px Cairo";
-            ctx.fillStyle = "#111111"; // لون أسود فاحم ونقي لزيادة الوضوح
-            ctx.strokeStyle = "#111111";
-            ctx.lineWidth = 0.6; 
+            // خط عريض جداً وثقيل (Extra Bold) ليطابق سمك كلمة Mark تماماً
+            ctx.font = "bold 52px Cairo";
+            ctx.fillStyle = "#0a0a0a"; 
+            ctx.strokeStyle = "#0a0a0a";
+            ctx.lineWidth = 1.5; // سماكة قوية وبارزة للحروف
             
-            // تفعيل ظل نقي وخفيف لزيادة التباين
-            ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
-            ctx.shadowBlur = 3;
+            // ظل خفيف لزيادة البروز والوضوح الفائق
+            ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
+            ctx.shadowBlur = 4;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
 
@@ -116,7 +115,7 @@ module.exports = {
             const startX = 90;
             const startY = 210;
             const maxWidth = canvas.width - 200;
-            const lineHeight = 65;
+            const lineHeight = 75; // مسافة أكبر بين السطور لتناسب الحجم الضخم الجديد
 
             const lines = this.wrapText(ctx, text, maxWidth);
 
@@ -129,7 +128,7 @@ module.exports = {
             fs.writeFileSync(pathImg, imageBuffer);
 
             await message.reply({
-                body: `✅ | ها هو التصميم بخط عريض ومرتب بطريقة تشبه خط الآيفون يا غالي 🤍`,
+                body: `✅ | ها هو التصميم بخط عريض وبارز مثل كلمة Mark يا غالي 🤍`,
                 attachment: fs.createReadStream(pathImg)
             });
 
