@@ -1,9 +1,9 @@
-const { spawn } = require("child_process");
-const log = require("./logger/log.js");
+import { spawn } from "child_process";
+import log from "./logger/log.js";
 
 function startProject() {
 	const child = spawn("node", ["Hinata.js"], {
-		cwd: __dirname,
+		cwd: process.cwd(),
 		stdio: "inherit",
 		shell: true
 	});
