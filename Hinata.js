@@ -1,17 +1,13 @@
 process.on('unhandledRejection', error => console.log(error));
 process.on('uncaughtException', error => console.log(error));
 
-import axios from "axios";
-import fs from "fs-extra";
-import { google } from "googleapis";
-import nodemailer from "nodemailer";
-import { execSync } from 'child_process';
-import log from './logger/log.js';
-import path from "path";
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const axios = require("axios");
+const fs = require("fs-extra");
+const google = require("googleapis").google;
+const nodemailer = require("nodemailer");
+const { execSync } = require('child_process');
+const log = require('./logger/log.js');
+const path = require("path");
 
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0; 
 
@@ -45,10 +41,10 @@ for (const pathDir of [dirConfig, dirConfigCommands]) {
 		process.exit(0);
 	}
 }
-const config = JSON.parse(fs.readFileSync(dirConfig, 'utf-8'));
+const config = require(dirConfig);
 if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
 	config.whiteListMode.whiteListIds = config.whiteListMode.whiteListIds.map(id => id.toString());
-const configCommands = JSON.parse(fs.readFileSync(dirConfigCommands, 'utf-8'));
+const configCommands = require(dirConfigCommands);
 
 global.GoatBot = {
 	startTime: Date.now() - process.uptime() * 1000, 
@@ -108,7 +104,7 @@ global.client = {
 	commandBanned: configCommands.commandBanned
 };
 
-import utils from "./utils.js";
+const utils = require("./utils.js");
 global.utils = utils;
 const { colors } = utils;
 
@@ -181,11 +177,10 @@ if (config.autoRestart) {
 	}
 	else if (typeof time == "string" && time.match(/^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})$/gmi)) {
 		utils.log.info("AUTO RESTART", getText("Goat", "autoRestart2", time));
-		import("node-cron").then(cron => {
-			cron.schedule(time, () => {
-				utils.log.info("AUTO RESTART", "Restarting...");
-				process.exit(2);
-			});
+		const cron = require("node-cron");
+		cron.schedule(time, () => {
+			utils.log.info("AUTO RESTART", "Restarting...");
+			process.exit(2);
 		});
 	}
 }
@@ -246,25 +241,22 @@ if (config.autoRestart) {
 	global.utils.transporter = transporter;
 
 	// ———————————————— CHECK VERSION ———————————————— //
-	try {
-		const { data: { version } } = await axios.get("https://raw.githubusercontent.com/mahmudx7/Hinata-Bot-V3/main/package.json");
-		const currentVersion = JSON.parse(fs.readFileSync(path.normalize(`${__dirname}/package.json`), 'utf-8')).version;
-		if (compareVersion(version, currentVersion) === 1)
-			utils.log.master("NEW VERSION", getText(
-				"Goat",
-				"newVersionDetected",
-				colors.gray(currentVersion),
-				colors.hex("#eb6a07", version),
-				colors.hex("#eb6a07", "node update")
-			));
-	} catch (e) {}
-
+	const { data: { version } } = await axios.get("https://raw.githubusercontent.com/mahmudx7/Hinata-Bot-V3/main/package.json");
+	const currentVersion = require("./package.json").version;
+	if (compareVersion(version, currentVersion) === 1)
+		utils.log.master("NEW VERSION", getText(
+			"Goat",
+			"newVersionDetected",
+			colors.gray(currentVersion),
+			colors.hex("#eb6a07", version),
+			colors.hex("#eb6a07", "node update")
+		));
 	// —————————— CHECK FOLDER GOOGLE DRIVE —————————— //
 	const parentIdGoogleDrive = await utils.drive.checkAndCreateParentFolder("GoatBot");
 	utils.drive.parentID = parentIdGoogleDrive;
 	
 	// ———————————————————— LOGIN (ALWAYS READ login.js) ———————————————————— //
-	await import(`./bot/login/login.js`);
+	require(`./bot/login/login.js`);
 })();
 
 function compareVersion(version1, version2) {
@@ -277,4 +269,4 @@ function compareVersion(version1, version2) {
 			return -1; 
 	}
 	return 0; 
-}
+				}
