@@ -6,13 +6,13 @@ const path = require("path");
 module.exports = {
     config: {
         name: "pc",
-        version: "1.4.0",
+        version: "1.6.0",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["كمبيوتر"],
         description: {
-            ar: "تصميم لقطة الشاشة داخل شاشة الكمبيوتر باحترافية وواقعية",
-            en: "Design a screenshot inside a professional and realistic PC screen"
+            ar: "تصميم لقطة الشاشة داخل قالب الكمبيوتر الشفاف باحترافية تامة وبدون تشوه",
+            en: "Design screenshot inside transparent PC template professionally without distortion"
         },
         category: "Edit-IMG",
         usages: {
@@ -31,15 +31,15 @@ module.exports = {
         ar: {
             prompt: "🖥️ | من فضلك أرسل لقطة شاشة لملفك الشخصي خلال 60 ثانية. 🌸",
             noImage: "× لم تقم بإرسال أي صورة يا غالي! تم إلغاء الأمر.",
-            processing: "⌛ | جاري معالجة الصورة ودمجها داخل الشاشة باحترافية، يرجى الانتظار...",
-            success: "✅ | إليك التصميم النهائي الواقعي يا فنان 🤍",
+            processing: "⌛ | جاري دمج صورتك داخل شاشة الكمبيوتر باحترافية، يرجى الانتظار...",
+            success: "✅ | إليك التصميم الاحترافي والواقعي يا فنان 🤍",
             error: "× حدث خطأ أثناء معالجة الصورة: %1"
         },
         en: {
             prompt: "🖥️ | Please send a screenshot of your profile within 60 seconds. 🌸",
             noImage: "× You didn't send any image! Command cancelled.",
-            processing: "⌛ | Processing and merging your image professionally, please wait...",
-            success: "✅ | Here is your realistic final design 🤍",
+            processing: "⌛ | Processing and merging your image into the PC screen, please wait...",
+            success: "✅ | Here is your realistic professional design 🤍",
             error: "× An error occurred while processing the image: %1"
         }
     },
@@ -80,7 +80,7 @@ module.exports = {
             api.setMessageReaction("⌛", messageID, () => {}, true);
             await fs.ensureDir(cacheDir);
 
-            const templateURL = "https://i.postimg.cc/9Mq21jVq/file-00000000b68c81f4add041e2a211dfe2.png";
+            const templateURL = "https://i.postimg.cc/VNVNg8rq/file-0000000064b881f48f93fe1bb651f7e5.png";
 
             const [templateResponse, userImgResponse] = await Promise.all([
                 axios.get(templateURL, { responseType: 'arraybuffer' }),
@@ -100,17 +100,39 @@ module.exports = {
             const canvas = createCanvas(templateImage.width, templateImage.height);
             const ctx = canvas.getContext("2d");
 
-            // إحداثيات ومقاسات الشاشة بدقة عالية لملء الإطار الأسود للشاشة تماماً دون تشويه
-            // يمكنك تعديل هذه القيم قليلاً لو احتجت لضبطها بالمليمتر على القالب الخاص بك:
-            const screenX = 170;   // نقطة بداية الشاشة من اليسار
-            const screenY = 65;    // نقطة بداية الشاشة من الأعلى
-            const screenWidth = 1010; // عرض الشاشة داخل القالب
-            const screenHeight = 690; // ارتفاع الشاشة داخل القالب
+            // إحداثيات ومقاسات الفراغ الشفاف داخل القالب بدقة متناهية
+            const screenX = 145;
+            const screenY = 58;
+            const screenWidth = 1040;
+            const screenHeight = 672;
 
-            // 1. رسم صورة المستخدم في الخلفية لتملأ مساحة الشاشة بالكامل وبشكل واقعي
-            ctx.drawImage(userImage, screenX, screenY, screenWidth, screenHeight);
+            // تطبيق خوارزمية الحفاظ على الأبعاد (Cover) لمنع أي تشوه مهما كانت أبعاد صورة المستخدم
+            const imgAspect = userImage.width / userImage.height;
+            const scrAspect = screenWidth / screenHeight;
 
-            // 2. رسم قالب الكمبيوتر فوقها ليخفي الأطراف الزائدة ويظهر التصميم كأنه حقيقي داخل الشاشة
+            let renderWidth, renderHeight, renderX, renderY;
+
+            if (imgAspect > scrAspect) {
+                renderHeight = screenHeight;
+                renderWidth = userImage.width * (screenHeight / userImage.height);
+                renderX = screenX + (screenWidth - renderWidth) / 2;
+                renderY = screenY;
+            } else {
+                renderWidth = screenWidth;
+                renderHeight = userImage.height * (screenWidth / userImage.width);
+                renderX = screenX;
+                renderY = screenY + (screenHeight - renderHeight) / 2;
+            }
+
+            // 1. رسم صورة المستخدم أولاً في الخلفية (داخل حدود الشاشة الشفافة وبدون تشوه)
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(screenX, screenY, screenWidth, screenHeight);
+            ctx.clip();
+            ctx.drawImage(userImage, renderX, renderY, renderWidth, renderHeight);
+            ctx.restore();
+
+            // 2. رسم قالب الكمبيوتر الشفاف فوقها لتظهر النتيجة واقعية تماماً كأنها شاشة حقيقية
             ctx.drawImage(templateImage, 0, 0, canvas.width, canvas.height);
 
             const finalBuffer = canvas.toBuffer("image/png");
