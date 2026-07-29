@@ -6,13 +6,13 @@ const path = require("path");
 module.exports = {
     config: {
         name: "pc",
-        version: "1.3.0",
+        version: "1.4.0",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["كمبيوتر"],
         description: {
-            ar: "تصميم لقطة الشاشة داخل قالب كمبيوتر احترافي",
-            en: "Design a screenshot inside a professional computer template"
+            ar: "تصميم لقطة الشاشة داخل شاشة الكمبيوتر باحترافية وواقعية",
+            en: "Design a screenshot inside a professional and realistic PC screen"
         },
         category: "Edit-IMG",
         usages: {
@@ -31,15 +31,15 @@ module.exports = {
         ar: {
             prompt: "🖥️ | من فضلك أرسل لقطة شاشة لملفك الشخصي خلال 60 ثانية. 🌸",
             noImage: "× لم تقم بإرسال أي صورة يا غالي! تم إلغاء الأمر.",
-            processing: "⌛ | جاري معالجة الصورة ودمجها داخل الشاشة، يرجى الانتظار...",
-            success: "✅ | إليك التصميم النهائي يا فنان 🤍",
+            processing: "⌛ | جاري معالجة الصورة ودمجها داخل الشاشة باحترافية، يرجى الانتظار...",
+            success: "✅ | إليك التصميم النهائي الواقعي يا فنان 🤍",
             error: "× حدث خطأ أثناء معالجة الصورة: %1"
         },
         en: {
             prompt: "🖥️ | Please send a screenshot of your profile within 60 seconds. 🌸",
             noImage: "× You didn't send any image! Command cancelled.",
-            processing: "⌛ | Processing and merging your image into the screen, please wait...",
-            success: "✅ | Here is your final design 🤍",
+            processing: "⌛ | Processing and merging your image professionally, please wait...",
+            success: "✅ | Here is your realistic final design 🤍",
             error: "× An error occurred while processing the image: %1"
         }
     },
@@ -100,10 +100,17 @@ module.exports = {
             const canvas = createCanvas(templateImage.width, templateImage.height);
             const ctx = canvas.getContext("2d");
 
-            // 1. ارسم صورة المستخدم أولاً في الخلفية تحت الشاشة الشفافة بدقة
-            ctx.drawImage(userImage, 208, 82, 935, 535);
+            // إحداثيات ومقاسات الشاشة بدقة عالية لملء الإطار الأسود للشاشة تماماً دون تشويه
+            // يمكنك تعديل هذه القيم قليلاً لو احتجت لضبطها بالمليمتر على القالب الخاص بك:
+            const screenX = 170;   // نقطة بداية الشاشة من اليسار
+            const screenY = 65;    // نقطة بداية الشاشة من الأعلى
+            const screenWidth = 1010; // عرض الشاشة داخل القالب
+            const screenHeight = 690; // ارتفاع الشاشة داخل القالب
 
-            // 2. ثم ارسم القالب الشفاف فوقها مباشرة
+            // 1. رسم صورة المستخدم في الخلفية لتملأ مساحة الشاشة بالكامل وبشكل واقعي
+            ctx.drawImage(userImage, screenX, screenY, screenWidth, screenHeight);
+
+            // 2. رسم قالب الكمبيوتر فوقها ليخفي الأطراف الزائدة ويظهر التصميم كأنه حقيقي داخل الشاشة
             ctx.drawImage(templateImage, 0, 0, canvas.width, canvas.height);
 
             const finalBuffer = canvas.toBuffer("image/png");
