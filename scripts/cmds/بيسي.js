@@ -6,7 +6,7 @@ const path = require("path");
 module.exports = {
     config: {
         name: "pc",
-        version: "1.2.0", // تم تحديث الإصدار
+        version: "1.3.0",
         role: 0,
         author: "Fares Kouachi",
         aliases: ["كمبيوتر"],
@@ -70,7 +70,6 @@ module.exports = {
 
         const imageUrl = attachment.url;
         const cacheDir = path.join(__dirname, 'cache');
-        // إنشاء معرف فريد للعملية
         const processID = `pc_${threadID}_${Date.now()}`;
         const pathTemplate = path.join(cacheDir, `${processID}_template.png`);
         const pathUserImg = path.join(cacheDir, `${processID}_user.png`);
@@ -81,13 +80,13 @@ module.exports = {
             api.setMessageReaction("⌛", messageID, () => {}, true);
             await fs.ensureDir(cacheDir);
 
-            // تحميل القالب وصورة المستخدم في نفس الوقت وبشكل آمن
+            const templateURL = "https://i.postimg.cc/9Mq21jVq/file-00000000b68c81f4add041e2a211dfe2.png";
+
             const [templateResponse, userImgResponse] = await Promise.all([
-                axios.get("https://i.postimg.cc/9Mq21jVq/file-00000000b68c81f4add041e2a211dfe2.png", { responseType: 'arraybuffer' }),
+                axios.get(templateURL, { responseType: 'arraybuffer' }),
                 axios.get(imageUrl, { responseType: 'arraybuffer' })
             ]);
 
-            // التأكد من أن الاستجابات صالحة
             if (!templateResponse.data || !userImgResponse.data) {
                 throw new Error("Failed to download images.");
             }
@@ -95,51 +94,16 @@ module.exports = {
             fs.writeFileSync(pathTemplate, Buffer.from(templateResponse.data));
             fs.writeFileSync(pathUserImg, Buffer.from(userImgResponse.data));
 
-            // تحميل الصور إلى Canvas معالجة الانتظار
             const templateImage = await loadImage(pathTemplate);
             const userImage = await loadImage(pathUserImg);
 
             const canvas = createCanvas(templateImage.width, templateImage.height);
             const ctx = canvas.getContext("2d");
 
-            // إحداثيات الشاشة الداخلية للقالب (تأكد من دقتها)
-            const screenX = 140;
-            const screenY = 110;
-            const screenWidth = 1000;
-            const screenHeight = 620;
+            // 1. ارسم صورة المستخدم أولاً في الخلفية تحت الشاشة الشفافة بدقة
+            ctx.drawImage(userImage, 208, 82, 935, 535);
 
-            // تطبيق تأثير Cover مع التحقق من الأبعاد
-            const imageAspectRatio = userImage.width / userImage.height;
-            const screenAspectRatio = screenWidth / screenHeight;
-
-            let renderWidth, renderHeight, renderX, renderY;
-
-            if (imageAspectRatio > screenAspectRatio) {
-                renderHeight = screenHeight;
-                renderWidth = userImage.width * (screenHeight / userImage.height);
-                renderX = screenX + (screenWidth - renderWidth) / 2;
-                renderY = screenY;
-            } else {
-                renderWidth = screenWidth;
-                renderHeight = userImage.height * (screenWidth / userImage.width);
-                renderX = screenX;
-                renderY = screenY + (screenHeight - renderHeight) / 2;
-            }
-
-            // التحقق من صحة الأبعاد قبل الرسم
-            if (renderWidth > 0 && renderHeight > 0) {
-                // قص منطقة الشاشة ورسم صورة المستخدم داخلها
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(screenX, screenY, screenWidth, screenHeight);
-                ctx.clip();
-                ctx.drawImage(userImage, renderX, renderY, renderWidth, renderHeight);
-                ctx.restore();
-            } else {
-                console.error("Calculated render dimensions are invalid (0 or NaN):", { renderWidth, renderHeight });
-            }
-
-            // رسم قالب الكمبيوتر فوق الصورة
+            // 2. ثم ارسم القالب الشفاف فوقها مباشرة
             ctx.drawImage(templateImage, 0, 0, canvas.width, canvas.height);
 
             const finalBuffer = canvas.toBuffer("image/png");
@@ -157,7 +121,6 @@ module.exports = {
             api.setMessageReaction("❌", messageID, () => {}, true);
             return message.reply(getLang("error", err.message));
         } finally {
-            // حذف جميع الملفات المؤقتة الخاصة بهذه العملية
             try {
                 if (fs.existsSync(pathTemplate)) fs.unlinkSync(pathTemplate);
                 if (fs.existsSync(pathUserImg)) fs.unlinkSync(pathUserImg);
