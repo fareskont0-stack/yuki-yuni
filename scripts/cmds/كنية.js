@@ -1,35 +1,36 @@
 "use strict";
 
+// خريطة لتخزين حالة الإيقاف لكل مجموعة
+const activeLoops = new Map();
+
 module.exports = {
 	config: {
 		name: "كنية",
 		aliases: ["nickname", "nick", "setnick"],
-		version: "2.0.0",
+		version: "2.1.0",
 		author: "Fares Kouachi",
 		countDown: 5,
 		role: 0,
 		description: {
-			ar: "تغيير كنية الأعضاء أو تفعيل وضع التغيير الجماعي التفاعلي"
+			ar: "تغيير كنية الأعضاء أو تفعيل وضع التغيير الجماعي التفاعلي مع إمكانية الإيقاف الفوري"
 		},
 		category: "box chat",
 		guide: {
 			ar:
 				"{pn} تشغيل → تفعيل وضع تغيير كنية جميع الأعضاء تفاعلياً\n" +
-				"{pn} ايقاف → إلغاء تفعيل الوضع\n" +
-				"{pn} [الكنية] → تغيير كنية جميع الأعضاء فوراً\n" +
-				"{pn} @شخص [الكنية] → تغيير كنية شخص\n" +
-				"الرد على رسالة ثم {pn} [الكنية] → تغيير كنية صاحب الرسالة\n" +
-				"{pn} بوت [الكنية] → تغيير كنية البوت"
+				"{pn} ايقاف → إيقاف عملية تغيير الكنيات فوراً\n" +
+				"{pn} [الكنية] → تغيير كنية جميع الأعضاء فوراً"
 		}
 	},
 
 	langs: {
 		ar: {
 			noName: "❌ | اكتب الكنية الجديدة.",
-			promptAll: "✏️ | مرحباً يا غالي، أرسل الآن الكنية التي تريد تطبيقها على **جميع أعضاء المجموعة** (أمامك 60 ثانية):",
-			stopped: "🛑 | تم إيقاف وضع تغيير الكنية الجماعي.",
+			promptAll: "✏️ | أرسل الآن الكنية التي تريد تطبيقها على **جميع أعضاء المجموعة** (أمامك 60 ثانية):",
+			stopped: "🛑 | تم إيقاف عملية تغيير الكنيات فوراً بنجاح.",
+			notRunning: "⚠️ | لا توجد عملية تغيير كنيات تعمل حالياً في هذه المجموعة.",
 			done: "✅ | تم تغيير الكنية بنجاح.",
-			doneAll: "✅ | تم تغيير كنية جميع أعضاء المجموعة بنجاح.",
+			doneAll: "✅ | تم الانتهاء من تغيير كنية جميع الأعضاء بنجاح.",
 			error: "❌ | حدث خطأ أثناء تغيير الكنية."
 		}
 	},
@@ -38,7 +39,17 @@ module.exports = {
 		const { threadID, senderID, messageReply, mentions } = event;
 		const action = args[0] ? args[0].toLowerCase() : "";
 
-		// 1. أمر التشغيل (لتفعيل نظام الرد الجماعي)
+		// 1. أمر الإيقاف الفوري
+		if (action === "ايقاف") {
+			if (activeLoops.has(threadID)) {
+				activeLoops.set(threadID, false); // إرسال إشارة إيقاف الحلقة
+				return message.reply(getLang("stopped"));
+			} else {
+				return message.reply(getLang("notRunning"));
+			}
+		}
+
+		// 2. أمر التشغيل
 		if (action === "تشغيل") {
 			return message.reply(getLang("promptAll"), (err, info) => {
 				if (err) return;
@@ -51,42 +62,35 @@ module.exports = {
 			});
 		}
 
-		// 2. أمر الإيقاف
-		if (action === "ايقاف") {
-			return message.reply(getLang("stopped"));
-		}
-
 		if (!args.length)
 			return message.reply(getLang("noName"));
 
 		let uid = null;
 		let nickname = "";
 
-		// تغيير كنية البوت
 		if (action === "بوت") {
 			uid = api.getCurrentUserID();
 			nickname = args.slice(1).join(" ");
-		}
-		// تغيير كنية شخص بالمنشن
-		else if (Object.keys(mentions).length > 0) {
+		} else if (Object.keys(mentions).length > 0) {
 			uid = Object.keys(mentions)[0];
 			nickname = args.slice(1).join(" ");
-		}
-		// تغيير كنية شخص بالرد
-		else if (messageReply) {
+		} else if (messageReply) {
 			uid = messageReply.senderID;
 			nickname = args.join(" ");
-		}
-		// تغيير كنية الجميع مباشرة
-		else {
+		} else {
 			nickname = args.join(" ");
 		}
 
 		try {
 			if (!uid && action !== "بوت" && Object.keys(mentions).length === 0 && !messageReply) {
 				const threadInfo = await api.getThreadInfo(threadID);
+				activeLoops.set(threadID, true); // تفعيل حالة التشغيل
+
 				for (const user of threadInfo.userInfo) {
+					// التحقق في كل خطوة ما إذا طلب المستخدم الإيقاف
+					if (activeLoops.get(threadID) === false) break;
 					if (!user || !user.id) continue;
+
 					try {
 						await api.changeNickname(nickname, threadID, user.id);
 						await new Promise(resolve => setTimeout(resolve, 500));
@@ -94,6 +98,8 @@ module.exports = {
 						console.log(`Failed: ${user.id}`);
 					}
 				}
+
+				activeLoops.delete(threadID);
 				return message.reply(getLang("doneAll"));
 			}
 
@@ -102,6 +108,7 @@ module.exports = {
 				return message.reply(getLang("done"));
 			}
 		} catch (err) {
+			activeLoops.delete(threadID);
 			console.log(err);
 			return message.reply(getLang("error"));
 		}
@@ -117,13 +124,17 @@ module.exports = {
 		if (!nickname) return message.reply(getLang("noName"));
 
 		try {
-			// حذف الرد من الذاكرة حتى لا يتكرر التفاعل
 			global.GoatBot.onReply.delete(Reply.messageID);
 			api.setMessageReaction("⌛", messageID, () => {}, true);
 
 			const threadInfo = await api.getThreadInfo(threadID);
+			activeLoops.set(threadID, true); // تفعيل حالة التشغيل للحلقة
+
 			for (const user of threadInfo.userInfo) {
+				// التحقق الفوري من أمر الإيقاف أثناء التغيير
+				if (activeLoops.get(threadID) === false) break;
 				if (!user || !user.id) continue;
+
 				try {
 					await api.changeNickname(nickname, threadID, user.id);
 					await new Promise(resolve => setTimeout(resolve, 500));
@@ -132,9 +143,11 @@ module.exports = {
 				}
 			}
 
+			activeLoops.delete(threadID);
 			api.setMessageReaction("✅", messageID, () => {}, true);
 			return message.reply(getLang("doneAll"));
 		} catch (err) {
+			activeLoops.delete(threadID);
 			console.log(err);
 			api.setMessageReaction("❌", messageID, () => {}, true);
 			return message.reply(getLang("error"));
