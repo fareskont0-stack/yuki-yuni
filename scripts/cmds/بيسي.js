@@ -83,7 +83,7 @@ module.exports = {
 
             // تحميل القالب وصورة المستخدم في نفس الوقت وبشكل آمن
             const [templateResponse, userImgResponse] = await Promise.all([
-                axios.get("https://i.postimg.cc/TwsZz5kH/file-00000000393081f497e3598e56cc12d6.png", { responseType: 'arraybuffer' }),
+                axios.get("https://i.postimg.cc/9Mq21jVq/file-00000000b68c81f4add041e2a211dfe2.png", { responseType: 'arraybuffer' }),
                 axios.get(imageUrl, { responseType: 'arraybuffer' })
             ]);
 
