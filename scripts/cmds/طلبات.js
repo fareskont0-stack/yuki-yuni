@@ -4,10 +4,10 @@ module.exports = {
     config: {
         name: "طلبات",
         aliases: ["req", "requests", "approve"],
-        version: "1.0.0",
+        version: "1.0.1",
         author: "Fares Kouachi",
-        countDown: 10,
-        role: 2, // مخصص للمشرفين أو المطور حمايةً للبوت
+        countDown: 5,
+        role: 0,
         description: {
             ar: "قبول وعرض طلبات المراسلة المعلقة للمجموعات والرسائل تلقائياً"
         },
@@ -33,12 +33,10 @@ module.exports = {
         const action = args[0] ? args[0].toLowerCase() : "عرض";
 
         try {
-            message.reply(getLang("fetching"));
+            await message.reply(getLang("fetching"));
 
-            // جلب قائمة طلبات المراسلة المعلقة باستخدام فبي آي الداخلي لمتجر الرسائل
             let pendingRequests = [];
             if (typeof api.getThreadList === "function") {
-                // جلب المجموعات التي في قائمة الانتظار أو غير المقبولة
                 const threads = await api.getThreadList(20, null, ["pending", "other"]);
                 pendingRequests = threads.filter(thread => thread.isGroup && (thread.folder === "PENDING" || thread.folder === "OTHER"));
             }
@@ -47,7 +45,6 @@ module.exports = {
                 return message.reply(getLang("noRequests"));
             }
 
-            // إذا كان الأمر "عرض"
             if (action === "عرض" || action === "list") {
                 let msg = getLang("listHeader").replace("%1", pendingRequests.length);
                 let count = 1;
@@ -59,21 +56,18 @@ module.exports = {
                 return message.reply(msg);
             }
 
-            // إذا كان الأمر "قبول"
             if (action === "قبول" || action === "accept" || action === "all") {
                 let acceptedCount = 0;
 
                 for (const thread of pendingRequests) {
                     try {
-                        // الانتقال للمحادثة أو قبول الطلب برمجياً
                         if (typeof api.handleMessageRequest === "function") {
                             await api.handleMessageRequest(thread.threadID, true);
-                        } else if (typeof api.addUserToGroup === "function" || api.setThreadColor) {
-                            // طريقة بديلة لتفعيل المحادثة في حال اختلاف دوال الـ FCA
+                        } else {
                             await api.sendMessage("مرحباً، تم قبول طلب الانضمام/المراسلة تلقائياً بواسطة البوت. 🤖", thread.threadID);
                         }
                         acceptedCount++;
-                        await new Promise(resolve => setTimeout(resolve, 600)); // تأخير لتجنب السبام
+                        await new Promise(resolve => setTimeout(resolve, 600));
                     } catch (err) {
                         console.error(`Failed to accept thread ${thread.threadID}:`, err);
                     }
