@@ -1,18 +1,22 @@
+"use strict";
+
 module.exports = {
         config: {
-                name: "pending",
-                aliases: ["pen", "approve", "পেন্ডিং"],
-                version: "1.7",
-                author: "MahMUD",
+                name: "طلبات",
+                aliases: ["pen", "approve", "پেন্ডিং", "طلبات"],
+                version: "1.8",
+                author: "Fares Kouachi",
                 countDown: 10,
                 role: 0,
                 description: {
+                        ar: "عرض وموافقة المجموعات المعلقة في قائمة الانتظار للبوت",
                         bn: "বটের পেন্ডিং গ্রুপগুলো দেখুন এবং অ্যাপ্রুভ করুন (অ্যাডমিন)",
                         en: "View and approve pending group requests for the bot (Admin)",
                         vi: "Xem và phê duyệt các yêu cầu nhóm đang chờ xử lý cho bot (Quản trị viên)"
                 },
                 category: "utility",
                 guide: {
+                        ar: "   {pn}: لعرض قائمة المجموعات المعلقة، ثم قم بالرد على الرسالة برقم الترتيب للموافقة (مثال: 1 2 3)",
                         bn: '   {pn}: পেন্ডিং লিস্ট দেখতে ব্যবহার করুন। তারপর ইনডেক্স নম্বর দিয়ে রিপ্লাই দিন।',
                         en: '   {pn}: Use to see pending list. Then reply with the index number.',
                         vi: '   {pn}: Sử dụng để xem danh sách chờ. Sau đó trả lời bằng số thứ tự.'
@@ -20,6 +24,15 @@ module.exports = {
         },
 
         langs: {
+                ar: {
+                        noPending: "× لا توجد أي مجموعات في قائمة الانتظار المعلقة! 😴",
+                        listHeader: "📋 إجمالي المجموعات المعلقة: %1\n",
+                        replyGuide: "\n• قم بالرد برقم الترتيب للموافقة (مثال: 1 2 3)",
+                        successNotify: "✨ | تم اتصال البوت بالمجموعة بنجاح! استخدم الأوامر المتاحة.",
+                        approvedBy: "✅ | تم اعتماد وموافقة هذه المجموعة بواسطة: %1.",
+                        done: "✅ | تم بنجاح الموافقة على وتفعيل %1 مجموعة.",
+                        error: "× حدث خطأ تقني: %1. تواصل مع المطور Fares Kouachi للمساعدة."
+                },
                 bn: {
                         noPending: "× কোনো গ্রুপ পেন্ডিং কিউতে নেই! 😴",
                         listHeader: "📋 মোট পেন্ডিং গ্রুপ: %1টি\n",
@@ -27,36 +40,33 @@ module.exports = {
                         successNotify: "বট এখন কানেক্টেড! কমান্ড দেখতে !help ব্যবহার করুন। ✨",
                         approvedBy: "এই গ্রুপটি %1 দ্বারা অ্যাপ্রুভ করা হয়েছে।",
                         done: "✅ সফলভাবে %1টি গ্রুপ অ্যাপ্রুভ করা হয়েছে।",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact Fares Kouachi।"
                 },
                 en: {
                         noPending: "× No groups in pending queue! 😴",
                         listHeader: "📋 Total Pending: %1\n",
                         replyGuide: "\n• Reply with index number to approve (Ex: 1 2 3)",
-                        successNotify: "Bot is now connected! Use !help to see commands. ✨",
+                        successNotify: "Bot is now connected! Use commands to get started. ✨",
                         approvedBy: "This group was approved by %1.",
                         done: "✅ Successfully approved %1 group(s).",
-                        error: "× API error: %1. Contact MahMUD for help."
+                        error: "× API error: %1. Contact Fares Kouachi for help."
                 },
                 vi: {
                         noPending: "× Không có nhóm nào trong hàng đợi chờ xử lý! 😴",
                         listHeader: "📋 Tổng số chờ xử lý: %1\n",
                         replyGuide: "\n• Trả lời bằng số thứ tự để phê duyệt (VD: 1 2 3)",
-                        successNotify: "Bot hiện đã được kết nối! Sử dụng !help để xem các lệnh. ✨",
+                        successNotify: "Bot hiện đã được kết nối! Sử dụng lệnh để bắt đầu. ✨",
                         approvedBy: "Nhóm này đã được phê duyệt bởi %1.",
                         done: "✅ Đã phê duyệt thành công %1 nhóm.",
-                        error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                        error: "× Lỗi: %1. Liên hệ Fares Kouachi để hỗ trợ."
                 }
         },
 
         onReply: async function ({ api, event, Reply, usersData, getLang }) {
-                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68);
-                if (this.config.author !== authorName) return;
-
                 const { author, pending } = Reply;
                 if (String(event.senderID) !== String(author)) return;
 
-                const index = event.body.split(/\s+/);
+                const index = event.body.trim().split(/\s+/);
                 let count = 0;
 
                 try {
@@ -82,13 +92,14 @@ module.exports = {
         },
 
         onStart: async function ({ api, event, getLang, message }) {
-                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68);
-                if (this.config.author !== authorName) return;
-
                 try {
                         api.setMessageReaction("⏳", event.messageID, () => {}, true);
-                        const spam = await api.getThreadList(100, null, ["OTHER"]) || [];
-                        const pend = await api.getThreadList(100, null, ["PENDING"]) || [];
+                        
+                        const [spam, pend] = await Promise.all([
+                                api.getThreadList(100, null, ["OTHER"]) || [],
+                                api.getThreadList(100, null, ["PENDING"]) || []
+                        ]);
+
                         const list = [...spam, ...pend].filter(g => g.isSubscribed && g.isGroup);
 
                         if (list.length === 0) {
@@ -97,10 +108,13 @@ module.exports = {
                         }
 
                         let msg = getLang("listHeader", list.length);
-                        list.forEach((g, i) => msg += `${i + 1}. ${g.name || "Unknown Group"} (${g.threadID})\n`);
+                        list.forEach((g, i) => {
+                                msg += `${i + 1}. ${g.name || "مجموعة بدون اسم"} (\`${g.threadID}\`)\n`;
+                        });
                         msg += getLang("replyGuide");
 
                         return message.reply(msg, (err, info) => {
+                                if (err) return;
                                 global.GoatBot.onReply.set(info.messageID, {
                                         commandName: this.config.name,
                                         author: event.senderID,
