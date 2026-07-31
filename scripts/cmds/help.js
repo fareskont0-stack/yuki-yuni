@@ -4,37 +4,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const https = require("https");
 
-const boldMap = {
-  a: "𝗮", b: "𝗯", c: "𝗰", d: "𝗱", e: "𝗲",
-  f: "𝗳", g: "𝗴", h: "𝗵", i: "𝗶", j: "𝗷",
-  k: "𝗸", l: "𝗹", m: "𝗺", n: "𝗻", o: "𝗼",
-  p: "𝗽", q: "𝗾", r: "𝗿", s: "𝘀", t: "𝘁",
-  u: "𝘂", v: "𝘃", w: "𝘄", x: "𝘅", y: "𝘆",
-  z: "𝘇"
-};
-
-const cmdFontMap = {
-  ...boldMap,
-  "0": "𝟬",
-  "1": "𝟭",
-  "2": "𝟮",
-  "3": "𝟯",
-  "4": "𝟰",
-  "5": "𝟱",
-  "6": "𝟲",
-  "7": "𝟳",
-  "8": "𝟴",
-  "9": "𝟵"
-};
-
-function toFont(text) {
-  return String(text || "")
-    .toLowerCase()
-    .split("")
-    .map(char => cmdFontMap[char] || char)
-    .join("");
-}
-
 const gifURLs = [
   "https://i.giphy.com/media/ZOGCyj0NW28gg/giphy.gif",
   "https://i.giphy.com/media/98dujYZyq4mOc/giphy.gif",
@@ -77,27 +46,21 @@ function getAllCommands() {
     const commandName = String(name).toLowerCase();
     if (commandName === "help") continue;
 
-    commands.push({ name: String(name) });
+    commands.push(commandName);
   }
 
-  return commands.sort((a, b) =>
-    a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-  );
+  return commands.sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
 }
 
 function createFullMenuMessage(commands, prefix) {
-  let msg = "╭┈────────────┈╮\n";
-  msg +=   "  ❖ 𝗔𝗟𝗟 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 𝗟𝗜𝗦𝗧 ❖\n";
-  msg +=   "╰┈────────────┈╯\n\n";
+  let msg = "COMMANDS LIST:\n\n";
 
-  for (const command of commands) {
-    msg += ` 🟢 ${prefix}${command.name}\n`;
-  }
+  // دمج الأوامر بنمط الأيقونة والمسافات الأفقية
+  const formattedCmds = commands.map(cmd => `🌸 ${prefix}${cmd}`);
+  msg += formattedCmds.join(" ");
 
-  msg += "\n╭┈────────────┈╮\n";
-  msg += ` 👑 𝗗𝗲𝘃: Fares Khenchli\n`;
-  msg += ` 📊 𝗧𝗼𝘁𝗮𝗹: ${commands.length} Commands\n`;
-  msg += "╰┈────────────┈╯";
+  msg += `\n\nDev: Fares Khenchli`;
+  msg += `\nTotal: ${commands.length} Commands`;
 
   return msg;
 }
@@ -111,26 +74,22 @@ function createCommandDetail(cmd, prefix) {
   const desc =
     longDescription?.en || longDescription ||
     shortDescription?.en || shortDescription ||
-    "No description available.";
+    "No description";
 
   const usage = String(guide?.en || guide || `{pn}${name}`)
     .replace(/{pn}/g, prefix)
     .replace(/{name}/g, name);
 
   return (
-    "╭┈──────────────┈╮\n" +
-    "  🌸 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗜𝗡𝗙𝗢 🌸\n" +
-    "╰┈──────────────┈╯\n\n" +
-    `🪷 Name: ${toFont(name)}\n` +
-    `🪷 Category: ${toFont(category || "General")}\n` +
-    `🪷 Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
-    `🪷 Version: ${version || "1.0"}\n` +
-    `🪷 Author: ${author || "Fares Khenchli"}\n\n` +
-    `📖 Desc: ${desc}\n` +
-    `💡 Usage: ${usage}\n\n` +
-    "╭┈──────────────┈╮\n" +
-    "  👑 Dev: Fares Khenchli\n" +
-    "╰┈──────────────┈╯"
+    `COMMAND INFO:\n\n` +
+    `Name: ${name}\n` +
+    `Category: ${category || "General"}\n` +
+    `Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
+    `Version: ${version || "1.0"}\n` +
+    `Author: ${author || "Fares Khenchli"}\n\n` +
+    `Desc: ${desc}\n` +
+    `Usage: ${usage}\n\n` +
+    `Dev: Fares Khenchli`
   );
 }
 
@@ -168,10 +127,10 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu", "commands"],
-    version: "9.0",
+    version: "9.5",
     author: "Fares Khenchli",
-    shortDescription: "Display all available commands",
-    longDescription: "Displays the complete command list developed by Fares Khenchli with a rotating GIF.",
+    shortDescription: "Display all available commands horizontally",
+    longDescription: "Displays clean horizontal command list developed by Fares Khenchli.",
     category: "system",
     guide: "{pn}help [command name]"
   },
@@ -187,7 +146,7 @@ module.exports = {
       console.error("HELP GIF ERROR:", error);
     }
 
-    // 1. في حال طلب تفاصيل أمر معين (مثل .help admin)
+    // 1. عند طلب تفاصيل أمر محدد
     if (query) {
       const lowerQuery = query.toLowerCase();
       const cmd = allCommands.get(lowerQuery) ||
@@ -209,14 +168,12 @@ module.exports = {
       return;
     }
 
-    // 2. عرض جميع الأوامر دفعة واحدة في مكان واحد
+    // 2. عرض جميع الأوامر أفقياً وبدون زخارف
     const commands = getAllCommands();
     const menuMessage = createFullMenuMessage(commands, prefix);
 
-    // إرسال النص الكامل أولاً لضمان ظهوره 100%
     await message.reply(menuMessage);
 
-    // إرسال صورة الـ GIF تحته مباشرة
     if (gifPath && fs.existsSync(gifPath)) {
       return message.reply({ attachment: fs.createReadStream(gifPath) });
     }
