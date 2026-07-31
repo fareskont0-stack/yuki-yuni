@@ -4,37 +4,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const https = require("https");
 
-const boldMap = {
-  a: "𝗮", b: "𝗯", c: "𝗰", d: "𝗱", e: "𝗲",
-  f: "𝗳", g: "𝗴", h: "𝗵", i: "𝗶", j: "𝗷",
-  k: "𝗸", l: "𝗹", m: "𝗺", n: "𝗻", o: "𝗼",
-  p: "𝗽", q: "𝗾", r: "𝗿", s: "𝘀", t: "𝘁",
-  u: "𝘂", v: "𝘃", w: "𝘄", x: "𝘅", y: "𝘆",
-  z: "𝘇"
-};
-
-const cmdFontMap = {
-  ...boldMap,
-  "0": "𝟬",
-  "1": "𝟭",
-  "2": "𝟮",
-  "3": "𝟯",
-  "4": "𝟰",
-  "5": "𝟱",
-  "6": "𝟲",
-  "7": "𝟳",
-  "8": "𝟴",
-  "9": "𝟵"
-};
-
-function toFont(text) {
-  return String(text || "")
-    .toLowerCase()
-    .split("")
-    .map(char => cmdFontMap[char] || char)
-    .join("");
-}
-
 const gifURLs = [
   "https://i.giphy.com/media/ZOGCyj0NW28gg/giphy.gif",
   "https://i.giphy.com/media/98dujYZyq4mOc/giphy.gif",
@@ -91,13 +60,13 @@ function createPageMessage(commands, page, totalPages, prefix) {
   const start = (page - 1) * COMMANDS_PER_PAGE;
   const pageCommands = commands.slice(start, start + COMMANDS_PER_PAGE);
 
-  let msg = "✨ COMMANDS LIST ✨\n\n";
+  let msg = "--- COMMANDS LIST ---\n\n";
 
   for (const command of pageCommands) {
-    msg += `• ${prefix}${command.name}\n`;
+    msg += `${prefix}${command.name}\n`;
   }
 
-  msg += `\n〈 Page ${page}/${totalPages} 〉`;
+  msg += `\n[ Page ${page}/${totalPages} ]`;
 
   return msg;
 }
@@ -118,15 +87,13 @@ function createCommandDetail(cmd, prefix) {
     .replace(/{name}/g, name);
 
   return (
-    "🌸 COMMAND INFO 🌸\n\n" +
-    `🪷 Name: ${toFont(name)}\n` +
-    `🪷 Category: ${toFont(category || "General")}\n` +
-    `🪷 Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
-    `🪷 Version: ${version || "1.0"}\n` +
-    `🪷 Author: ${author || "S1FU"}\n\n` +
-    `📖 Desc: ${desc}\n` +
-    `💡 Usage: ${usage}\n\n` +
-    "🌸 Stay Happy & Beautiful 🌸"
+    `Name: ${name}\n` +
+    `Category: ${category || "General"}\n` +
+    `Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
+    `Version: ${version || "1.0"}\n` +
+    `Author: ${author || "S1FU"}\n\n` +
+    `Desc: ${desc}\n` +
+    `Usage: ${usage}`
   );
 }
 
@@ -192,7 +159,7 @@ module.exports = {
       console.error("HELP GIF ERROR:", error);
     }
 
-    // 1. حالة طلب تفاصيل أمر معين
+    // تفاصيل أمر معين
     if (query && !/^\d+$/.test(query)) {
       const lowerQuery = query.toLowerCase();
       const cmd = allCommands.get(lowerQuery) ||
@@ -214,7 +181,7 @@ module.exports = {
       return message.reply(msgObj);
     }
 
-    // 2. حالة عرض القائمة العامة
+    // القائمة العامة
     const commands = getAllCommands();
     const totalPages = Math.max(1, Math.ceil(commands.length / COMMANDS_PER_PAGE));
 
@@ -224,7 +191,6 @@ module.exports = {
 
     const menuMessage = createPageMessage(commands, page, totalPages, prefix);
 
-    // إرسال النص والصورة معاً في كائن واحد (رسالة واحدة فقط)
     const msgObj = { body: menuMessage };
 
     if (gifPath && fs.existsSync(gifPath)) {
