@@ -9,15 +9,16 @@ const mahmhd = async () => {
 
 module.exports = {
         config: {
-                name: "write",
-                aliases: ["wr", "লিখুন"],
-                version: "1.7",
+                name: "لون",
+                aliases: ["wr", "লিখুন", "اكتب"],
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
                         bn: "ছবির ওপর রঙিন টেক্সট লিখুন",
-                        en: "Write colored text on a replied image"
+                        en: "Write colored text on a replied image",
+                        ar: "اكتب نصاً ملوناً على صورة قمت بالرد عليها"
                 },
                 category: "image",
                 guide: {
@@ -26,7 +27,10 @@ module.exports = {
                                 + '\n   উদাহরণ: {pn} r - Hello Baby',
                         en: '   {pn} <color_code> - <text>: Reply to an image'
                                 + '\n   {pn} list: See available color codes'
-                                + '\n   Example: {pn} r - Hello Baby'
+                                + '\n   Example: {pn} r - Hello Baby',
+                        ar: '   {pn} <color_code> - <text>: قم بالرد على الصورة لكتابة النص'
+                                + '\n   {pn} list: لعرض قائمة رموز الألوان المتاحة'
+                                + '\n   مثال: {pn} r - Hello Baby'
                 }
         },
 
@@ -36,7 +40,7 @@ module.exports = {
                         noReply: "× বেবি, একটি ছবিতে রিপ্লাই দিয়ে কমান্ডটি ব্যবহার করো!",
                         noText: "× ছবিতে কি লিখবো সেটা তো বলো! (যেমন: r - text)",
                         apiError: "⚠️ | রিমোট এপিআই এই মুহূর্তে বন্ধ আছে।",
-                        error: "× টেক্সট লিখতে সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× টেক্সট লিখতে সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD."
                 },
                 en: {
                         colorList: "🎨 Available short codes:\n%1\n\nDefault is white if not specified.",
@@ -44,6 +48,13 @@ module.exports = {
                         noText: "× Please provide text to write! (Example: r - text)",
                         apiError: "⚠️ | Remote API unavailable — try again later.",
                         error: "× Failed to write text: %1. Contact MahMUD for help."
+                },
+                ar: {
+                        colorList: "🎨 رموز الألوان المتاحة:\n%1\n\nاللون الافتراضي هو الأبيض إذا لم يتم تحديده.",
+                        noReply: "× عذراً، يرجى الرد على صورة لاستخدام هذا الأمر!",
+                        noText: "× يرجى كتابة النص المراد إضافته! (مثال: r - text)",
+                        apiError: "⚠️ | الخادم الخارجي (API) غير متوفر حالياً — حاول لاحقاً.",
+                        error: "× فشل كتابة النص: %1. تواصل مع MahMUD للمساعدة."
                 }
         },
 
