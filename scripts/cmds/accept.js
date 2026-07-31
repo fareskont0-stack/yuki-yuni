@@ -2,19 +2,21 @@ const moment = require("moment-timezone");
 
 module.exports = {
         config: {
-                name: "accept",
-                aliases: ["acp"],
+                name: "اقبل",
+                aliases: ["قبول", "acp", "accept"],
                 version: "1.7",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
+                        ar: "قبول أو حذف طلبات الصداقة المعلقة للبوت (للمسؤولين)",
                         bn: "বটের পেন্ডিং ফ্রেন্ড রিকোয়েস্টগুলো এক্সেপ্ট বা ডিলিট করুন (অ্যাডমিন)",
                         en: "Accept or delete pending friend requests of the bot (Admin)",
                         vi: "Chấp nhận hoặc xóa các yêu cầu kết bạn đang chờ của bot (Quản trị viên)"
                 },
                 category: "admin",
                 guide: {
+                        ar: '   {pn}: استخدمه لعرض قائمة الطلبات. ثم قم بالرد بـ "add <الرقم>" لـ القبول أو "del <الرقم>" لـ الحذف.',
                         bn: '   {pn}: রিকোয়েস্ট লিস্ট দেখতে ব্যবহার করুন। তারপর রিপ্লাই দিন "add <index>" অথবা "del <index>"।',
                         en: '   {pn}: Use to see request list. Then reply "add <index>" or "del <index>".',
                         vi: '   {pn}: Sử dụng để xem danh sách yêu cầu. Sau đó trả lời "add <index>" hoặc "del <index>".'
@@ -22,6 +24,14 @@ module.exports = {
         },
 
         langs: {
+                ar: {
+                        noRequest: "× لا توجد طلبات صداقة معلقة حالياً! 😴",
+                        listHeader: "📋 إجمالي الطلبات: %1\n",
+                        replyGuide: "\n• رد بـ 'add <الرقم|all>' للقبول\n• رد بـ 'del <الرقم|all>' للحذف",
+                        invalidAction: "× إجراء غير صالح! استخدم 'add' للقبول أو 'del' للحذف.",
+                        done: "✅ تمت العملية بنجاح!\n• الناجحة: %1\n• الفاشلة: %2",
+                        error: "× حدث خطأ في الـ API: %1. تواصل مع MahMUD للمساعدة."
+                },
                 bn: {
                         noRequest: "× কোনো পেন্ডিং ফ্রেন্ড রিকোয়েস্ট নেই! 😴",
                         listHeader: "📋 মোট রিকোয়েস্ট: %1টি\n",
