@@ -62,7 +62,7 @@ function getAllCommands() {
     if (!cmd || !cmd.config) continue;
 
     const commandName = String(name).toLowerCase();
-    if (commandName === "help") continue;
+    if (commandName === "اوامر") continue;
 
     commands.push(commandName);
   }
