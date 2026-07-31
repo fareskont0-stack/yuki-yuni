@@ -1136,7 +1136,7 @@ const database = {
     "ما كنش غيرك في البال",
     "قاعد وحدي ونخمم فيك"
   ]
-{
+
   "salut": ["Salut kho 😎"],
   "wesh": ["Wesh kho 😁"],
   "cv": ["Ça va hamdoullah, w nta ?"],
