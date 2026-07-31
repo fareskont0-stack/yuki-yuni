@@ -108,42 +108,23 @@ function createPageMessage(
   totalPages,
   prefix
 ) {
-  const start =
-    (page - 1) * COMMANDS_PER_PAGE;
-
-  const pageCommands =
-    commands.slice(
-      start,
-      start + COMMANDS_PER_PAGE
-    );
+  const start = (page - 1) * COMMANDS_PER_PAGE;
+  const pageCommands = commands.slice(start, start + COMMANDS_PER_PAGE);
 
   let msg = "";
 
-  msg +=
-    centerMenuText("commands list") +
-    "\n\n";
+  msg += centerMenuText("commands list") + "\n\n";
 
   for (const command of pageCommands) {
-    msg +=
-      centerMenuText(
-        `${prefix}${command.name}`
-      ) +
-      "\n";
+    msg += centerMenuText(`${prefix}${command.name}`) + "\n";
   }
 
-  msg +=
-    "\n" +
-    centerMenuText(
-      `〈 page ${page}/${totalPages} 〉`
-    );
+  msg += "\n" + centerMenuText(`〈 page ${page}/${totalPages} 〉`);
 
   return msg;
 }
 
-function createCommandDetail(
-  cmd,
-  prefix
-) {
+function createCommandDetail(cmd, prefix) {
   const {
     name,
     version,
@@ -162,20 +143,9 @@ function createCommandDetail(
     shortDescription ||
     "No description";
 
-  const usage =
-    String(
-      guide?.en ||
-      guide ||
-      `{pn}${name}`
-    )
-      .replace(
-        /{pn}/g,
-        prefix
-      )
-      .replace(
-        /{name}/g,
-        name
-      );
+  const usage = String(guide?.en || guide || `{pn}${name}`)
+    .replace(/{pn}/g, prefix)
+    .replace(/{name}/g, name);
 
   return (
     "╭┈─────┈─ ─┈────┈╮\n" +
@@ -184,16 +154,10 @@ function createCommandDetail(
     `🪷 𝐍𝐚𝐦𝐞: ${toFont(name)}\n` +
     `🪷 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${toFont(category || "General")}\n` +
     `🪷 𝐀𝐥𝐢𝐚𝐬𝐞𝐬: ${
-      aliases?.length
-        ? aliases.join(", ")
-        : "None"
+      aliases?.length ? aliases.join(", ") : "None"
     }\n` +
-    `🪷 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: ${
-      version || "1.0"
-    }\n` +
-    `🪷 𝐀𝐮𝐭𝐡𝐨𝐫: ${
-      author || "S1FU"
-    }\n\n` +
+    `🪷 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: ${version || "1.0"}\n` +
+    `🪷 𝐀𝐮𝐭𝐡𝐨𝐫: ${author || "S1FU"}\n\n` +
     "┌──────ʚ🍄ɞ──────┐\n" +
     `📖 𝐃𝐞𝐬𝐜: ${desc}\n\n` +
     `💡 𝐔𝐬𝐚𝐠𝐞: ${usage}\n` +
@@ -204,74 +168,33 @@ function createCommandDetail(
 }
 
 async function getHelpGif() {
-  const cacheDir =
-    path.join(
-      __dirname,
-      "cache"
-    );
+  const cacheDir = path.join(__dirname, "cache");
 
   if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(
-      cacheDir,
-      {
-        recursive: true
-      }
-    );
+    fs.mkdirSync(cacheDir, { recursive: true });
   }
 
-  const indexFile =
-    path.join(
-      cacheDir,
-      "help_gif_index.json"
-    );
-
+  const indexFile = path.join(cacheDir, "help_gif_index.json");
   let index = 0;
 
   if (fs.existsSync(indexFile)) {
     try {
-      const savedData =
-        JSON.parse(
-          fs.readFileSync(
-            indexFile,
-            "utf8"
-          )
-        );
-
-      index =
-        (
-          Number(
-            savedData.index || 0
-          ) + 1
-        ) %
-        gifURLs.length;
-
+      const savedData = JSON.parse(fs.readFileSync(indexFile, "utf8"));
+      index = (Number(savedData.index || 0) + 1) % gifURLs.length;
     } catch {
       index = 0;
     }
   }
 
-  fs.writeFileSync(
-    indexFile,
-    JSON.stringify({
-      index
-    })
-  );
+  fs.writeFileSync(indexFile, JSON.stringify({ index }));
 
-  const gifPath =
-    path.join(
-      cacheDir,
-      `help_gif_${index}.gif`
-    );
+  const gifPath = path.join(cacheDir, `help_gif_${index}.gif`);
 
   const needsDownload =
-    !fs.existsSync(gifPath) ||
-    fs.statSync(gifPath).size === 0;
+    !fs.existsSync(gifPath) || fs.statSync(gifPath).size === 0;
 
   if (needsDownload) {
-    await downloadFile(
-      gifURLs[index],
-      gifPath
-    );
+    await downloadFile(gifURLs[index], gifPath);
   }
 
   return gifPath;
@@ -283,311 +206,137 @@ module.exports = {
 
     aliases: [
       "menu",
-      "help1",
-      "help2",
-      "help3",
-      "help4",
-      "help5",
-      "help6",
-      "help7",
-      "help8",
-      "help9",
-      "help10",
-      "help11",
-      "help12",
-      "help13",
-      "help14",
-      "help15"
+      "help1", "help2", "help3", "help4", "help5",
+      "help6", "help7", "help8", "help9", "help10",
+      "help11", "help12", "help13", "help14", "help15"
     ],
 
     version: "8.1",
-
     author: "𝐒𝐈𝐅𝐀𝐓",
-
-    shortDescription:
-      "Show all available commands",
-
-    longDescription:
-      "Displays commands in centered pages with a rotating GIF.",
-
+    shortDescription: "Show all available commands",
+    longDescription: "Displays commands in centered pages with a rotating GIF.",
     category: "system",
-
-    guide:
-      "{pn}help [page number | command name]"
+    guide: "{pn}help [page number | command name]"
   },
 
-  onStart: async function ({
-    message,
-    args,
-    prefix,
-    commandName
-  }) {
-    const allCommands =
-      global.GoatBot.commands;
+  onStart: async function ({ message, args, prefix, commandName }) {
+    const allCommands = global.GoatBot.commands;
 
-    let query =
-      args?.[0]
-        ? String(
-            args[0]
-          ).trim()
-        : "";
+    let query = args?.[0] ? String(args[0]).trim() : "";
 
-    const usedCommand =
-      String(
-        commandName || ""
-      ).toLowerCase();
+    const usedCommand = String(commandName || "").toLowerCase();
 
-    if (
-      /^help\d+$/.test(
-        usedCommand
-      )
-    ) {
-      query =
-        usedCommand.replace(
-          /^help/,
-          ""
-        );
+    if (/^help\d+$/.test(usedCommand)) {
+      query = usedCommand.replace(/^help/, "");
     }
 
     let gifPath = null;
 
     try {
-      gifPath =
-        await getHelpGif();
-
+      gifPath = await getHelpGif();
     } catch (error) {
-      console.error(
-        "HELP GIF ERROR:",
-        error
-      );
+      console.error("HELP GIF ERROR:", error);
     }
 
-    if (
-      query &&
-      !/^\d+$/.test(query)
-    ) {
-      const lowerQuery =
-        query.toLowerCase();
+    // حالة الاستعلام عن أمر معين
+    if (query && !/^\d+$/.test(query)) {
+      const lowerQuery = query.toLowerCase();
 
       const cmd =
-        allCommands.get(
-          lowerQuery
-        ) ||
-        [
-          ...allCommands.values()
-        ].find(
-          command =>
-            (
-              command.config?.aliases ||
-              []
-            ).some(
-              alias =>
-                String(alias)
-                  .toLowerCase() ===
-                lowerQuery
-            )
-        );
-
-      if (
-        !cmd ||
-        !cmd.config
-      ) {
-        return message.reply(
-          `❌ Command "${query}" not found.`
-        );
-      }
-
-      const detailMsg =
-        createCommandDetail(
-          cmd,
-          prefix
-        );
-
-      const replyData = {
-        body: detailMsg
-      };
-
-      if (
-        gifPath &&
-        fs.existsSync(
-          gifPath
-        )
-      ) {
-        replyData.attachment =
-          fs.createReadStream(
-            gifPath
-          );
-      }
-
-      return message.reply(
-        replyData
-      );
-    }
-
-    const commands =
-      getAllCommands();
-
-    const totalPages =
-      Math.max(
-        1,
-        Math.ceil(
-          commands.length /
-          COMMANDS_PER_PAGE
-        )
-      );
-
-    let page =
-      query &&
-      /^\d+$/.test(query)
-        ? parseInt(
-            query,
-            10
+        allCommands.get(lowerQuery) ||
+        [...allCommands.values()].find(command =>
+          (command.config?.aliases || []).some(
+            alias => String(alias).toLowerCase() === lowerQuery
           )
-        : 1;
-
-    if (page < 1) {
-      page = 1;
-    }
-
-    if (
-      page >
-      totalPages
-    ) {
-      page =
-        totalPages;
-    }
-
-    const menuMessage =
-      createPageMessage(
-        commands,
-        page,
-        totalPages,
-        prefix
-      );
-
-    const replyData = {
-      body: menuMessage
-    };
-
-    if (
-      gifPath &&
-      fs.existsSync(
-        gifPath
-      )
-    ) {
-      replyData.attachment =
-        fs.createReadStream(
-          gifPath
         );
+
+      if (!cmd || !cmd.config) {
+        return message.reply(`❌ Command "${query}" not found.`);
+      }
+
+      const detailMsg = createCommandDetail(cmd, prefix);
+
+      // إرسال النص أولاً
+      await message.reply(detailMsg);
+
+      // إرسال الصورة أسفله
+      if (gifPath && fs.existsSync(gifPath)) {
+        return message.reply({
+          attachment: fs.createReadStream(gifPath)
+        });
+      }
+
+      return;
     }
 
-    return message.reply(
-      replyData
+    // حالة عرض قائمة الأوامر العامة
+    const commands = getAllCommands();
+    const totalPages = Math.max(
+      1,
+      Math.ceil(commands.length / COMMANDS_PER_PAGE)
     );
+
+    let page = query && /^\d+$/.test(query) ? parseInt(query, 10) : 1;
+
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+
+    const menuMessage = createPageMessage(commands, page, totalPages, prefix);
+
+    // 1. إرسال القائمة النصية
+    await message.reply(menuMessage);
+
+    // 2. إرسال صورة الـ GIF تحته فوراً
+    if (gifPath && fs.existsSync(gifPath)) {
+      return message.reply({
+        attachment: fs.createReadStream(gifPath)
+      });
+    }
   }
 };
 
-function downloadFile(
-  url,
-  destination
-) {
-  return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-      const file =
-        fs.createWriteStream(
-          destination
+function downloadFile(url, destination) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(destination);
+
+    const request = https.get(url, response => {
+      if (
+        response.statusCode >= 300 &&
+        response.statusCode < 400 &&
+        response.headers.location
+      ) {
+        file.close();
+        fs.unlink(destination, () => {});
+        return downloadFile(response.headers.location, destination)
+          .then(resolve)
+          .catch(reject);
+      }
+
+      if (response.statusCode !== 200) {
+        file.close();
+        fs.unlink(destination, () => {});
+        return reject(
+          new Error(`Failed to download GIF (${response.statusCode})`)
         );
+      }
 
-      const request =
-        https.get(
-          url,
-          response => {
-            if (
-              response.statusCode >= 300 &&
-              response.statusCode < 400 &&
-              response.headers.location
-            ) {
-              file.close();
+      response.pipe(file);
 
-              fs.unlink(
-                destination,
-                () => {}
-              );
+      file.on("finish", () => {
+        file.close(resolve);
+      });
+    });
 
-              return downloadFile(
-                response.headers.location,
-                destination
-              )
-                .then(resolve)
-                .catch(reject);
-            }
+    request.on("error", error => {
+      file.close();
+      fs.unlink(destination, () => {});
+      reject(error);
+    });
 
-            if (
-              response.statusCode !== 200
-            ) {
-              file.close();
-
-              fs.unlink(
-                destination,
-                () => {}
-              );
-
-              return reject(
-                new Error(
-                  `Failed to download GIF (${response.statusCode})`
-                )
-              );
-            }
-
-            response.pipe(
-              file
-            );
-
-            file.on(
-              "finish",
-              () => {
-                file.close(
-                  resolve
-                );
-              }
-            );
-          }
-        );
-
-      request.on(
-        "error",
-        error => {
-          file.close();
-
-          fs.unlink(
-            destination,
-            () => {}
-          );
-
-          reject(
-            error
-          );
-        }
-      );
-
-      file.on(
-        "error",
-        error => {
-          file.close();
-
-          fs.unlink(
-            destination,
-            () => {}
-          );
-
-          reject(
-            error
-          );
-        }
-      );
-    }
-  );
+    file.on("error", error => {
+      file.close();
+      fs.unlink(destination, () => {});
+      reject(error);
+    });
+  });
 }
