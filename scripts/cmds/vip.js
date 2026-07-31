@@ -3,20 +3,34 @@ const { writeFileSync } = require("fs-extra");
 
 module.exports = {
         config: {
-                name: "vip",
+                name: "مستخدمين",
+                aliases: ["vip"],
                 version: "1.7",
                 author: "MahMUD",
                 countDown: 5,
                 role: 2,
                 description: {
+                        ar: "إضافة، إزالة، أو عرض قائمة مستخدمي VIP",
                         bn: "VIP ইউজার যোগ, অপসারণ বা তালিকা দেখুন",
                         en: "Add, remove, or list VIP users"
                 },
                 category: "owner",
-                guide: { bn: '{pn} add/remove/list [ID/@tag]', en: '{pn} add/remove/list [ID/@tag]' }
+                guide: { 
+                        ar: '{pn} اضافه/حذف/قائمه [ID/@تاغ]',
+                        bn: '{pn} add/remove/list [ID/@tag]', 
+                        en: '{pn} add/remove/list [ID/@tag]' 
+                }
         },
 
         langs: {
+                ar: {
+                        added: "🌟 | تم منح رتبة VIP بنجاح لـ %1 مستخدم:\n%2",
+                        already: "\n⚠️ | %1 مستخدم لديهم رتبة VIP بالفعل:\n%2",
+                        missingAdd: "⚠️ | يرجى وضع تاغ أو الرد على رسالة أو كتابة ID لإضافته إلى الـ VIP!",
+                        removed: "🚫 | تم إزالة رتبة VIP بنجاح عن %1 مستخدم:\n%2",
+                        notIn: "⚠️ | %1 مستخدم لم يكونوا في قائمة VIP من الأساس:\n%2",
+                        list: "🌟 | قائمة مستخدمي VIP:\n\n%1"
+                },
                 bn: {
                         added: "🌟 | সফলভাবে %1 জনকে VIP রোল দেওয়া হয়েছে:\n%2",
                         already: "\n⚠️ | %1 জন আগে থেকেই VIP ছিল:\n%2",
@@ -41,6 +55,8 @@ module.exports = {
                 if (!config.vipUser) config.vipUser = [];
 
                 switch (action) {
+                        case "اضافه":
+                        case "إضافة":
                         case "add": {
                                 if (args[1] || event.messageReply) {
                                         let uids = Object.keys(event.mentions).length > 0 ? Object.keys(event.mentions) : 
@@ -58,6 +74,8 @@ module.exports = {
                                         return api.sendMessage(response, threadID, messageID);
                                 } else return api.sendMessage(getLang("missingAdd"), threadID, messageID);
                         }
+                        case "حذف":
+                        case "إزالة":
                         case "remove": {
                                 if (args[1] || event.messageReply) {
                                         let uids = Object.keys(event.mentions).length > 0 ? Object.keys(event.mentions) : 
@@ -75,6 +93,8 @@ module.exports = {
                                         return api.sendMessage(response, threadID, messageID);
                                 } else return api.sendMessage(getLang("missingAdd"), threadID, messageID);
                         }
+                        case "قائمه":
+                        case "قائمة":
                         case "list": {
                                 const getNames = await Promise.all(config.vipUser.map(uid => usersData.getName(uid).then(name => ({ uid, name }))));
                                 return api.sendMessage(getLang("list", getNames.map(({ uid, name }) => `• ${name}\n  └ ID: ${uid}`).join("\n\n")), threadID, messageID);
