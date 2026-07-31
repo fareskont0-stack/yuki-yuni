@@ -10,27 +10,27 @@ const baseApiUrl = async () => {
 };
 
 /**
-* @author MahMUD
+* @author فارس خنشلي
 * @author: do not delete it
 */
 
 module.exports = {
   config: {
-    name: "tokai",
+    name: "حذاء",
     aliases: ["toqai"],
     version: "1.7",
-    author: "MahMUD",
+    author: "فارس خنشلي",
     role: 0,
     category: "fun",
     cooldown: 10,
-    guide: "[mention/reply/UID]",
+    guide: "[قم بالإشارة / الرد / أو أضف المعرف UID]",
   },
 
   onStart: async function({ api, event, args }) {
-    const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68); 
-    if (module.exports.config.author !== obfuscatedAuthor) {
+    const authorizedAuthor = "فارس خنشلي"; 
+    if (module.exports.config.author !== authorizedAuthor) {
       return api.sendMessage(
-        "You are not authorized to change the author name.\n", 
+        "أنت لست مخولاً بتغيير اسم المؤلف.\n", 
         event.threadID, 
         event.messageID
       );
@@ -46,7 +46,7 @@ module.exports = {
       id = args[0]; 
     } else {
       return api.sendMessage(
-        "❌ Mention, reply, or give UID to make tokai someone",
+        "❌ يرجى الإشارة إلى شخص، الرد على رسالته، أو إدخال معرف المستخدم (UID) لتطبيق الأمر.",
         threadID,
         messageID
       );
@@ -61,14 +61,14 @@ module.exports = {
       fs.writeFileSync(filePath, response.data);
       
       api.sendMessage(
-        { attachment: fs.createReadStream(filePath), body: "Here's your tokai image 🐸" },
+        { attachment: fs.createReadStream(filePath), body: "إليك صورة Tokai الخاصة بك 🐸" },
         threadID,
         () => fs.unlinkSync(filePath),
         messageID
       );
 
     } catch (err) {
-      api.sendMessage(`🥹error, contact MahMUD.`, threadID, messageID);
+      api.sendMessage(` حدث خطأ، يرجى التواصل مع المطور فارس خنشلي.`, threadID, messageID);
     }
   }
 };
