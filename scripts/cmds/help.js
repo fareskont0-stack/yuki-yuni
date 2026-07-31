@@ -37,7 +37,7 @@ const gifURLs = [
   "https://i.giphy.com/media/HOmZcACWYNntC/giphy.gif"
 ];
 
-// خريطة تحويل الخط العريض للأحرف والأرقام اللاتينية
+// تحويل الأحرف اللاتينية والأرقام فقط إلى خط عريض
 const cmdFontMap = {
   a: "𝗮", b: "𝗯", c: "𝗰", d: "𝗱", e: "𝗲", f: "𝗳", g: "𝗴", h: "𝗵", i: "𝗶", j: "𝗷",
   k: "𝗸", l: "𝗹", m: "𝗺", n: "𝗻", o: "𝗼", p: "𝗽", q: "𝗾", r: "𝗿", s: "𝘀", t: "𝘁",
@@ -48,16 +48,7 @@ const cmdFontMap = {
   "0": "𝟬", "1": "𝟭", "2": "𝟮", "3": "𝟯", "4": "𝟰", "5": "𝟱", "6": "𝟲", "7": "𝟳", "8": "𝟴", "9": "𝟵"
 };
 
-// دالة لتطبيق الخط العريض
-function toBoldText(text) {
-  const isArabic = /[\u0600-\u06FF]/.test(text);
-  
-  // الأحرف العربية تُحيط بـ ** للخط العريض في مسنجر
-  if (isArabic) {
-    return `**${text}**`;
-  }
-  
-  // الأحرف الإنجليزية والأرقام يتم تحويلها بواسطة الخريطة
+function toBoldEnglish(text) {
   return String(text)
     .split("")
     .map(char => cmdFontMap[char] || char)
@@ -80,27 +71,22 @@ function getAllCommands() {
 }
 
 function createFullMenuMessage(commands, prefix) {
-  const LTR = "\u200e"; // Left-To-Right Mark
-  const RLO = "\u202e"; // Right-To-Left Override
-  const PDF = "\u202c"; // Pop Directional Formatting
+  const LTR = "\u200e";
 
   let msg = `${LTR}COMMANDS LIST:\n\n`;
 
   for (const cmd of commands) {
     const isArabic = /[\u0600-\u06FF]/.test(cmd);
-    const boldCmd = toBoldText(cmd);
 
     if (isArabic) {
-      // إجبار التنسيق العربي مع جعل النص عريضاً وضبط المحاذاة جهة اليسار
-      msg += `${LTR}.${RLO}${boldCmd}${PDF} 🌸\n`;
+      msg += `${LTR}${prefix}${cmd} 🌸\n`;
     } else {
-      // التنسيق الإنجليزي العادي مع الخط العريض
-      msg += `${LTR}${prefix}${boldCmd} 🌸\n`;
+      msg += `${LTR}${prefix}${toBoldEnglish(cmd)} 🌸\n`;
     }
   }
 
   msg += `\n${LTR}Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`;
-  msg += `\n${LTR}Total: ${toBoldText(commands.length)} Commands`;
+  msg += `\n${LTR}Total: ${toBoldEnglish(commands.length)} Commands`;
 
   return msg;
 }
@@ -123,42 +109,63 @@ function createCommandDetail(cmd, prefix) {
 
   return (
     `${LTR}COMMAND INFO:\n\n` +
-    `${LTR}Name: ${toBoldText(name)}\n` +
-    `${LTR}Category: ${toBoldText(category || "General")}\n` +
-    `${LTR}Aliases: ${aliases?.length ? aliases.map(toBoldText).join(", ") : "None"}\n` +
-    `${LTR}Version: ${toBoldText(version || "1.0")}\n` +
-    `${LTR}Author: ${toBoldText(author || "Fares Khenchli")}\n\n` +
+    `${LTR}Name: ${toBoldEnglish(name)}\n` +
+    `${LTR}Category: ${toBoldEnglish(category || "General")}\n` +
+    `${LTR}Aliases: ${aliases?.length ? aliases.map(toBoldEnglish).join(", ") : "None"}\n` +
+    `${LTR}Version: ${toBoldEnglish(version || "1.0")}\n` +
+    `${LTR}Author: ${toBoldEnglish(author || "Fares Khenchli")}\n\n` +
     `${LTR}Desc: ${desc}\n` +
     `${LTR}Usage: ${usage}\n\n` +
     `${LTR}Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`
   );
 }
 
-async function getHelpGif() {
+// دالة خلط مصفوفة عشوائياً (Fisher-Yates Shuffle)
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// اختيار GIF عشوائي بدون تكرار حتى تنتهي القائمة
+async function getRandomNonRepeatingGif() {
   const cacheDir = path.join(__dirname, "cache");
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
   }
 
-  const indexFile = path.join(cacheDir, "help_gif_index.json");
-  let index = 0;
+  const queueFile = path.join(cacheDir, "help_gif_queue.json");
+  let queue = [];
 
-  if (fs.existsSync(indexFile)) {
+  // قراءة القائمة المتبقية
+  if (fs.existsSync(queueFile)) {
     try {
-      const savedData = JSON.parse(fs.readFileSync(indexFile, "utf8"));
-      index = (Number(savedData.index || 0) + 1) % gifURLs.length;
+      queue = JSON.parse(fs.readFileSync(queueFile, "utf8"));
     } catch {
-      index = 0;
+      queue = [];
     }
   }
 
-  fs.writeFileSync(indexFile, JSON.stringify({ index }));
+  // إذا كانت القائمة فارغة أو اكتملت الدورة، يتم إنشاؤها عشوائياً من جديد
+  if (!Array.isArray(queue) || queue.length === 0) {
+    const indices = Array.from({ length: gifURLs.length }, (_, i) => i);
+    queue = shuffleArray(indices);
+  }
 
-  const gifPath = path.join(cacheDir, `help_gif_${index}.gif`);
+  // سحب العنصر الأول من القائمة المتبقية
+  const selectedIndex = queue.shift();
+
+  // حفظ القائمة المتبقية
+  fs.writeFileSync(queueFile, JSON.stringify(queue));
+
+  const gifPath = path.join(cacheDir, `help_gif_${selectedIndex}.gif`);
   const needsDownload = !fs.existsSync(gifPath) || fs.statSync(gifPath).size === 0;
 
   if (needsDownload) {
-    await downloadFile(gifURLs[index], gifPath);
+    await downloadFile(gifURLs[selectedIndex], gifPath);
   }
 
   return gifPath;
@@ -168,10 +175,10 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu", "commands"],
-    version: "13.0",
+    version: "16.0",
     author: "Fares Khenchli",
-    shortDescription: "Display commands aligned to left with bold text",
-    longDescription: "Displays clean vertical command list with LTR alignment and bold formatting.",
+    shortDescription: "Random non-repeating GIF menu",
+    longDescription: "Displays clean command list with a random, non-repeating GIF per cycle.",
     category: "system",
     guide: "{pn}help [command name]"
   },
@@ -182,7 +189,7 @@ module.exports = {
 
     let gifPath = null;
     try {
-      gifPath = await getHelpGif();
+      gifPath = await getRandomNonRepeatingGif();
     } catch (error) {
       console.error("HELP GIF ERROR:", error);
     }
