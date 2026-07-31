@@ -12,7 +12,7 @@ const database = {
     "  🙂 هاني جيييت"
   ],
   "توحشتك": [
-    "حتى أنا توحشتك كتر يا عمري 😭💙",
+    "حتى أنا توحشتك كتر يا عمري 😭",
     "امم زعما صح",
     "مام انا توحشتك 🥺",
     "كذاااب متوحشتنيش 😭"
@@ -44,7 +44,7 @@ const database = {
   ],
   "راني مريض": [
     "ربي يشفيك 😭",
-    "يا عمري، ربي يجيب الشفاء 💙"
+    "ربي يشافيك"
   ],
   "😂😂😂": [
     "😂😂😂",
@@ -61,7 +61,7 @@ const database = {
     "نحبك بزاف بزاف 🥺❤️"
   ],
   "شكرا": [
-    "عفوا يا روحي، ما بيناتناش 🤍",
+    "العفو",
     
     "صحييت",
     "عفوا"
@@ -70,30 +70,30 @@ const database = {
     " قود متسبش 🙂 "
   ],
   "صح": [
-    "والله العظيم غير صح يا عمري 🥺",
+    "لالا ماشي صح",
     "أايه صح ✨"
   ],
   "بصحتك": [
     "يسلمك يا روحي 🤍",
     "يعيشك يا عمري 🌸"
   ],
-  "واش راك": [
-    "منيش مليحة راني عيانة 🥺"
+  "واش راكي": [
+    "منيش مليحة راني عيانة 🙂"
     
   ],
   "علاش راكي عيانة": [
     " عيانة وخلاص بصح نتا علاش تحوس عليا 🙂"
   ],
   "راني زعفان": [
-    "علاش شكون زعلك، نفوت عليه 😭",
-    "بسم الله عليك متزعفش يا روحي 🥺"
+    "شكون زعفك",
+    "متزعفش ياعمري"
   ],
   "عاوني": [
     "في وشنو نعاونك ؟",
     "حاضر يا عمري، واش كاين؟ ✨"
   ],
   "تتزوج بيا": [
-    "مباشرة بلا ما تفكر 🥺💍",
+    "مباشرة بلا ما تفكر 🥺",
     "ايه نتزوجو 🥺"
   ],
   "عينيك": [
@@ -120,8 +120,8 @@ const database = {
     "علاش راك تبكي ياعمري"
   
   ],
-  "وشراك دير": [
-    "قاعد نحكي معاك 🙂"
+  "وشراكي ديري": [
+    "قاعدة نحكي معاك 🙂"
   ],
   "عمري": [
     "اعمري 🥺",
@@ -590,6 +590,7 @@ const database = {
   ],
   "بوت": [
     " هاني جيت 🌸"
+    " oui ? "
   ],
   "صفا": [
     "صفا الحمد لله",
@@ -1135,6 +1136,109 @@ const database = {
     "ما كنش غيرك في البال",
     "قاعد وحدي ونخمم فيك"
   ]
+{
+  "salut": ["Salut kho 😎"],
+  "wesh": ["Wesh kho 😁"],
+  "cv": ["Ça va hamdoullah, w nta ?"],
+  "tu fais quoi": ["Rani connecté 😎"],
+  "ça roule": ["Oui tranquille 😌"],
+  "bonjour": ["Bonjour saha ☀️"],
+  "bonsoir": ["Bonsoir kho 🌙"],
+  "bonne nuit": ["Bonne nuit, rêve bien 😴"],
+  "merci": ["De rien kho ❤️"],
+  "merci beaucoup": ["Avec plaisir 😊"],
+  "je t'aime": ["Moi aussi je t'aime ❤️"],
+  "tu m'aimes": ["Bien sûr 😍"],
+  "tu me manques": ["Toi aussi 😭"],
+  "je suis triste": ["Mat7zanesh kho ❤️"],
+  "je suis malade": ["Rabbi ychafik 🤲"],
+  "je suis fatigué": ["Roh terteh chwiya 😴"],
+  "je suis content": ["Saha lik 😍"],
+  "ça va pas": ["Chkoun za3fek ? 😕"],
+  "quoi de neuf": ["Makach jdida 😅"],
+  "t'es où": ["Hani hna 😂"],
+  "viens": ["Jit jit 🏃"],
+  "attends": ["Sber chwiya 😅"],
+  "aide moi": ["Oui dis-moi 😊"],
+  "t'es gentil": ["Merci kho 🌹"],
+  "t'es drôle": ["Hahaha merci 😂"],
+  "t'es beau": ["Merci ya zin 😎"],
+  "t'es belle": ["Merci 😳"],
+  "qui es tu": ["Ana bot 😎"],
+  "ton nom": ["Ana Bot 🤖"],
+  "tu dors": ["Mazal ma r9adtch 👀"],
+  "réveille toi": ["Rani faye9 😎"],
+  "lol": ["😂😂😂"],
+  "mdr": ["Mdrrrr 😂"],
+  "haha": ["😂😂"],
+  "hahaha": ["Mout b'dehk 😂"],
+  "arrête": ["Okay nhebess 😅"],
+  "oui": ["Yes 😎"],
+  "non": ["Pourquoi non ? 🤔"],
+  "ok": ["Okay "],
+  "d'accord": ["Safi 😊"],
+  "discord": ["Discord c'est la base 😎"],
+  "youtube": ["Abonne-toi 😂"],
+  "instagram": ["Story wela post ? 📸"],
+  "facebook": ["Les anciens sont là 😅"],
+  "tiktok": ["Encore TikTok 😂"],
+  "snapchat": ["Snap time 👻"],
+  "free fire": ["Qui joue FF ? 🔥"],
+  "pubg": ["Chicken Dinner 😎"],
+  "valorant": ["Ace incoming 😏"],
+  "minecraft": ["Let's build 😎"],
+  "fortnite": ["Top 1 nchallah 😂"],
+  "call of duty": ["COD gang 😎"],
+  "bot": ["Yes 😭"],
+  "ping": ["Pong 🏓"],
+  "ça marche": ["Oui ça marche 😎"],
+  "bonne chance": ["Bonne chance kho 🍀"],
+  "félicitations": ["Bravo 😍"],
+  "saha": ["Allah ysalmek ❤️"],
+  "bsahtek": ["Allah y3ichk 🌹"],
+  "je mange": ["Bsahtek 😋"],
+  "je bois": ["Bsahtek 😋"],
+  "j'ai faim": ["Roh koul 🍔"],
+  "j'ai soif": ["Roh echreb 🥤"],
+  "je m'ennuie": ["Va jouer un peu 😂"],
+  "je rigole": ["Moi aussi 😂"],
+  "c'est vrai": ["Oui wallah 😌"],
+  "sérieux": ["Oui sérieux 😎"],
+  "incroyable": ["De ouf 😲"],
+  "calme toi": ["Rani calme 😇"],
+  "je pars": ["Rabi m3ak 👋"],
+  "bye": ["Bye bye 👋"],
+  "à bientôt": ["À bientôt kho ❤️"],
+  "bonne journée": ["Bonne journée ☀️"],
+  "bon week-end": ["Profite bien 😎"],
+  "bonne fête": ["Bonne fête 🎉"],
+  "ramadan": ["Ramadan moubarak 🌙"],
+  "aid": ["Aid moubarak 🤍"],
+  "allah": ["Subhan Allah 🤍"],
+  "hamdoullah": ["Toujours hamdoullah ❤️"],
+  "inchallah": ["Inchallah 🤲"],
+  "wallah": ["Wallah 😌"],
+  "t'es réel": ["Non ana bot 😂"],
+  "tu bug": ["Non, tout va bien 😎"],
+  "ça bug": ["Essaie encore 😅"],
+  "erreur": ["Oops 😅"],
+  "help": ["Comment je peux t'aider ? 😊"],
+  "admin": ["Oui chef 😎"],
+  "mod": ["Respect aux modos 😌"],
+  "serveur": ["Très beau serveur 😍"],
+  "bienvenue": ["Merhba bik ❤️"],
+  "merci bot": ["Avec plaisir 🤖"],
+  "bon travail": ["Merci kho 🌹"],
+  "je suis nouveau": ["Bienvenue parmi nous 🎉"],
+  "qui est le meilleur": ["Toi bien sûr 😎"],
+  "qui gagne": ["Que le meilleur gagne 😏"],
+  "chance": ["Bonne chance 🍀"],
+  "amitié": ["L'amitié avant tout ❤️"],
+  "amour": ["L'amour c'est beau 😍"],
+  "algérie": ["One Two Three Viva l'Algérie 🇩🇿"],
+  "dz": ["Tahya Dzair 🇩🇿"],
+  "vive l'algérie": ["🇩🇿❤️🇩🇿"]
+
 };
 
 module.exports.config = {
