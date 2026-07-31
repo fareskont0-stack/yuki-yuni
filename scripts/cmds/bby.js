@@ -1219,7 +1219,7 @@ module.exports.onChat = async ({ api, event }) => {
 
         const customReply = getDatabaseResponse(message);
         if (customReply) {
-            api.setMessageReaction("🙂", event.messageID, () => {}, true);
+            api.setMessageReaction("🌸", event.messageID, () => {}, true);
             return api.sendMessage(customReply, event.threadID, event.messageID);
         }
     } catch (err) {
