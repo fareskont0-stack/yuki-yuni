@@ -7,22 +7,24 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "waifu",
+                name: "وايفو",
                 aliases: ["waifugame"],
                 version: "1.8",
-                author: "MahMUD",
+                author: "فارس خنشلي",
                 countDown: 10,
                 role: 0,
                 description: {
                         bn: "অ্যানিমে ওয়াইফু দেখে নাম অনুমান করার খেলা",
                         en: "Guess the anime waifu name by looking at the picture",
-                        vi: "Đoán tên waifu bằng cách nhìn vào bức ảnh"
+                        vi: "Đoán tên waifu bằng cách nhìn vào bức ảnh",
+                        ar: "لعبة تخمين اسم شخصية الأنمي وايفو من خلال النظر إلى الصورة"
                 },
                 category: "game",
                 guide: {
                         bn: '   {pn}: গেমটি শুরু করতে লিখুন',
                         en: '   {pn}: Type to start the game',
-                        vi: '   {pn}: Nhập để bắt đầu trò chơi'
+                        vi: '   {pn}: Nhập để bắt đầu trò chơi',
+                        ar: '   {pn}: اكتب لبدء اللعبة'
                 }
         },
 
@@ -32,7 +34,7 @@ module.exports = {
                         correct: "✅ | একদম সঠিক উত্তর বেবি!\n\nতুমি জিতেছো %1 কয়েন এবং %2 এক্সপি।",
                         wrong: "🥺 | উত্তরটি ভুল হয়েছে বেবি!\n\nসঠিক উত্তর ছিল: %1",
                         notYour: "× বেবি, এটি তোমার জন্য নয়! নিজের জন্য গেম শুরু করো। >🐸",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD."
                 },
                 en: {
                         start: "✨ | A waifu has appeared! Guess her name, baby.",
@@ -47,13 +49,20 @@ module.exports = {
                         wrong: "🥺 | Sai rồi cưng ơi!\n\n🌸 Đáp án đúng là: %1",
                         notYour: "× Đây không phải phần chơi của bạn cưng à! >🐸",
                         error: "× Lỗi: %1. Liên hệ MahMUD để được hỗ trợ."
+                },
+                ar: {
+                        start: "✨ | ظهرت شخصية وايفو! خمن اسمها يا روحي.",
+                        correct: "✅ | إجابة صحيحة يا قلبي!\n\nلقد ربحت %1 عملة و %2 خبرة.",
+                        wrong: "🥺 | إجابة خاطئة يا عمري!\n\nالإجابة الصحيحة كانت: %1",
+                        notYour: "× هذه ليست الوايفو الخاصة بك يا غالي! ابدأ لعبتك الخاصة. >🐸",
+                        error: "× حدث خطأ: %1. يرجى التواصل مع المطور فارس خنشلي."
                 }
         },
 
         onReply: async function ({ api, event, Reply, usersData, getLang }) {
-                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68); 
-                if (this.config.author !== authorName) {
-                        return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
+                const authorizedAuthor = "فارس خنشلي"; 
+                if (this.config.author !== authorizedAuthor) {
+                        return api.sendMessage("أنت لست مخولاً بتغيير اسم المؤلف.", event.threadID, event.messageID);
                 }
 
                 const { waifu, author, messageID } = Reply;
@@ -85,8 +94,8 @@ module.exports = {
         },
 
         onStart: async function ({ api, event, getLang }) {
-                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68); 
-                if (this.config.author !== authorName) return;
+                const authorizedAuthor = "فارس خنشلي"; 
+                if (this.config.author !== authorizedAuthor) return;
 
                 try {
                         const apiUrl = await baseApiUrl();
