@@ -8,11 +8,21 @@ module.exports = {
 		countDown: 5,
 		role: 0,
 		description: {
+			ar: "تحذير عضو في المجموعة، عند الوصول لـ 3 تحذيرات يتم حظره من المجموعة",
 			vi: "cảnh cáo thành viên trong nhóm, đủ 3 lần ban khỏi box",
 			en: "warn member in group, if they have 3 warns, they will be banned"
 		},
 		category: "box chat",
+		aliases: ["تحذير", "انذار", "إنذار"],
 		guide: {
+			ar: "   {pn} @تاغ <السبب>: تحذير عضو"
+				+ "\n   {pn} list: عرض قائمة الأعضاء المحذرين"
+				+ "\n   {pn} listban: عرض قائمة الأعضاء المطرودين/المحظورين (3 تحذيرات)"
+				+ "\n   {pn} info [@تاغ | <uid> | الرد | فارغ]: عرض معلومات التحذير لشخص معين أو لنفسك"
+				+ "\n   {pn} unban [@تاغ | <uid> | الرد | فارغ]: إزالة الحظر عن عضو وإلغاء كافة تحذيراته"
+				+ "\n   {pn} unwarn [@تاغ | <uid> | الرد | فارغ] [<الرقم> | فارغ]: إزالة تحذير محدد برقمه، أو إزالة آخر تحذير إذا ترك فارغاً"
+				+ "\n   {pn} reset: إعادة ضبط ورسالة كافة بيانات التحذيرات في المجموعة"
+				+ "\n⚠️ يجب رفع البوت مسؤولاً (أدمن) ليتمكن من طرد الأعضاء المحظورين تلقائياً",
 			vi: "   {pn} @tag <lý do>: dùng cảnh cáo thành viên"
 				+ "\n   {pn} list: xem danh sách những thành viên đã bị cảnh cáo"
 				+ "\n   {pn} listban: xem danh sách những thành viên đã bị cảnh cáo đủ 3 lần và bị ban khỏi box"
@@ -24,7 +34,7 @@ module.exports = {
 			en: "   {pn} @tag <reason>: warn member"
 				+ "\n   {pn} list: view list of warned members"
 				+ "\n   {pn} listban: view list of banned members"
-				+ "\n   {pn} info [@tag | <uid> | reply | leave blank]: view warning information of tagged person or uid or yourself"
+				+ "\n   {pn} info [@tag | <uid> | leave blank]: view warning information of tagged person or uid or yourself"
 				+ "\n   {pn} unban [@tag | <uid> | reply | leave blank]: unban member, at the same time remove all warnings of that member"
 				+ "\n   {pn} unwarn [@tag | <uid> | reply | leave blank] [<number> | leave blank]: remove warning of member by uid and number of warning, if leave blank will remove the last warning"
 				+ "\n   {pn} reset: reset all warn data"
@@ -33,6 +43,33 @@ module.exports = {
 	},
 
 	langs: {
+		ar: {
+			list: "قائمة الأعضاء الذين تم تحذيرهم:\n%1\n\nلعرض تفاصيل التحذيرات استخدم الأمر \"%2warn info [@تاغ | <uid> | فارغ]\": لعرض معلومات التحذير للعضو المحدد أو لنفسك",
+			listBan: "قائمة الأعضاء الذين تلقوا 3 تحذيرات وتم حظرهم من المجموعة:\n%1",
+			listEmpty: "لا يوجد أعضاء محذرون في مجموعتك",
+			listBanEmpty: "لا يوجد أعضاء محظورون في مجموعتك",
+			invalidUid: "يرجى إدخال معرف (UID) صحيح للشخص الذي تريد عرض معلوماته",
+			noData: "لا توجد بيانات تحذير",
+			noPermission: "❌ يمكن لمدراء المجموعة فقط إزالة الحظر عن الأعضاء المحظورين",
+			invalidUid2: "⚠️ يرجى إدخال معرف (UID) صحيح للشخص الذي تريد إلغاء حظره",
+			notBanned: "⚠️ المستخدم صاحب المعرف %1 غير محظور في مجموعتك",
+			unbanSuccess: "✅ تم إلغاء حظر العضو [%1 | %2] بنجاح، يمكنه الآن الانضمام للمجموعة",
+			noPermission2: "❌ يمكن لمدراء المجموعة فقط إزالة التحذيرات عن الأعضاء",
+			invalidUid3: "⚠️ يرجى إدخال معرف (UID) أو الإشارة لشخص لإزالة التحذير عنه",
+			noData2: "⚠️ المستخدم صاحب المعرف %1 ليس لديه أي سجل تحذيرات",
+			notEnoughWarn: "❌ المستخدم %1 لديه %2 تحذير/تحذيرات فقط",
+			unwarnSuccess: "✅ تم إزالة التحذير رقم %1 للعضو [%2 | %3] بنجاح",
+			noPermission3: "❌ يمكن لمدراء المجموعة فقط إعادة ضبط سجل التحذيرات",
+			resetWarnSuccess: "✅ تم إعادة ضبط كافة بيانات التحذيرات بنجاح",
+			noPermission4: "❌ يمكن لمدراء المجموعة فقط تحذير الأعضاء",
+			invalidUid4: "⚠️ تحتاج إلى الإشارة (Tag) أو الرد على رسالة الشخص الذي تريد تحذيره",
+			warnSuccess: "⚠️ تم تحذير العضو %1 (المرة رقم %2)\n- المعرف (UID): %3\n- السبب: %4\n- التاريخ والوقت: %5\nهذا العضو وصل للحد الأقصى (3 تحذيرات) وتم طرده وحظره، لإلغاء الحظر استخدم \"%6warn unban <uid>\"",
+			noPermission5: "⚠️ يحتاج البوت إلى صلاحيات المسؤول (أدمن) لطرد الأعضاء المحظورين",
+			warnSuccess2: "⚠️ تم تحذير العضو %1 (المرة رقم %2)\n- المعرف (UID): %3\n- السبب: %4\n- التاريخ والوقت: %5\nإذا خالف القوانين %6 مرة/مرات أخرى سيتعرض للحظر والطرد من المجموعة",
+			hasBanned: "⚠️ الأعضاء التاليين تم تحذيرهم 3 مرات سابقاً ومحظورون من المجموعة:\n%1",
+			failedKick: "⚠️ حدث خطأ أثناء طرد الأعضاء التاليين:\n%1",
+			userNotInGroup: "⚠️ المستخدم \"%1\" غير موجود في المجموعة حالياً"
+		},
 		vi: {
 			list: "Danh sách những thành viên bị cảnh cáo:\n%1\n\nĐể xem chi tiết những lần cảnh cáo hãy dùng lệnh \"%2warn info  [@tag | <uid> | để trống]\": để xem thông tin cảnh cáo của người được tag hoặc uid hoặc bản thân",
 			listBan: "Danh sách những thành viên bị cảnh cáo đủ 3 lần và ban khỏi box:\n%1",
