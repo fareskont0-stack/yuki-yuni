@@ -1,17 +1,18 @@
-const { config } = global.GoatBot;
+Const { config } = global.GoatBot;
 const { client } = global;
 const { writeFileSync } = require("fs-extra");
 
 module.exports = {
 	config: {
-		name: "whitelistthread",
+		name: "مجموعات",
 		aliases: ["wlt"],
-		version: "1.5",
+		version: "1.6",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
 		description: {
-			en: "Add, remove, edit whiteListThreadIds role"
+			en: "Add, remove, edit whiteListThreadIds role",
+			ar: "إضافة، إزالة، أو تعديل المجموعات المسموح لها باستخدام البوت (القائمة البيضاء للمجموعات)"
 		},
 		category: "admin",
 		guide: {
@@ -19,7 +20,12 @@ module.exports = {
 				+ '\n   {pn} [remove | -r | -] [<tid>...]: Remove whiteListThreadIds role from the current thread or specified thread IDs'
 				+ '\n   {pn} [list | -l]: List all whiteListThreadIds'
 				+ '\n   {pn} [mode | -m] <on|off>: Turn on/off whiteListThreadIds mode'
-				+ '\n   {pn} [mode | -m] noti <on|off>: Turn on/off notification for non-whiteListThreadIds'
+				+ '\n   {pn} [mode | -m] noti <on|off>: Turn on/off notification for non-whiteListThreadIds',
+			ar: '   {pn} [add | -a | +] [<tid>...]: لإضافة المجموعة الحالية أو المجموعات المحددة إلى القائمة البيضاء'
+				+ '\n   {pn} [remove | -r | -] [<tid>...]: لإزالة مجموعة من القائمة البيضاء'
+				+ '\n   {pn} [list | -l]: لعرض قائمة جميع المجموعات المسموح لها'
+				+ '\n   {pn} [mode | -m] <on|off>: تشغيل أو إيقاف وضع حصر البوت على القائمة البيضاء فقط'
+				+ '\n   {pn} [mode | -m] noti <on|off>: تشغيل أو إيقاف الإشعارات للمجموعات غير المدرجة'
 		}
 	},
 
@@ -36,6 +42,19 @@ module.exports = {
 			turnedOff: "❎ | 𝚃𝚞𝚛𝚗𝚎𝚍 𝚘𝚏𝚏 𝚝𝚑𝚎 𝚖𝚘𝚍𝚎 𝚘𝚗𝚕𝚢 𝚠𝚑𝚒𝚝𝚎𝙻𝚒𝚜𝚝𝚃𝚑𝚛𝚎𝚊𝚍𝙸𝚍𝚜 𝚌𝚊𝚗 𝚞𝚜𝚎 𝚋𝚘𝚝",
 			turnedOnNoti: "✅ | 𝚃𝚞𝚛𝚗𝚎𝚍 𝚘𝚗 𝚝𝚑𝚎 𝚗𝚘𝚝𝚒𝚏𝚒𝚌𝚊𝚝𝚒𝚘𝚗 𝚠𝚑𝚎𝚗 𝚝𝚑𝚛𝚎𝚊𝚍 𝚒𝚜 𝚗𝚘𝚝 𝚠𝚑𝚒𝚝𝚎𝙻𝚒𝚜𝚝𝚃𝚑𝚛𝚎𝚊𝚍𝙸𝚍𝚜",
 			turnedOffNoti: "❎ | 𝚃𝚞𝚛𝚗𝚎𝚍 𝚘𝚏𝚏 𝚝𝚑𝚎 𝚗𝚘𝚝𝚒𝚏𝚒𝚌𝚊𝚝𝚒𝚘𝚗 𝚠𝚑𝚎𝚗 𝚝𝚑𝚛𝚎𝚊𝚍 𝚒𝚜 𝚗𝚘𝚝 𝚠𝚑𝚒𝚝𝚎𝙻𝚒𝚜𝚝𝚃𝚑𝚛𝚎𝚊𝚍𝙸𝚍𝚜"
+		},
+		ar: {
+			added: `\n╭─✦✅ | تم إضافة %1 مجموعة/مجموعات بنجاح\n%2`,
+			alreadyAdmin: `╭✦⚠️ | مجموعات مضافة مسبقاً (%1 مجموعة)\n%2\n`,
+			missingAdd: "⚠️ | يرجى إدخال معرف المجموعة (TID) لإضافتها إلى القائمة البيضاء",
+			removed: `\n╭✦✅ | تم إزالة %1 مجموعة/مجموعات\n%2`,
+			notAdmin: `╭✦❎ | لم يتم العثور على %1 مجموعة/مجموعات في القائمة\n%2\n`,
+			missingIdRemove: "⚠️ | يرجى إدخال معرف المجموعة (TID) لإزالتها من القائمة البيضاء",
+			listAdmin: `╭✦✨ | قائمة المجموعات المسموح لها\n%1\n╰─────────────────⧕`,
+			turnedOn: "✅ | تم تفعيل وضع حصر استخدام البوت على المجموعات المسموح لها فقط",
+			turnedOff: "❎ | تم إيقاف وضع حصر البوت (البوت متاح للجميع الآن)",
+			turnedOnNoti: "✅ | تم تفعيل إشعارات التنبيه عند محاولة استخدام البوت في مجموعات غير مسموحة",
+			turnedOffNoti: "❎ | تم إيقاف إشعارات التنبيه للمجموعات غير المسموحة"
 		}
 	},
 
@@ -58,7 +77,7 @@ module.exports = {
 				config.whiteListModeThread.whiteListThreadIds.push(...notAdminIds);
 				const getNames = await Promise.all(tids.map(async tid => {
 					const info = await api.getThreadInfo(tid) || {};
-					return { tid, name: info.threadName || "Not found" };
+					return { tid, name: info.threadName || "غير معروف" };
 				}));
 
 				writeFileSync(global.client.dirConfig, JSON.stringify(config, null, 2));
@@ -66,9 +85,9 @@ module.exports = {
 				return message.reply(
 					(notAdminIds.length > 0 ? getLang("added", notAdminIds.length,
 						getNames.filter(({ tid }) => notAdminIds.includes(tid))
-							.map(({ tid, name }) => `├‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙽𝙰𝙼𝙴: ${name}\n╰‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙸𝙳: ${tid}`).join("\n")) : "") +
+							.map(({ tid, name }) => `├‣ اسم المجموعة: ${name}\n╰‣ معرف المجموعة: ${tid}`).join("\n")) : "") +
 					(alreadyAdded.length > 0 ? getLang("alreadyAdmin", alreadyAdded.length,
-						alreadyAdded.map(tid => `╰‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙸𝙳: ${tid}`).join("\n")) : "")
+						alreadyAdded.map(tid => `╰‣ معرف المجموعة: ${tid}`).join("\n")) : "")
 				);
 			}
 
@@ -93,16 +112,16 @@ module.exports = {
 
 				const getNames = await Promise.all(removed.map(async tid => {
 					const info = await api.getThreadInfo(tid) || {};
-					return { tid, name: info.threadName || "Not found" };
+					return { tid, name: info.threadName || "غير معروف" };
 				}));
 
 				writeFileSync(global.client.dirConfig, JSON.stringify(config, null, 2));
 
 				return message.reply(
 					(removed.length > 0 ? getLang("removed", removed.length,
-						getNames.map(({ tid, name }) => `├‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙽𝙰𝙼𝙴: ${name}\n╰‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙸𝙳: ${tid}`).join("\n")) : "") +
+						getNames.map(({ tid, name }) => `├‣ اسم المجموعة: ${name}\n╰‣ معرف المجموعة: ${tid}`).join("\n")) : "") +
 					(notFound.length > 0 ? getLang("notAdmin", notFound.length,
-						notFound.map(tid => `╰‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙸𝙳: ${tid}`).join("\n")) : "")
+						notFound.map(tid => `╰‣ معرف المجموعة: ${tid}`).join("\n")) : "")
 				);
 			}
 
@@ -110,11 +129,11 @@ module.exports = {
 			case "-l": {
 				const getNames = await Promise.all(config.whiteListModeThread.whiteListThreadIds.map(async tid => {
 					const info = await api.getThreadInfo(tid) || {};
-					return { tid, name: info.threadName || "Unfetched" };
+					return { tid, name: info.threadName || "غير جلب الاسم" };
 				}));
 
 				return message.reply(getLang("listAdmin",
-					getNames.map(({ tid, name }) => `├‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙽𝙰𝙼𝙴: ${name}\n├‣ 𝚃𝙷𝚁𝙴𝙰𝙳 𝙸𝙳: ${tid}`).join("\n")));
+					getNames.map(({ tid, name }) => `├‣ اسم المجموعة: ${name}\n├‣ معرف المجموعة: ${tid}`).join("\n")));
 			}
 
 			case "mode":
@@ -129,7 +148,7 @@ module.exports = {
 
 				const value = args[index] === "on" ? true : args[index] === "off" ? false : null;
 				if (value === null)
-					return message.reply("⚠️ | Please specify 'on' or 'off'.");
+					return message.reply("⚠️ | يرجى تحديد 'on' أو 'off'.");
 
 				if (isSetNoti) {
 					config.hideNotiMessage.whiteListModeThread = !value;
