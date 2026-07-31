@@ -44,7 +44,7 @@ const cmdFontMap = {
   u: "𝘂", v: "𝘃", w: "𝘄", x: "𝘅", y: "𝘆", z: "𝘇",
   A: "𝗔", B: "𝗕", C: "𝗖", D: "𝗗", E: "𝗘", F: "𝗙", G: "𝗚", H: "𝗛", I: "𝗜", J: "𝗝",
   K: "𝗞", L: "𝗟", M: "𝗠", N: "𝗡", O: "𝗢", P: "𝗣", Q: "𝗤", R: "𝗥", S: "𝗦", T: "𝗧",
-  U: "𝗨", V: "𝗩", W: "𝗪", X: "𝘅", Y: "𝗬", Z: "𝗭",
+  U: "𝗨", V: "𝗩", W: "𝗪", X: "𝗫", Y: "𝗬", Z: "𝗭",
   "0": "𝟬", "1": "𝟭", "2": "𝟮", "3": "𝟯", "4": "𝟰", "5": "𝟱", "6": "𝟲", "7": "𝟳", "8": "𝟴", "9": "𝟵"
 };
 
@@ -62,7 +62,7 @@ function getAllCommands() {
     if (!cmd || !cmd.config) continue;
 
     const commandName = String(name).toLowerCase();
-    if (commandName === "help") continue;
+    if (commandName === "اوامر") continue;
 
     commands.push(commandName);
   }
@@ -173,14 +173,14 @@ async function getRandomNonRepeatingGif() {
 
 module.exports = {
   config: {
-    name: "اوامر",
-    aliases: ["أوامر", "الأوامر", "الأوامر", "help", "menu", "commands"],
+    name: "help",
+    aliases: ["menu", "commands"],
     version: "16.0",
     author: "Fares Khenchli",
-    shortDescription: "عرض قائمة الأوامر مع GIF عشوائي",
-    longDescription: "عرض قائمة الأوامر المنظمة مع صور GIF متجددة وغير مكررة.",
+    shortDescription: "Random non-repeating GIF menu",
+    longDescription: "Displays clean command list with a random, non-repeating GIF per cycle.",
     category: "system",
-    guide: "{pn}اوامر [اسم الأمر]"
+    guide: "{pn}help [command name]"
   },
 
   onStart: async function ({ message, args, prefix }) {
@@ -202,7 +202,7 @@ module.exports = {
         );
 
       if (!cmd || !cmd.config) {
-        return message.reply(`❌ الأمر "${query}" غير موجود.`);
+        return message.reply(`❌ Command "${query}" not found.`);
       }
 
       const detailMsg = createCommandDetail(cmd, prefix);
