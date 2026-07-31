@@ -49,25 +49,37 @@ function getAllCommands() {
     commands.push(commandName);
   }
 
-  return commands.sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
+  return commands.sort((a, b) => a.localeCompare(b, "ar", { sensitivity: "base" }));
 }
 
 function createFullMenuMessage(commands, prefix) {
-  let msg = "COMMANDS LIST:\n\n";
+  const LTR = "\u200e"; // Left-To-Right Mark
+  const RLO = "\u202e"; // Right-To-Left Override
+  const PDF = "\u202c"; // Pop Directional Formatting
 
-  // ترتيب عمودي مع وضع الزهرة في النهاية
+  let msg = `${LTR}COMMANDS LIST:\n\n`;
+
   for (const cmd of commands) {
-    msg += `${prefix}${cmd} 🌸\n`;
+    // فحص ما إذا كان الأمر يحتوي على أحرف عربية
+    const isArabic = /[\u0600-\u06FF]/.test(cmd);
+
+    if (isArabic) {
+      // إجبار التنسيق العربي على أن يبدأ بالنقطة من اليسار وينتهي بالزهرة
+      msg += `${LTR}.${RLO}${cmd}${PDF} 🌸\n`;
+    } else {
+      // التنسيق الإنجليزي العادي
+      msg += `${LTR}${prefix}${cmd} 🌸\n`;
+    }
   }
 
-  // اسم المطور بالخط الأحمر البارز
-  msg += `\nDev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`;
-  msg += `\nTotal: ${commands.length} Commands`;
+  msg += `\n${LTR}Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`;
+  msg += `\n${LTR}Total: ${commands.length} Commands`;
 
   return msg;
 }
 
 function createCommandDetail(cmd, prefix) {
+  const LTR = "\u200e";
   const {
     name, version, author, guide, category,
     longDescription, shortDescription, aliases
@@ -83,15 +95,15 @@ function createCommandDetail(cmd, prefix) {
     .replace(/{name}/g, name);
 
   return (
-    `COMMAND INFO:\n\n` +
-    `Name: ${name}\n` +
-    `Category: ${category || "General"}\n` +
-    `Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
-    `Version: ${version || "1.0"}\n` +
-    `Author: ${author || "Fares Khenchli"}\n\n` +
-    `Desc: ${desc}\n` +
-    `Usage: ${usage}\n\n` +
-    `Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`
+    `${LTR}COMMAND INFO:\n\n` +
+    `${LTR}Name: ${name}\n` +
+    `${LTR}Category: ${category || "General"}\n` +
+    `${LTR}Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
+    `${LTR}Version: ${version || "1.0"}\n` +
+    `${LTR}Author: ${author || "Fares Khenchli"}\n\n` +
+    `${LTR}Desc: ${desc}\n` +
+    `${LTR}Usage: ${usage}\n\n` +
+    `${LTR}Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`
   );
 }
 
@@ -129,10 +141,10 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu", "commands"],
-    version: "10.0",
+    version: "12.0",
     author: "Fares Khenchli",
-    shortDescription: "Display all available commands vertically",
-    longDescription: "Displays clean vertical command list developed by Fares Khenchli.",
+    shortDescription: "Display commands aligned to left cleanly",
+    longDescription: "Displays clean vertical command list with strict text directional fix.",
     category: "system",
     guide: "{pn}help [command name]"
   },
@@ -148,7 +160,6 @@ module.exports = {
       console.error("HELP GIF ERROR:", error);
     }
 
-    // 1. عند طلب تفاصيل أمر محدد
     if (query) {
       const lowerQuery = query.toLowerCase();
       const cmd = allCommands.get(lowerQuery) ||
@@ -170,7 +181,6 @@ module.exports = {
       return;
     }
 
-    // 2. عرض جميع الأوامر عمودياً
     const commands = getAllCommands();
     const menuMessage = createFullMenuMessage(commands, prefix);
 
