@@ -55,11 +55,13 @@ function getAllCommands() {
 function createFullMenuMessage(commands, prefix) {
   let msg = "COMMANDS LIST:\n\n";
 
-  // دمج الأوامر بنمط الأيقونة والمسافات الأفقية
-  const formattedCmds = commands.map(cmd => `🌸 ${prefix}${cmd}`);
-  msg += formattedCmds.join(" ");
+  // ترتيب عمودي مع وضع الزهرة في النهاية
+  for (const cmd of commands) {
+    msg += `${prefix}${cmd} 🌸\n`;
+  }
 
-  msg += `\n\nDev: Fares Khenchli`;
+  // اسم المطور بالخط الأحمر البارز
+  msg += `\nDev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`;
   msg += `\nTotal: ${commands.length} Commands`;
 
   return msg;
@@ -89,7 +91,7 @@ function createCommandDetail(cmd, prefix) {
     `Author: ${author || "Fares Khenchli"}\n\n` +
     `Desc: ${desc}\n` +
     `Usage: ${usage}\n\n` +
-    `Dev: Fares Khenchli`
+    `Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`
   );
 }
 
@@ -127,10 +129,10 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu", "commands"],
-    version: "9.5",
+    version: "10.0",
     author: "Fares Khenchli",
-    shortDescription: "Display all available commands horizontally",
-    longDescription: "Displays clean horizontal command list developed by Fares Khenchli.",
+    shortDescription: "Display all available commands vertically",
+    longDescription: "Displays clean vertical command list developed by Fares Khenchli.",
     category: "system",
     guide: "{pn}help [command name]"
   },
@@ -168,7 +170,7 @@ module.exports = {
       return;
     }
 
-    // 2. عرض جميع الأوامر أفقياً وبدون زخارف
+    // 2. عرض جميع الأوامر عمودياً
     const commands = getAllCommands();
     const menuMessage = createFullMenuMessage(commands, prefix);
 
