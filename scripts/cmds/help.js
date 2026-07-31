@@ -37,6 +37,33 @@ const gifURLs = [
   "https://i.giphy.com/media/HOmZcACWYNntC/giphy.gif"
 ];
 
+// خريطة تحويل الخط العريض للأحرف والأرقام اللاتينية
+const cmdFontMap = {
+  a: "𝗮", b: "𝗯", c: "𝗰", d: "𝗱", e: "𝗲", f: "𝗳", g: "𝗴", h: "𝗵", i: "𝗶", j: "𝗷",
+  k: "𝗸", l: "𝗹", m: "𝗺", n: "𝗻", o: "𝗼", p: "𝗽", q: "𝗾", r: "𝗿", s: "𝘀", t: "𝘁",
+  u: "𝘂", v: "𝘃", w: "𝘄", x: "𝘅", y: "𝘆", z: "𝘇",
+  A: "𝗔", B: "𝗕", C: "𝗖", D: "𝗗", E: "𝗘", F: "𝗙", G: "𝗚", H: "𝗛", I: "𝗜", J: "𝗝",
+  K: "𝗞", L: "𝗟", M: "𝗠", N: "𝗡", O: "𝗢", P: "𝗣", Q: "𝗤", R: "𝗥", S: "𝗦", T: "𝗧",
+  U: "𝗨", V: "𝗩", W: "𝗪", X: "𝗫", Y: "𝗬", Z: "𝗭",
+  "0": "𝟬", "1": "𝟭", "2": "𝟮", "3": "𝟯", "4": "𝟰", "5": "𝟱", "6": "𝟲", "7": "𝟳", "8": "𝟴", "9": "𝟵"
+};
+
+// دالة لتطبيق الخط العريض
+function toBoldText(text) {
+  const isArabic = /[\u0600-\u06FF]/.test(text);
+  
+  // الأحرف العربية تُحيط بـ ** للخط العريض في مسنجر
+  if (isArabic) {
+    return `**${text}**`;
+  }
+  
+  // الأحرف الإنجليزية والأرقام يتم تحويلها بواسطة الخريطة
+  return String(text)
+    .split("")
+    .map(char => cmdFontMap[char] || char)
+    .join("");
+}
+
 function getAllCommands() {
   const commands = [];
 
@@ -60,20 +87,20 @@ function createFullMenuMessage(commands, prefix) {
   let msg = `${LTR}COMMANDS LIST:\n\n`;
 
   for (const cmd of commands) {
-    // فحص ما إذا كان الأمر يحتوي على أحرف عربية
     const isArabic = /[\u0600-\u06FF]/.test(cmd);
+    const boldCmd = toBoldText(cmd);
 
     if (isArabic) {
-      // إجبار التنسيق العربي على أن يبدأ بالنقطة من اليسار وينتهي بالزهرة
-      msg += `${LTR}.${RLO}${cmd}${PDF} 🌸\n`;
+      // إجبار التنسيق العربي مع جعل النص عريضاً وضبط المحاذاة جهة اليسار
+      msg += `${LTR}.${RLO}${boldCmd}${PDF} 🌸\n`;
     } else {
-      // التنسيق الإنجليزي العادي
-      msg += `${LTR}${prefix}${cmd} 🌸\n`;
+      // التنسيق الإنجليزي العادي مع الخط العريض
+      msg += `${LTR}${prefix}${boldCmd} 🌸\n`;
     }
   }
 
   msg += `\n${LTR}Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`;
-  msg += `\n${LTR}Total: ${commands.length} Commands`;
+  msg += `\n${LTR}Total: ${toBoldText(commands.length)} Commands`;
 
   return msg;
 }
@@ -96,11 +123,11 @@ function createCommandDetail(cmd, prefix) {
 
   return (
     `${LTR}COMMAND INFO:\n\n` +
-    `${LTR}Name: ${name}\n` +
-    `${LTR}Category: ${category || "General"}\n` +
-    `${LTR}Aliases: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
-    `${LTR}Version: ${version || "1.0"}\n` +
-    `${LTR}Author: ${author || "Fares Khenchli"}\n\n` +
+    `${LTR}Name: ${toBoldText(name)}\n` +
+    `${LTR}Category: ${toBoldText(category || "General")}\n` +
+    `${LTR}Aliases: ${aliases?.length ? aliases.map(toBoldText).join(", ") : "None"}\n` +
+    `${LTR}Version: ${toBoldText(version || "1.0")}\n` +
+    `${LTR}Author: ${toBoldText(author || "Fares Khenchli")}\n\n` +
     `${LTR}Desc: ${desc}\n` +
     `${LTR}Usage: ${usage}\n\n` +
     `${LTR}Dev: 🚨 𝗙𝗮𝗿𝗲𝘀 𝗞𝗵𝗲𝗻𝗰𝗵𝗹𝗶 🚨`
@@ -141,10 +168,10 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu", "commands"],
-    version: "12.0",
+    version: "13.0",
     author: "Fares Khenchli",
-    shortDescription: "Display commands aligned to left cleanly",
-    longDescription: "Displays clean vertical command list with strict text directional fix.",
+    shortDescription: "Display commands aligned to left with bold text",
+    longDescription: "Displays clean vertical command list with LTR alignment and bold formatting.",
     category: "system",
     guide: "{pn}help [command name]"
   },
