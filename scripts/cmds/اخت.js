@@ -9,22 +9,24 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "sister",
-                aliases: ["sis", "বোন"],
-                version: "1.7",
+                name: "اخت",
+                aliases: ["sis", "বোন", "اخت"],
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 5,
                 role: 0,
                 description: {
                         bn: "বোন-ভাইয়ের মিষ্টি সম্পর্কের একটি ছবি তৈরি করুন",
                         en: "Create a sweet sister-brother relationship image",
-                        vi: "Tạo hình ảnh tình cảm chị em ngọt ngào"
+                        vi: "Tạo hình ảnh tình cảm chị em ngọt ngào",
+                        ar: "أنشئ صورة تعبر عن العلاقة اللطيفة بين الأخ والأخت"
                 },
                 category: "love",
                 guide: {
                         bn: '   {pn} <@tag/reply>: কাউকে ট্যাগ অথবা রিপ্লাই দিন',
                         en: '   {pn} <@tag/reply>: Tag or reply to someone',
-                        vi: '   {pn} <@tag/reply>: Gắn thẻ hoặc phản hồi ai đó'
+                        vi: '   {pn} <@tag/reply>: Gắn thẻ hoặc phản hồi ai đó',
+                        ar: '   {pn} <@tag/reply>: قم بعمل إشارة (منشن) أو رد على رسالة شخص ما'
                 }
         },
 
@@ -33,7 +35,7 @@ module.exports = {
                         noTarget: "× বেবি, একজনকে ট্যাগ করো অথবা রিপ্লাই দাও! 🎀",
                         wait: "⌛ তোমার ছবিটি তৈরি করছি... একটু অপেক্ষা করো বেবি! <😘",
                         success: "𝐋𝐢𝐟𝐞'𝐬 𝐛𝐞𝐭𝐭𝐞𝐫 𝐰𝐢𝐭𝐡 𝐚 𝐒𝐢𝐬𝐭𝐞𝐫 𝐛𝐲 𝐲𝐨𝐮𝐫 𝐬𝐢𝐝𝐞 🎀",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD."
                 },
                 en: {
                         noTarget: "× Baby, please tag or reply to someone! 🎀",
@@ -46,6 +48,12 @@ module.exports = {
                         wait: "⌛ Đang tạo hình ảnh cho cưng... Chờ chút nhé! <😘",
                         success: "𝐂𝐮𝐨̣̂𝐜 𝐬𝐨̂́𝐧𝐠 𝐭𝐨̂́𝐭 đ𝐞̣𝐩 𝐡𝐨̛𝐧 𝐤𝐡𝐢 𝐜𝐨́ 𝐜𝐡𝐢̣ 𝐞𝐦 𝐛𝐞̂𝐧 𝐜𝐚̣𝐧𝐡 🎀",
                         error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                },
+                ar: {
+                        noTarget: "× عزيزي، يرجى عمل إشارة (منشن) لشخص ما أو الرد على رسالته! 🎀",
+                        wait: "⌛ جاري تصميم صورتك... يرجى الانتظار قليلاً يا غالي! <😘",
+                        success: "𝐋𝐢𝐟𝐞'𝐬 𝐛𝐞𝐭𝐭𝐞𝐫 𝐰𝐢𝐭𝐡 𝐚 𝐒𝐢𝐬𝐭𝐞𝐫 𝐛𝐲 𝐲𝐨𝐮𝐫 𝐬𝐢𝐝𝐞 🎀",
+                        error: "× حدث خطأ: %1. تواصل مع MahMUD للمساعدة."
                 }
         },
 
