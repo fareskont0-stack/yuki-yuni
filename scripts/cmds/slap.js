@@ -9,15 +9,16 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "slap",
+                name: "صرفقهالو",
                 aliases: ["thappor"],
-                version: "1.7",
+                version: "1.9",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
                 description: {
                         bn: "কাউকে থাপ্পড় মারার ছবি তৈরি করুন",
-                        en: "Create a slap image of someone"
+                        en: "Create a slap image of someone",
+                        ar: "إنشاء صورة صفعة لشخص ما"
                 },
                 category: "fun",
                 guide: {
@@ -26,7 +27,10 @@ module.exports = {
                                 + '\n   (অথবা কারো মেসেজে রিপ্লাই দিয়ে এটি ব্যবহার করুন)',
                         en: '   {pn} <@tag>: Slap a tagged user'
                                 + '\n   {pn} <uid>: Slap by UID'
-                                + '\n   (Or reply to someone\'s message)'
+                                + '\n   (Or reply to someone\'s message)',
+                        ar: '   {pn} <@tag>: قم بصفع شخص تم الإشارة إليه'
+                                + '\n   {pn} <uid>: صفعة عن طريق الآي دي UID'
+                                + '\n   (أو قم بالرد على رسالة شخص ما)'
                 }
         },
 
@@ -34,12 +38,17 @@ module.exports = {
                 bn: {
                         noTarget: "× বেবি, কাকে থাপ্পড় মারবে তাকে মেনশন দাও বা রিপ্লাই করো!",
                         success: "এই নাও থাপ্পড়! একদম গাল লাল হয়ে গেছে 💥",
-                        error: "× থাপ্পড় মারতে গিয়ে সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× থাপ্পড় মারতে গিয়ে সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD。"
                 },
                 en: {
                         noTarget: "× Baby, mention or reply to someone to slap!",
                         success: "Here's a slap! 💥",
                         error: "× Failed to slap: %1. Contact MahMUD for help."
+                },
+                ar: {
+                        noTarget: "× يا عيوني، قم بالإشارة إلى شخص أو الرد على رسالته لصفعه!",
+                        success: "خذ هذه الصفعة! لقد احمر وجهه تماماً 💥",
+                        error: "× حدث خطأ أثناء تنفيذ الصفعة: %1. للتواصل تواصل مع MahMUD."
                 }
         },
 
@@ -48,6 +57,9 @@ module.exports = {
                 if (this.config.author !== authorName) {
                         return api.sendMessage("You are not authorized to change the author name.", event.threadID, event.messageID);
                 }
+
+                // إضافة التفاعل بالايموجي المطلوب على رسالة المستخدم
+                api.setMessageReaction("🩵", event.messageID, (err) => {}, true);
 
                 const { senderID, messageReply, mentions } = event;
                 let id2;
