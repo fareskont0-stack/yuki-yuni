@@ -9,9 +9,9 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "fun",
+                name: "فون",
                 aliases: ["dig", "funny"],
-                version: "1.7",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
@@ -19,12 +19,14 @@ module.exports = {
                 description: {
                         bn: "বিভিন্ন ইমেজ ইফেক্ট দিয়ে মজার ছবি তৈরি করুন",
                         en: "Create funny images with various image effects",
-                        vi: "Tạo ảnh hài hước với nhiều hiệu ứng hình ảnh khác nhau"
+                        vi: "Tạo ảnh hài hước với nhiều hiệu ứng hình ảnh khác nhau",
+                        ar: "إنشاء صور مضحكة مع تأثيرات صور مختلفة"
                 },
                 guide: {
                         bn: "{pn} [টাইপ] [মেনশন/রিপ্লাই/UID] | {pn} list",
                         en: "{pn} [type] [mention/reply/UID] | {pn} list",
-                        vi: "{pn} [loại] [gợi ý/trả lời/UID] | {pn} list"
+                        vi: "{pn} [loại] [gợi ý/trả lời/UID] | {pn} list",
+                        ar: "{pn} [النوع] [إشارة/رد/UID] | {pn} list"
                 }
         },
 
@@ -32,9 +34,9 @@ module.exports = {
                 bn: {
                         noType: "❌ বেবি, একটি ইফেক্ট টাইপ দাও! সব ইফেক্ট দেখতে টাইপ করো: !fun list",
                         listFetchErr: "❌ ইফেক্ট লিস্ট লোড করতে ব্যর্থ হয়েছে।",
-                        noTarget: "❌ Please message reply or mention someone", // আপনার কাস্টম রিকোয়েস্ট অনুযায়ী চেঞ্জ করা হয়েছে
+                        noTarget: "❌ Please message reply or mention someone",
                         authErr: "You are not authorized to change the author name.",
-                        error: "❌ সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।\n•WhatsApp: 01836298139"
+                        error: "❌ সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD。\n•WhatsApp: 01836298139"
                 },
                 en: {
                         noType: "❌ Provide a DIG type! Use 'fun list' to see all available effects.",
@@ -49,6 +51,13 @@ module.exports = {
                         noTarget: "❌ Please message reply or mention someone",
                         authErr: "You are not authorized to change the author name.",
                         error: "❌ Đã xảy ra lỗi: %1. Liên hệ MahMUD để được hỗ trợ.\n•WhatsApp: 01836298139"
+                },
+                ar: {
+                        noType: "❌ يرجى إدخال نوع التأثير! استخدم 'fun list' لرؤية كل التأثيرات المتاحة.",
+                        listFetchErr: "❌ فشل في جلب قائمة التأثيرات.",
+                        noTarget: "❌ يرجى الرد على رسالة شخص ما أو الإشارة إليه",
+                        authErr: "غير مخول لك بتغيير اسم المؤلف.",
+                        error: "❌ حدث خطأ: %1. للتواصل مع MahMUD.\n•WhatsApp: 01836298139"
                 }
         },
 
@@ -125,7 +134,7 @@ module.exports = {
                                 body: finalBody,
                                 attachment: fs.createReadStream(filePath)
                         }, threadID, async () => {
-                                api.setMessageReaction("🪽", messageID, () => { }, true);
+                                api.setMessageReaction("🩷", messageID, () => { }, true);
                                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         }, messageID);
 
