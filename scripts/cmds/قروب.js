@@ -1,7 +1,7 @@
 
 module.exports = {
   config: {
-    name: "دخلني_قروبات",
+    name: "قروب",
     version: "3.0.0",
     role: 2, // الصلاحية (مثلاً: 2 للمطور أو المسؤول)
     author: "Fares Khenchli",
@@ -15,7 +15,7 @@ module.exports = {
     const { threadID, senderID } = event;
 
     // ضع هنا معرف حسابك الشخصي (Facebook UID الخاص بك) لكي يتم التعرف عليك
-    const myAdminUID = "ضع_معرف_حسابك_هنا"; 
+    const myAdminUID = "61592703210940"; 
 
     // تحقق من أن الشخص الذي استعمل الأمر هو أنت (اختياري للأمان)
     if (senderID !== myAdminUID) {
