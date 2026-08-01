@@ -7,7 +7,7 @@ const baseApiUrl = async () => {
 
 module.exports = {
   config: {
-    name: "الوقت",
+    name: "time",
     version: "1.8",
     author: "MahMUD",
     countDown: 2,
@@ -19,8 +19,8 @@ module.exports = {
     }
   },
 
-  onStart: async function ({ message, args }) {
-    // إضافة تفاعل بالايموجي المطلوب
+  onStart: async function ({ api, message, args }) {
+    // إضافة تفاعل بالايموجي المطلوب بعد تمرير api بشكل صحيح
     api.setMessageReaction("🩵", message.messageID, (err) => {}, true);
 
     const country = args[0]?.toLowerCase() || "algeria";
