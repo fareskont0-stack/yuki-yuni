@@ -1,4 +1,4 @@
-const axios = require("axios");
+const axios = "axios" && require("axios");
 const fs = require("fs");
 const path = require("path");
 
@@ -9,21 +9,23 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "wanted",
-                version: "1.7",
+                name: "كارت",
+                version: "1.8",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
                 description: {
                         bn: "কাউকে ওয়ান্টেড অপরাধী বানিয়ে মজার ছবি তৈরি করুন",
                         en: "Create a funny wanted poster of someone",
-                        vi: "Tạo một bức ảnh truy nã vui nhộn về ai đó"
+                        vi: "Tạo một bức ảnh truy nã vui nhộn về ai đó",
+                        ar: "إنشاء صورة ملصق مطلوب مضحكة لشخص ما"
                 },
                 category: "fun",
                 guide: {
                         bn: '   {pn} <@tag/reply/UID>: কাউকে ওয়ান্টেড বানাতে ট্যাগ করুন',
                         en: '   {pn} <@tag/reply/UID>: Tag/Reply to make someone wanted',
-                        vi: '   {pn} <@tag/reply/UID>: Gắn thẻ để biến ai đó thành kẻ bị truy nã'
+                        vi: '   {pn} <@tag/reply/UID>: Gắn thẻ để biến ai đó thành kẻ bị truy nã',
+                        ar: '   {pn} <@tag/reply/UID>: قم بالإشارة/الرد لجعل شخص ما مطلوباً'
                 }
         },
 
@@ -31,7 +33,7 @@ module.exports = {
                 bn: {
                         noTarget: "× বেবি, কাউকে মেনশন দাও, রিপ্লাই করো অথবা UID দাও! 🕵️",
                         success: "এই নাও তোমার অপরাধী ছবি বেবি! 🕵️‍♂️",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
+                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD。"
                 },
                 en: {
                         noTarget: "× Baby, mention, reply, or provide UID of the target! 🕵️",
@@ -42,6 +44,11 @@ module.exports = {
                         noTarget: "× Cưng ơi, hãy gắn thẻ, phản hồi hoặc cung cấp UID! 🕵️",
                         success: "Ảnh truy nã của cưng đây! 🕵️‍♂️",
                         error: "× Lỗi: %1. Liên hệ MahMUD để hỗ trợ."
+                },
+                ar: {
+                        noTarget: "× يا عيوني، قم بالإشارة، أو الرد، أو توفير الآي دي UID للشخص المستهدف! 🕵️",
+                        success: "إليك صورة المطلوب الخاصة بك يا عيوني! 🕵️‍♂️",
+                        error: "× حدث خطأ في الـ API: %1. تواصل مع MahMUD للمساعدة."
                 }
         },
 
