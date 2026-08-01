@@ -7,17 +7,23 @@ const baseApiUrl = async () => {
 
 module.exports = {
   config: {
-    name: "time",
-    version: "1.7",
+    name: "الوقت",
+    version: "1.8",
     author: "MahMUD",
     countDown: 2,
     role: 0,
     category: "utility",
-    guide: "{pn} [country] | {pn} list\n\nExamples:\n{pn} bangladesh\n{pn} london\n{pn} list"
+    guide: "{pn} [country] | {pn} list\n\nExamples:\n{pn} algeria\n{pn} bangladesh\n{pn} london\n{pn} list",
+    description: {
+      ar: "عرض الوقت الحالي حسب الدولة"
+    }
   },
 
   onStart: async function ({ message, args }) {
-    const country = args[0]?.toLowerCase() || "bangladesh";
+    // إضافة تفاعل بالايموجي المطلوب
+    api.setMessageReaction("🩵", message.messageID, (err) => {}, true);
+
+    const country = args[0]?.toLowerCase() || "algeria";
 
    try {
     const baseUrl = await baseApiUrl();
