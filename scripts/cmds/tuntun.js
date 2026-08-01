@@ -9,8 +9,8 @@ const baseApiUrl = async () => {
 
 module.exports = {
         config: {
-                name: "tuntun",
-                version: "1.7",
+                name: "تونتون",
+                version: "1.8",
                 author: "MahMUD",
                 role: 0,
                 category: "fun",
@@ -18,7 +18,8 @@ module.exports = {
                 guide: {
                         en: "{pn} [mention/reply/UID]",
                         bn: "{pn} [মেনশন/রিপ্লাই/UID]",
-                        vi: "{pn} [mention/reply/UID]"
+                        vi: "{pn} [mention/reply/UID]",
+                        ar: "{pn} [إشارة/رد/UID]"
                 }
         },
 
@@ -37,6 +38,11 @@ module.exports = {
                         noTarget: "• Cưng ơi, hãy đề cập, phản hồi hoặc cung cấp UID",
                         error: "❌ An error occurred: contact MahMUD %1",
                         success: "Hiệu ứng tuntun thành công"
+                },
+                ar: {
+                        noTarget: "• يا عيوني، من تريد استهدافه؟ قم بالإشارة، أو الرد، أو توفير الآي دي UID",
+                        error: "❌ حدث خطأ: تواصل مع Fares %1",
+                        success: "تم تنفيذ تأثير tuntun بنجاح"
                 }
         },
 
@@ -69,7 +75,7 @@ module.exports = {
                                 attachment: fs.createReadStream(filePath)
                         }, threadID, (err) => {
                                 if (!err) {
-                                        api.setMessageReaction("🪽", messageID, () => { }, true);
+                                        api.setMessageReaction("💖", messageID, () => { }, true);
                                 }
                                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         }, messageID);
