@@ -4,7 +4,7 @@ const { writeFileSync } = require("fs-extra");
 
 module.exports = {
 	config: {
-		name: "groups",
+		name: "قروب",
 		aliases: ["مجموعات", "wlt"],
 		version: "1.7",
 		author: "NTKhang",
@@ -98,8 +98,8 @@ module.exports = {
 
 				const getNames = await Promise.all(removed.map(async tid => {
 					const info = await api.getThreadInfo(tid) || {};
-					return { tid, name: info.threadName || "غير معروف"}}}
-				);
+					return { tid, name: info.threadName || "غير معروف" };
+				}));
 
 				writeFileSync(global.client.dirConfig, JSON.stringify(config, null, 2));
 
