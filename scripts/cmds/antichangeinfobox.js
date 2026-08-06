@@ -2,14 +2,16 @@ const { getStreamFromURL, uploadImgbb } = global.utils;
 
 module.exports = {
 	config: {
-		name: "antichangeinfobox",
-		version: "1.9",
-		author: "NTKhang",
+		name: "حماية",
+		aliases: ["antichangeinfobox"],
+		version: "2.0",
+		author: "NTKhang & Fares Kouachi",
 		countDown: 5,
 		role: 0,
 		description: {
 			vi: "Bật tắt chức năng chống thành viên đổi thông tin box chat của bạn",
-			en: "Turn on/off anti change info box"
+			en: "Turn on/off anti change info box",
+			ar: "تفعيل/إيقاف حماية معلومات المجموعة وإرجاعها تلقائياً"
 		},
 		category: "box chat",
 		guide: {
@@ -22,7 +24,12 @@ module.exports = {
 				+ "\n   {pn} name [on | off]: anti change name box chat"
 				+ "\n   {pn} nickname [on | off]: anti change nickname in box chat"
 				+ "\n   {pn} theme [on | off]: anti change theme (chủ đề) box chat"
-				+ "\n   {pn} emoji [on | off]: anti change emoji box chat"
+				+ "\n   {pn} emoji [on | off]: anti change emoji box chat",
+			ar: "   {pn} صورة [on | off]: حماية صورة المجموعة"
+				+ "\n   {pn} اسم [on | off]: حماية اسم المجموعة"
+				+ "\n   {pn} القاب [on | off]: حماية الألقاب"
+				+ "\n   {pn} ثيم [on | off]: حماية ثيم الشات"
+				+ "\n   {pn} ايموجي [on | off]: حماية إيموجي المجموعة"
 		}
 	},
 
@@ -64,16 +71,36 @@ module.exports = {
 			antiChangeNicknameAlreadyOn: "Your box chat is currently on anti change nickname",
 			antiChangeThemeAlreadyOn: "Your box chat is currently on anti change theme",
 			antiChangeEmojiAlreadyOn: "Your box chat is currently on anti change emoji"
+		},
+		ar: {
+			antiChangeAvatarOn: "✅ تم تفعيل حماية صورة المجموعة بنجاح",
+			antiChangeAvatarOff: "❌ تم إيقاف حماية صورة المجموعة",
+			missingAvt: "⚠️ لم يتم ضبط صورة للمجموعة بعد",
+			antiChangeNameOn: "✅ تم تفعيل حماية اسم المجموعة بنجاح",
+			antiChangeNameOff: "❌ تم إيقاف حماية اسم المجموعة",
+			antiChangeNicknameOn: "✅ تم تفعيل حماية ألقاب الأعضاء بنجاح",
+			antiChangeNicknameOff: "❌ تم إيقاف حماية ألقاب الأعضاء",
+			antiChangeThemeOn: "✅ تم تفعيل حماية ثيم/مظهر المجموعة بنجاح",
+			antiChangeThemeOff: "❌ تم إيقاف حماية ثيم/مظهر المجموعة",
+			antiChangeEmojiOn: "✅ تم تفعيل حماية إيموجي المجموعة بنجاح",
+			antiChangeEmojiOff: "❌ تم إيقاف حماية إيموجي المجموعة",
+			antiChangeAvatarAlreadyOn: "⚠️ لقد تم منعك من تغيير صورة المجموعة بواسطة مطور Fares!",
+			antiChangeAvatarAlreadyOnButMissingAvt: "⚠️ حماية الصورة مفعّلة ولكن لا توجد صورة قديمة لإرجاعها",
+			antiChangeNameAlreadyOn: "⚠️ لقد تم منعك من تغيير اسم مجموعة بواسطة مطور Fares!",
+			antiChangeNicknameAlreadyOn: "⚠️ لقد تم منعك من تغيير الألقاب بواسطة مطور Fares!",
+			antiChangeThemeAlreadyOn: "⚠️ لقد تم منعك من تغيير ثيم المجموعة بواسطة مطور Fares!",
+			antiChangeEmojiAlreadyOn: "⚠️ لقد تم منعك من تغيير إيموجي المجموعة بواسطة مطور Fares!"
 		}
 	},
 
 	onStart: async function ({ message, event, args, threadsData, getLang }) {
-		if (!["on", "off"].includes(args[1]))
+		if (!args[0] || !["on", "off"].includes(args[1]))
 			return message.SyntaxError();
+
 		const { threadID } = event;
 		const dataAntiChangeInfoBox = await threadsData.get(threadID, "data.antiChangeInfoBox", {});
+
 		async function checkAndSaveData(key, data) {
-			// dataAntiChangeInfoBox[key] = args[1] === "on" ? data : false;
 			if (args[1] === "off")
 				delete dataAntiChangeInfoBox[key];
 			else
@@ -82,10 +109,14 @@ module.exports = {
 			await threadsData.set(threadID, dataAntiChangeInfoBox, "data.antiChangeInfoBox");
 			message.reply(getLang(`antiChange${key.slice(0, 1).toUpperCase()}${key.slice(1)}${args[1].slice(0, 1).toUpperCase()}${args[1].slice(1)}`));
 		}
-		switch (args[0]) {
+
+		const target = args[0].toLowerCase();
+
+		switch (target) {
 			case "avt":
 			case "avatar":
-			case "image": {
+			case "image":
+			case "صورة": {
 				const { imageSrc } = await threadsData.get(threadID);
 				if (!imageSrc)
 					return message.reply(getLang("missingAvt"));
@@ -93,22 +124,27 @@ module.exports = {
 				await checkAndSaveData("avatar", newImageSrc.image.url);
 				break;
 			}
-			case "name": {
+			case "name":
+			case "اسم": {
 				const { threadName } = await threadsData.get(threadID);
 				await checkAndSaveData("name", threadName);
 				break;
 			}
-			case "nickname": {
+			case "nickname":
+			case "القاب":
+			case "لقب": {
 				const { members } = await threadsData.get(threadID);
 				await checkAndSaveData("nickname", members.map(user => ({ [user.userID]: user.nickname })).reduce((a, b) => ({ ...a, ...b }), {}));
 				break;
 			}
-			case "theme": {
+			case "theme":
+			case "ثيم": {
 				const { threadThemeID } = await threadsData.get(threadID);
 				await checkAndSaveData("theme", threadThemeID);
 				break;
 			}
-			case "emoji": {
+			case "emoji":
+			case "ايموجي": {
 				const { emoji } = await threadsData.get(threadID);
 				await checkAndSaveData("emoji", emoji);
 				break;
@@ -127,7 +163,6 @@ module.exports = {
 				if (!dataAntiChange.avatar && role < 1)
 					return;
 				return async function () {
-					// check if user not is admin or bot then change avatar back
 					if (role < 1 && api.getCurrentUserID() !== author) {
 						if (dataAntiChange.avatar != "REMOVE") {
 							message.reply(getLang("antiChangeAvatarAlreadyOn"));
@@ -136,8 +171,8 @@ module.exports = {
 						else {
 							message.reply(getLang("antiChangeAvatarAlreadyOnButMissingAvt"));
 						}
+						try { await api.removeUserFromGroup(author, threadID); } catch (e) {}
 					}
-					// else save new avatar
 					else {
 						const imageSrc = logMessageData.url;
 						if (!imageSrc)
@@ -150,14 +185,13 @@ module.exports = {
 			}
 			case "log:thread-name": {
 				const dataAntiChange = await threadsData.get(threadID, "data.antiChangeInfoBox", {});
-				// const name = await threadsData.get(threadID, "data.antiChangeInfoBox.name");
-				// if (name == false)
 				if (!dataAntiChange.hasOwnProperty("name"))
 					return;
 				return async function () {
 					if (role < 1 && api.getCurrentUserID() !== author) {
 						message.reply(getLang("antiChangeNameAlreadyOn"));
 						api.setTitle(dataAntiChange.name, threadID);
+						try { await api.removeUserFromGroup(author, threadID); } catch (e) {}
 					}
 					else {
 						const threadName = logMessageData.name;
@@ -167,8 +201,6 @@ module.exports = {
 			}
 			case "log:user-nickname": {
 				const dataAntiChange = await threadsData.get(threadID, "data.antiChangeInfoBox", {});
-				// const nickname = await threadsData.get(threadID, "data.antiChangeInfoBox.nickname");
-				// if (nickname == false)
 				if (!dataAntiChange.hasOwnProperty("nickname"))
 					return;
 				return async function () {
@@ -185,14 +217,12 @@ module.exports = {
 			}
 			case "log:thread-color": {
 				const dataAntiChange = await threadsData.get(threadID, "data.antiChangeInfoBox", {});
-				// const themeID = await threadsData.get(threadID, "data.antiChangeInfoBox.theme");
-				// if (themeID == false)
 				if (!dataAntiChange.hasOwnProperty("theme"))
 					return;
 				return async function () {
 					if (role < 1 && api.getCurrentUserID() !== author) {
 						message.reply(getLang("antiChangeThemeAlreadyOn"));
-						api.changeThreadColor(dataAntiChange.theme || "196241301102133", threadID); // 196241301102133 is default color
+						api.changeThreadColor(dataAntiChange.theme || "196241301102133", threadID);
 					}
 					else {
 						const threadThemeID = logMessageData.theme_id;
@@ -202,8 +232,6 @@ module.exports = {
 			}
 			case "log:thread-icon": {
 				const dataAntiChange = await threadsData.get(threadID, "data.antiChangeInfoBox", {});
-				// const emoji = await threadsData.get(threadID, "data.antiChangeInfoBox.emoji");
-				// if (emoji == false)
 				if (!dataAntiChange.hasOwnProperty("emoji"))
 					return;
 				return async function () {
