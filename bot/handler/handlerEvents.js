@@ -203,19 +203,36 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 			if (!body || !body.startsWith(prefix))
 				return;
 
-			// —————————————— OWNER PRIVACY CHECK —————————————— //
+			// —————————————— OWNER PRIVACY CHECK (احترافي) —————————————— //
 			const OWNER_UID = "61592703210940";
 			if (senderID != OWNER_UID) {
-				return api.sendMessage(
-					"🔒 هذا البوت خاص بالمطور.\n\n" +
-					"👤 Fares Kouachi\n" +
-					"📩 للتواصل:\n" +
-					"https://www.facebook.com/profile.php?id=61592703210940",
-					threadID,
-					messageID
-				);
+				const ownerName = "Fares Kouachi";
+				const noticeText = "🔒 هذا البوت خاص بالمطور.\n\n✨ الأدمن الأسطوري تاعنا ✨";
+
+				try {
+					// المحاولة الأولى: إرسال كـ Contact Card تفاعلي (بطاقة شخصية قابلة للضغط)
+					if (typeof api.shareContact === "function") {
+						return await api.shareContact(noticeText, OWNER_UID, threadID, messageID);
+					}
+					
+					// المحاولة الثانية: إرسال الرسالة مع Mention احترافي
+					return await api.sendMessage({
+						body: `${noticeText}\n👤 ${ownerName}\n📩 للتواصل:\nhttps://www.facebook.com/profile.php?id=${OWNER_UID}`,
+						mentions: [{
+							tag: ownerName,
+							id: OWNER_UID
+						}]
+					}, threadID, messageID);
+				} catch (err) {
+					// في حال حدوث أي خطأ في الـ API، الإرسال بالطريقة الاحتياطية المباشرة
+					return await api.sendMessage(
+						`${noticeText}\n👤 ${ownerName}\n📩 للتواصل:\nhttps://www.facebook.com/profile.php?id=${OWNER_UID}`,
+						threadID,
+						messageID
+					);
+				}
 			}
-			// —————————————————————————————————————————————————— //
+			// ————————————————————————————————————————————————————————— //
 
 			const dateNow = Date.now();
 			const args = body.slice(prefix.length).trim().split(/ +/);
