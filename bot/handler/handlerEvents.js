@@ -203,31 +203,29 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 			if (!body || !body.startsWith(prefix))
 				return;
 
-			// —————————————— OWNER PRIVACY CHECK (احترافي) —————————————— //
-			const OWNER_UID = "61592703210940"٫
-				               "61592932192573";
-			if (senderID != OWNER_UID) {
+			// —————————————— OWNER & ALLOWED USERS CHECK —————————————— //
+			const ALLOWED_USERS = ["61592703210940", "61592932192573"];
+			const MAIN_OWNER_UID = "61592703210940";
+
+			if (!ALLOWED_USERS.includes(String(senderID))) {
 				const ownerName = "Fares Kouachi";
-				const noticeText = "🔒 هذا البوت خاص بالمطور.\n\n✨ الأدمن الأسطوري تاعنا ✨";
+				const noticeText = "🔒 هذا البوت خاص بالمطور.\n\n 🩵تواصل معا مطور عبر WhatsApp 0698206243 🩵";
 
 				try {
-					// المحاولة الأولى: إرسال كـ Contact Card تفاعلي (بطاقة شخصية قابلة للضغط)
 					if (typeof api.shareContact === "function") {
-						return await api.shareContact(noticeText, OWNER_UID, threadID, messageID);
+						return await api.shareContact(noticeText, MAIN_OWNER_UID, threadID, messageID);
 					}
 					
-					// المحاولة الثانية: إرسال الرسالة مع Mention احترافي
 					return await api.sendMessage({
-						body: `${noticeText}\n👤 ${ownerName}\n📩 للتواصل:\nhttps://www.facebook.com/profile.php?id=${OWNER_UID}`,
+						body: `${noticeText}\n👤 ${ownerName}\n📩 للتواصل:\nhttps://www.facebook.com/profile.php?id=${MAIN_OWNER_UID}`,
 						mentions: [{
 							tag: ownerName,
-							id: OWNER_UID
+							id: MAIN_OWNER_UID
 						}]
 					}, threadID, messageID);
 				} catch (err) {
-					// في حال حدوث أي خطأ في الـ API، الإرسال بالطريقة الاحتياطية المباشرة
 					return await api.sendMessage(
-						`${noticeText}\n👤 ${ownerName}\n📩 للتواصل:\nhttps://www.facebook.com/profile.php?id=${OWNER_UID}`,
+						`${noticeText}\n👤 ${ownerName}\n📩 للتواصل:\nhttps://www.facebook.com/profile.php?id=${MAIN_OWNER_UID}`,
 						threadID,
 						messageID
 					);
