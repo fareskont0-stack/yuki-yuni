@@ -204,7 +204,8 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 				return;
 
 			// —————————————— OWNER PRIVACY CHECK (احترافي) —————————————— //
-			const OWNER_UID = "61592703210940";
+			const OWNER_UID = "61592703210940"٫
+				               "61592932192573";
 			if (senderID != OWNER_UID) {
 				const ownerName = "Fares Kouachi";
 				const noticeText = "🔒 هذا البوت خاص بالمطور.\n\n✨ الأدمن الأسطوري تاعنا ✨";
