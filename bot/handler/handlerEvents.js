@@ -178,6 +178,7 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 
 		const prefix = getPrefix(threadID);
 		const role = getRole(threadData, senderID);
+
 		const parameters = {
 			api, usersData, threadsData, message, event,
 			userModel, threadModel, prefix, dashBoardModel,
@@ -201,6 +202,21 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 		async function onStart() {
 			if (!body || !body.startsWith(prefix))
 				return;
+
+			// —————————————— OWNER PRIVACY CHECK —————————————— //
+			const OWNER_UID = "61592703210940";
+			if (senderID != OWNER_UID) {
+				return api.sendMessage(
+					"🔒 هذا البوت خاص بالمطور.\n\n" +
+					"👤 Fares Kouachi\n" +
+					"📩 للتواصل:\n" +
+					"https://www.facebook.com/profile.php?id=61592703210940",
+					threadID,
+					messageID
+				);
+			}
+			// —————————————————————————————————————————————————— //
+
 			const dateNow = Date.now();
 			const args = body.slice(prefix.length).trim().split(/ +/);
 			let commandName = args.shift().toLowerCase();
