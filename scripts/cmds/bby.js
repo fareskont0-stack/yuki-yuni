@@ -17,6 +17,7 @@ if (fs.existsSync(memoryPath)) {
     fs.writeFileSync(memoryPath, JSON.stringify({}, null, 2));
 }
 
+// دالة التعلم الجماعي والسريع
 function learnMultiplePhrases(text) {
     const lines = text.split("\n");
     let count = 0;
@@ -43,10 +44,18 @@ function learnMultiplePhrases(text) {
     return count;
 }
 
+// البحث في الذاكرة بتطابق دقيق لتفادي الردود الخاطئة
 function getFromMemory(text) {
     const cleanText = text.toLowerCase().trim();
+    
+    // 1. فحص المطابقة التامة أولاً
+    if (memory[cleanText]) {
+        return memory[cleanText];
+    }
+    
+    // 2. فحص الكلمات المفتاحية الدقيقة
     for (const [key, reply] of Object.entries(memory)) {
-        if (cleanText.includes(key)) {
+        if (cleanText === key || cleanText.startsWith(key + " ") || cleanText.endsWith(" " + key)) {
             return reply;
         }
     }
@@ -74,34 +83,31 @@ async function getUserDetails(api, uid, messageText = "") {
 
 async function getAIResponse(prompt, userInfo) {
     try {
-        const systemInstruction = `أنت شاب جزائري حقيقي اسمه "يوكي". تتحدث فقط بالدارجة الجزائرية العادية والثقيلة.
+        const systemPrompt = `أنت شاب جزائري كاريزما ورجلة اسمه "يوكي". تتحدث بالدارجة الجزائرية فقط.
 
-قواعد صارمة جداً الممنوعات:
-- ممنوع منعاً باتاً الكلمات المصرية (مثل: عايز، دي، عشان، هقولك، بلاش، كده، ايه، ازاي).
-- ممنوع منعاً باتاً الكلمات المغربية (مثل: مزيان، دابا، نيت، كلاشك، عافاك، بزاف بزاف).
-- ممنوع الفصحى والمصطلحات المعقدة والروبوتية.
-
-كيف تتحدث:
-- جاوب بسطر واحد فقط، مباشر ورزين.
-- استخدم كلمات جزائرية حقيقية فقط مثل: (واش، صفا، لباس، عيشك، يعطيك الصحة، صحا، راني، صوالحي، صحيت).
-- إذا تحدثت مع فتاة (${userInfo.name}) كن محترماً وثقيلاً وبدون تلصاق أو إيموجيات ملونة.
+قواعد صارمة جداً:
+1. ممنوع نهائياً الكلمات المصرية أو الشرقية مثل: (عايز، كويسة، دي، عشان، هقولك، بلاش، كده، ايه، ازاي، مينفعش).
+2. ممنوع التأتأة أو الكلام المعقد.
+3. جاوب مباشرة على سؤال المستخدم بأسلوب جزائري ثقيل ورزين وبسطر واحد فقط.
+4. بدون إيموجيات ملونة أو كلام رخيص.
 
 أمثلة للرد الصحيح:
-المستخدم: واش راك؟ -> الرد: لباس الحمد لله وأنتِ؟
-المستخدم: شكون أنت؟ -> الرد: أنا يوكي.
-المستخدم: راني عيانة -> الرد: ارتاحي شوية.
-المستخدم: وين رايح؟ -> الرد: نقضي صوالحي ونرجع.`;
+- "اعطينا كاش نكتة" -> "مرة واحد زاتول راح للشربات قالو عندك قاروزة؟ قالو لا، قالو ملا معليش اعطيني كاس"
+- "صحا" -> "صحا خويا"
+- "صفا" -> "لباس الحمد لله وأنت؟"
+- "كي تقلك وحدة نحبك واش تقولها" -> "نقولها القدر بيناتنا كبير"
+- "واش راك" -> "بخير عيشك"`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
-                { role: "system", content: systemInstruction },
+                { role: "system", content: systemPrompt },
                 { role: "user", content: prompt }
             ],
             model: "llama-3.1-8b-instant",
-            temperature: 0.2 // درجة منخفضة تضمن عدم الابتكار بلهجات أخرى
+            temperature: 0.1 // درجة منخفضة جداً لضمان عدم الابتكار بلغات أخرى والتزامه بالدارجة فقط
         });
 
-        return chatCompletion.choices[0]?.message?.content || "لباس الحمد لله وأنتِ";
+        return chatCompletion.choices[0]?.message?.content || "لباس الحمد لله";
     } catch (err) {
         return "لباس الحمد لله";
     }
@@ -110,11 +116,11 @@ async function getAIResponse(prompt, userInfo) {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "20.0",
+    version: "21.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت جزائري 100% صارم وبدون تخليط لهجات",
+    description: "بوت جزائري كاريزما ودقيق في الردود",
     category: "chat"
 };
 
@@ -122,15 +128,18 @@ async function handleMessage(api, event, text) {
     const msg = text.trim();
     if (!msg || containsBadWords(msg)) return;
 
+    // 1. التعلم السريع
     if (msg.includes("تعلم:") || msg.includes("تعلم ")) {
         const learnedCount = learnMultiplePhrases(msg);
         if (learnedCount > 0) {
-            return api.sendMessage(`تم يا الفحل! حفظت ${learnedCount} رد جديد في الذاكرة بنجاح.`, event.threadID, event.messageID);
+            return api.sendMessage(`تم يا الفحل! حفظت ${learnedCount} رد جديد في الذاكرة.`, event.threadID, event.messageID);
         }
     }
 
+    // 2. الفحص الدقيق في الذاكرة
     let botResponse = getFromMemory(msg);
 
+    // 3. الذكاء الاصطناعي بالدارجة الجزائرية الدقيقة
     if (!botResponse) {
         const userInfo = await getUserDetails(api, event.senderID, msg);
         botResponse = await getAIResponse(msg, userInfo);
