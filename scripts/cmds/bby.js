@@ -9,44 +9,51 @@ function containsBadWords(text) {
     return badWords.some(word => lower.includes(word));
 }
 
-async function getUserDetails(api, uid) {
+// دالة ذكية لمعرفة هل المتحدث بنت بناءً على الاسم وكلام الرسالة
+async function getUserDetails(api, uid, messageText = "") {
     try {
         const userInfo = await api.getUserInfo(uid);
         const user = userInfo[uid];
-        return {
-            name: user?.name || "الزين",
-            gender: user?.gender === 1 ? "female" : (user?.gender === 2 ? "male" : "unknown")
-        };
+        const name = user?.name || "الزين";
+        
+        // الكلمات المؤنثة التي تشير إلى أن المتحدثة بنت
+        const femaleKeywords = ["راني", "عرفك", "وسمك", "حبيبتي", "عمري", "زوجني", "زعفانة", "عيانة", "مريضة", "تبغيني"];
+        const isTextFemale = femaleKeywords.some(kw => messageText.toLowerCase().includes(kw));
+        
+        let isFemale = user?.gender === 1 || isTextFemale;
+
+        return { name, isFemale };
     } catch (e) {
-        return { name: "الزين", gender: "unknown" };
+        return { name: "الزين", isFemale: true }; // الافتراضي معاملة حنونة
     }
 }
 
-async function getAIResponse(prompt, userInfo) {
+// دالة الذكاء الاصطناعي للفهم والدقة في الرد
+async function getAIResponse(prompt, userInfo, repliedText = "") {
     try {
-        const isGirl = userInfo.gender === "female";
+        const contextPrompt = repliedText ? `(الرسالة التي يرد عليها البوت: "${repliedText}")\nرسالة المستخدم: "${prompt}"` : prompt;
 
-        // تعليمات صارمة لحظر أي لهجة غير الجزائرية ومنع الردود الطويلة
-        const systemInstruction = isGirl 
-            ? `أنت شاب جزائري حقيقي (ممنوع تماماً الكلام كـ روبوت). تتحدث مع فتاة اسمها "${userInfo.name}".
-قواعد صارمة جداً:
-1. التحدث بالدارجة الجزائرية العادية والمباشرة فقط! (ممنوع منعاً باتاً كلمات مصرية مثل: هقولك، بلاش، هاخدك، سوا... وممنوع الفصحى).
-2. الرد يكون قصير جداً (جملة واحدة أو جملتين فقط). ممنوع الجرائد والخطابات الرومانسية المبتذلة!
-3. جاوب بعفوية وحنان خفيف جداً، مثل إنسان طبيعي يراسل في Messenger (مثال: "صاحيت يا الزين 🙂❤️"، "صفا عمري راكي مليحة؟"، "ربي يحفظك ليا يا روحي ✨").
-4. إذا قالت لك "اسكت" أو "بلع"، رد بكلمة قصيرة ولطيفة بدون فلسفة (مثال: "صحا عمري هاني سكت 🙂❤️").`
-            : `أنت شاب جزائري رجلة. تتحدث مع صديقك "${userInfo.name}".
-قواعد: ردود قصيرة جداً ومباشرة بالدارجة الجزائرية فقط (مثال: "واش خويا العزيز"، "صحا الفحل").`;
+        const systemInstruction = userInfo.isFemale 
+            ? `أنت شاب جزائري حنون، ذكي جداً، ورومانسي. تتحدث في الشات مع فتاة اسمها "${userInfo.name}".
+قواعد صارمة للإجابة:
+1. افهم كلامها ورسالتها بدقة وجاوب مباشرة على موضوع كلامها دون خروج عن السياق.
+2. ممنوع نهائياً استعمال عبارات مثل "خويا"، "العزيز"، أو "صاحبي" مع البنات!
+3. نادِها دائماً بـ: (يا عمري، يا الزين، يا روحي، يا لالة، قلبي...).
+4. جاوب بالدارجة الجزائرية المفهومة، العصرية، واللطيفة جداً.
+5. اجعل الرد قصيراً (سطر أو سطرين) وغير مكرر، وبدون لغة روبوتية أو مصطلحات غريبة.`
+            : `أنت شاب جزائري محترم ورجلة. تتحدث مع صديقك "${userInfo.name}".
+جاوب بدقة وبإيجاز بالدارجة الجزائرية المباشرة.`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemInstruction },
-                { role: "user", content: prompt }
+                { role: "user", content: contextPrompt }
             ],
             model: "llama-3.1-8b-instant",
-            temperature: 0.5 // تقليل العشوائية للالتزام بالدارجة القصيرة
+            temperature: 0.6
         });
 
-        return chatCompletion.choices[0]?.message?.content || "صفا عمري راكي مليحة 🙂❤️";
+        return chatCompletion.choices[0]?.message?.content || "راني معاك يا الزين 🙂❤️";
     } catch (err) {
         console.error("Groq AI Error:", err);
         return "صحا يا الزين 🙂❤️";
@@ -56,11 +63,11 @@ async function getAIResponse(prompt, userInfo) {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "15.0",
+    version: "16.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت جزائري قح يرد بأسلوب قصير وطبيعي جداً بدون روبوتية",
+    description: "بوت جزائري يفهم الرسائل بدقة ويرد برومانسية وحنان مع البنات",
     category: "chat"
 };
 
@@ -69,17 +76,17 @@ module.exports.onStart = async ({ api, event, args }) => {
     const uid = event.senderID;
 
     try {
-        const userInfo = await getUserDetails(api, uid);
+        const userInfo = await getUserDetails(api, uid, msg);
 
         if (!msg) {
-            const startMsg = userInfo.gender === "female" 
-                ? `صفا عمري راكي مليحة 🙂❤️`
-                : `واش خويا العزيز 🙂✨`;
+            const startMsg = userInfo.isFemale 
+                ? `نعم يا الزين... راني نسمع فيك يا عمري 🙂❤️`
+                : `واش خويا، لباس؟ ✨`;
             return api.sendMessage(startMsg, event.threadID, event.messageID);
         }
 
         if (containsBadWords(msg)) {
-            return api.sendMessage("خلينا عاقلين خير 🙂🌸", event.threadID, event.messageID);
+            return api.sendMessage("خلينا عاقلين والكلام حلو خير 🙂🌸", event.threadID, event.messageID);
         }
 
         const botResponse = await getAIResponse(msg, userInfo);
@@ -107,8 +114,11 @@ module.exports.onReply = async ({ api, event }) => {
         const userText = event.body?.trim() || "";
         if (!userText || containsBadWords(userText)) return;
 
-        const userInfo = await getUserDetails(api, event.senderID);
-        const replyMessage = await getAIResponse(userText, userInfo);
+        // جلب النص الذي يتم الرد عليه
+        const repliedText = event.messageReply?.body || "";
+        const userInfo = await getUserDetails(api, event.senderID, userText);
+        
+        const replyMessage = await getAIResponse(userText, userInfo, repliedText);
 
         api.sendMessage(replyMessage, event.threadID, (err, info) => {
             if (!err) {
@@ -131,11 +141,11 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.trim() || "";
         if (event.type === "message_reply" || !message || message.startsWith("/") || message.startsWith(".") || containsBadWords(message)) return;
 
-        const userInfo = await getUserDetails(api, event.senderID);
+        const userInfo = await getUserDetails(api, event.senderID, message);
         const customReply = await getAIResponse(message, userInfo);
 
         if (customReply) {
-            const reaction = userInfo.gender === "female" ? "🩵" : "💖";
+            const reaction = userInfo.isFemale ? "❤️" : "👍";
             api.setMessageReaction(reaction, event.messageID, () => {}, true);
 
             return api.sendMessage(customReply, event.threadID, (err, info) => {
