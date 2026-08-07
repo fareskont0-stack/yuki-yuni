@@ -1,10 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-// قراءة المفتاح أوتوماتيكياً من Railway
-const apiKey = process.env.GEMINI_API_KEY || "ضع_المفتاح_هنا_إذا_كنت_تجرب_محليا";
-const genAI = new GoogleGenerativeAI(apiKey);
 
 // قاعدة البيانات المحلية المحدثة بالردود الرجيولية والحنونة
 const database = {
@@ -237,19 +232,6 @@ const database = {
   ]
 };
 
-// تعريف نموذج رين الشاب الرجلة والحنون
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: `أنت شاب جزائري رجلة، حنون، ودافئ اسمه "رين".
-تتكلم بأسلوب رجولي، حنون، ومحترم بالدارجة الجزائرية القحة.
-
-قواعد الرد:
-1. استخدم كلمات رجيولية وحنونة مثل: (يا الفحل، يا الراجل، يا العزيز، يا الغالي، خويا، ربي يحفظك، ربي يعزك).
-2. ردودك قصيرة، مباشرة، ودافئة (سطر أو سطرين).
-3. ممنوع منعاً باتاً استخدام أي كلمات مصرية أو مغربية.
-4. إذا سألك أحد "رين صفا" أو كيف حالك جاوب برجولة وحنان: "صفا الحمد لله يا الفحل، ونتا واش أحوالك يا الغالي؟"`
-});
-
 const memoryPath = path.join(__dirname, "bot_memory.json");
 
 let memory = {};
@@ -289,46 +271,37 @@ function learnMultiplePhrases(text) {
     return count;
 }
 
-// البحث في قاعدة البيانات المباشرة وفي الذاكرة المتعلمة
 function getFromMemoryOrDatabase(text) {
     const cleanText = text.toLowerCase().trim();
     
-    // 1. البحث في الذاكرة المكتسبة من أمر (تعلم:)
-    if (memory[cleanText]) {
-        return memory[cleanText];
-    }
+    // تنظيف كلمة "رين" من النصف لكي يقرأ الكلمة المطلوبة
+    const cleanQuery = cleanText.replace("رين", "").replace("rein", "").trim();
     
-    // 2. البحث في قاعدة البيانات المحددة سلفاً (اختيار رد عشوائي إذا كان هناك عدة ردود)
+    // 1. البحث في الذاكرة المكتسبة
+    if (memory[cleanQuery]) return memory[cleanQuery];
+    if (memory[cleanText]) return memory[cleanText];
+    
+    // 2. البحث في قاعدة البيانات المباشرة
+    if (database[cleanQuery]) {
+        const responses = database[cleanQuery];
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
     if (database[cleanText]) {
         const responses = database[cleanText];
-        const randomIndex = Math.floor(Math.random() * responses.length);
-        return responses[randomIndex];
+        return responses[Math.floor(Math.random() * responses.length)];
     }
     
     return null;
 }
 
-async function getAIResponse(prompt, userName) {
-    try {
-        const userPrompt = `المستخدم (${userName}) يناديك ويقول: ${prompt}`;
-        const result = await model.generateContent(userPrompt);
-        const response = await result.response;
-        const text = response.text();
-        return text ? text.trim() : "يا الفحل راني هنا، واش خاصك يا الغالي؟";
-    } catch (err) {
-        console.error("Gemini API Error:", err);
-        return "السيرفر راه خفيف شوية يا الراجل، عاودلي بعد لحظة برك؟";
-    }
-}
-
 module.exports.config = {
     name: "rein",
     aliases: ["رين"],
-    version: "27.0",
+    version: "28.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت رين الشاب الرجلة والحنون - يرد فقط عند مناداته باسمه",
+    description: "بوت رين المعتمد 100% على الذاكرة الجاهزة فقط بدون AI",
     category: "chat"
 };
 
@@ -343,19 +316,10 @@ async function handleMessage(api, event, text) {
         }
     }
 
-    // البحث أولاً في الردود الجاهزة والذاكرة
-    let botResponse = getFromMemoryOrDatabase(msg);
+    const botResponse = getFromMemoryOrDatabase(msg);
 
-    // إذا لم يجد رد مباشر يذهب للذكاء الاصطناعي
-    if (!botResponse) {
-        let senderName = "الفحل";
-        try {
-            const userInfo = await api.getUserInfo(event.senderID);
-            senderName = userInfo[event.senderID]?.name || "الفحل";
-        } catch (e) {}
-
-        botResponse = await getAIResponse(msg, senderName);
-    }
+    // إذا لم يجد الكلمة في الذاكرة، يتجاهل ولا يرسل أي شيء إطلاقاً
+    if (!botResponse) return;
 
     api.sendMessage(botResponse, event.threadID, (err, info) => {
         if (!err) {
@@ -384,14 +348,10 @@ module.exports.onChat = async ({ api, event }) => {
     const message = event.body?.trim() || "";
     const lowerMsg = message.toLowerCase();
 
-    // الشرط: لا يُجيب إلا إذا كان هناك Reply أو احتوت الرسالة على اسم "رين"
     const isReplyToBot = event.type === "message_reply";
     const mentionsRein = lowerMsg.includes("رين") || lowerMsg.includes("rein");
 
-    if (!isReplyToBot && !mentionsRein) {
-        return; // تجاهل الرسالة إذا لم يذكر اسم رين
-    }
-
+    if (!isReplyToBot && !mentionsRein) return;
     if (message.startsWith("/") || message.startsWith(".")) return;
 
     await handleMessage(api, event, message);
