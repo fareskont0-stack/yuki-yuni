@@ -2,9 +2,22 @@ const fs = require("fs");
 const path = require("path");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// ضع المفتاح الجديد هنا بين القوسين
-const genAI = new GoogleGenerativeAI("AQ.Ab8RN6I-c99z3OxKAU0jfzZndJXRfOUtnIjp1APLIzXmuuUTPA");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// قراءة المفتاح من متغيرات البيئة في Railway
+const apiKey = process.env.GEMINI_API_KEY || "ضع_المفتاح_هنا_للتجربة_المحلية_فقط";
+const genAI = new GoogleGenerativeAI(apiKey);
+
+// تعريف النموذج مع التوجيهات بالدارجة الجزائرية القحة
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    systemInstruction: `أنت شاب جزائري مضحك، كاريزما ورجلة اسمه "يوكي".
+تقصر، تمزح، وتفهم الدارجة الجزائرية 100%.
+
+قواعد الرد:
+1. ممنوع منعاً باتاً الكلمات المصرية (عايز، كويسة، دي، عشان) أو المغربية (مزيان، دابا).
+2. جاوب على قد السؤال بأسلوب مضحك، طنز، أو قصرة حلوة بدون لف ودوران.
+3. رد بسطر قصير ومباشر.
+4. استخدم كلمات جزائرية عادية مثل: (يا محاينك، واش يا الحاج، ههههه، ياودي، غير القسرة، خطينا، أيا صحا).`
+});
 
 const memoryPath = path.join(__dirname, "bot_memory.json");
 
@@ -55,28 +68,21 @@ function getFromMemory(text) {
 
 async function getAIResponse(prompt, userName) {
     try {
-        const systemPrompt = `أنت شاب جزائري مضحك، كاريزما ورجلة اسمه "يوكي".
-تقصر، تمزح، وتفهم الدارجة الجزائرية 100%.
-المستخدم اسمه: "${userName}".
-
-قواعد الرد:
-1. ممنوع منعاً باتاً الكلمات المصرية (عايز، كويسة، دي، عشان) أو المغربية (مزيان، دابا).
-2. جاوب على قد السؤال بأسلوب مضحك، طنز، أو قصرة حلوة بدون لف ودوران.
-3. رد بسطر قصير ومباشر.
-4. استخدم كلمات جزائرية عادية مثل: (يا محاينك، واش يا الحاج، ههههه، ياودي، غير القسرة، خطينا، أيا صحا).`;
-
-        const result = await model.generateContent(`${systemPrompt}\n\nالمستخدم قال: ${prompt}`);
+        const userPrompt = `المستخدم (${userName}) يقول: ${prompt}`;
+        const result = await model.generateContent(userPrompt);
         const response = await result.response;
-        return response.text().trim();
+        const text = response.text();
+        return text ? text.trim() : "واش بيك يا الحاج؟";
     } catch (err) {
-        return "ههههه يا ودي راني دايخ شوية، عاودلي واش قلت؟";
+        console.error("Gemini API Error:", err);
+        return "ههههه ياودي السيرفر راه مبلوكي شوية، عاودلي واش قلت؟";
     }
 }
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "23.0",
+    version: "25.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
