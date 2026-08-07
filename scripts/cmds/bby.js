@@ -17,9 +17,31 @@ if (fs.existsSync(memoryPath)) {
     fs.writeFileSync(memoryPath, JSON.stringify({}, null, 2));
 }
 
-function learnPhrase(key, reply) {
-    memory[key.toLowerCase().trim()] = reply.trim();
-    fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
+// دالة الحفظ الجماعي والسريع
+function learnMultiplePhrases(text) {
+    const lines = text.split("\n");
+    let count = 0;
+    
+    for (let line of lines) {
+        line = line.trim();
+        if (line.startsWith("تعلم:") || line.startsWith("تعلم ")) {
+            const cleanMsg = line.replace("تعلم:", "").replace("تعلم", "").trim();
+            const parts = cleanMsg.split("=");
+            if (parts.length === 2) {
+                const question = parts[0].trim().toLowerCase();
+                const answer = parts[1].trim();
+                if (question && answer) {
+                    memory[question] = answer;
+                    count++;
+                }
+            }
+        }
+    }
+    
+    if (count > 0) {
+        fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
+    }
+    return count;
 }
 
 function getFromMemory(text) {
@@ -54,12 +76,8 @@ async function getUserDetails(api, uid, messageText = "") {
 async function getAIResponse(prompt, userInfo) {
     try {
         const systemInstruction = userInfo.isFemale 
-            ? `أنت شاب جزائري حنون ورومانسي. تتحدث في مسنجر مع فتاة اسمها "${userInfo.name}".
-شروط صارمة جداً للهجتك:
-1. اتكلم بالدارجة الجزائرية العادية فقط (مثل: صفا عمري، راني مليح، ربي يحفظك يا الزين).
-2. ممنوع منعاً باتاً الكلمات المغربية (مثل: مزيان، نيت، كلاشك) وممنوع الفصحى والمصرية.
-3. جاوب بسطر واحد قصير جداً وبدون تعقيد.`
-            : `أنت شاب جزائري رجلة تتحدث مع صديقك "${userInfo.name}". جاوب بسطر واحد بالدارجة الجزائرية العادية فقط.`;
+            ? `أنت شاب جزائري حنون، كاريزما، وثقيل. تتحدث مع فتاة اسمها "${userInfo.name}". جاوب بسطر واحد قصير بالدارجة الجزائرية بدون إيموجيات ملونة وبدون كلام رخيص.`
+            : `أنت شاب جزائري رجلة تتحدث مع صديقك "${userInfo.name}". جاوب بسطر واحد بالدارجة الجزائرية العادية.`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
@@ -67,23 +85,23 @@ async function getAIResponse(prompt, userInfo) {
                 { role: "user", content: prompt }
             ],
             model: "llama-3.1-8b-instant",
-            temperature: 0.3 // درجة منخفضة جداً للالتزام بالدارجة بدون تخليط
+            temperature: 0.3
         });
 
-        return chatCompletion.choices[0]?.message?.content || "صفا عمري راكي مليحة 🙂❤️";
+        return chatCompletion.choices[0]?.message?.content || "لباس الحمد لله وأنتِ";
     } catch (err) {
-        return "صحا يا الزين 🙂❤️";
+        return "لباس الحمد لله";
     }
 }
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "18.0",
+    version: "19.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت جزائري مضبوط 100% بدون تخليط لهجات مع نظام تعليم صحيح",
+    description: "بوت يتعلّم مئات الكلمات في ثانية واحدة من القوائم الطويلة",
     category: "chat"
 };
 
@@ -91,24 +109,18 @@ async function handleMessage(api, event, text) {
     const msg = text.trim();
     if (!msg || containsBadWords(msg)) return;
 
-    // 1. معالجة أمر التعليم فوراً وبدون إرساله للذكاء الاصطناعي
-    if (msg.startsWith("تعلم:") || msg.startsWith("تعلم ")) {
-        const cleanMsg = msg.replace("تعلم:", "").replace("تعلم", "").trim();
-        const parts = cleanMsg.split("=");
-        if (parts.length === 2) {
-            const question = parts[0].trim();
-            const answer = parts[1].trim();
-            learnPhrase(question, answer);
-            return api.sendMessage(`صحيت يا الزين، حفظتها عندي! كي تقولولي "${question}" نرد بـ "${answer}" 🙂❤️`, event.threadID, event.messageID);
-        } else {
-            return api.sendMessage("طريقة التعليم: تعلم: الكلمة = الرد", event.threadID, event.messageID);
+    // 1. فحص هل تحتوي الرسالة على أوامر تعليم (حتى لو كانت قائمة طويلة)
+    if (msg.includes("تعلم:") || msg.includes("تعلم ")) {
+        const learnedCount = learnMultiplePhrases(msg);
+        if (learnedCount > 0) {
+            return api.sendMessage(`تم يا الفحل! حفظت ${learnedCount} رد جديد في الذاكرة بنجاح.`, event.threadID, event.messageID);
         }
     }
 
-    // 2. الفحص في الذاكرة أولاً
+    // 2. الفحص في الذاكرة
     let botResponse = getFromMemory(msg);
 
-    // 3. إذا لم يجدها في الذاكرة، نطلب من AI بالدارجة الجزائرية الصافية
+    // 3. إذا لم يجد، يطلب من الذكاء الاصطناعي
     if (!botResponse) {
         const userInfo = await getUserDetails(api, event.senderID, msg);
         botResponse = await getAIResponse(msg, userInfo);
@@ -131,7 +143,7 @@ module.exports.onStart = async ({ api, event, args }) => {
     const msg = args.join(" ").trim();
     if (!msg) {
         const userInfo = await getUserDetails(api, event.senderID, "");
-        const startMsg = userInfo.isFemale ? `نعم يا الزين... راني نسمع فيك 🙂❤️` : `واش خويا، لباس؟ ✨`;
+        const startMsg = userInfo.isFemale ? `نعم، أسمع فيك` : `واش خويا، لباس؟`;
         return api.sendMessage(startMsg, event.threadID, event.messageID);
     }
     await handleMessage(api, event, msg);
