@@ -4,10 +4,8 @@ const Groq = require("groq-sdk");
 
 const groq = new Groq({ apiKey: "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" });
 
-// مسار ملف الذاكرة التي يحفظ فيها البوت كلامه
 const memoryPath = path.join(__dirname, "bot_memory.json");
 
-// تحميل الذاكرة أو إنشاؤها إن لم تكن موجودة
 let memory = {};
 if (fs.existsSync(memoryPath)) {
     try {
@@ -19,13 +17,11 @@ if (fs.existsSync(memoryPath)) {
     fs.writeFileSync(memoryPath, JSON.stringify({}, null, 2));
 }
 
-// دالة حفظ كلمة جديدة في الذاكرة
 function learnPhrase(key, reply) {
     memory[key.toLowerCase().trim()] = reply.trim();
     fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
 }
 
-// دالة البحث في الذاكرة
 function getFromMemory(text) {
     const cleanText = text.toLowerCase().trim();
     for (const [key, reply] of Object.entries(memory)) {
@@ -55,23 +51,26 @@ async function getUserDetails(api, uid, messageText = "") {
     }
 }
 
-async function getAIResponse(prompt, userInfo, repliedText = "") {
+async function getAIResponse(prompt, userInfo) {
     try {
-        const contextPrompt = repliedText ? `(الرسالة السابقة: "${repliedText}")\nرسالة المستخدم: "${prompt}"` : prompt;
         const systemInstruction = userInfo.isFemale 
-            ? `أنت شاب جزائري حنون، ذكي ورومانسي. تتحدث مع "${userInfo.name}". جاوب بالدارجة الجزائرية المفهومة بأسلوب قصير ولطيف وبدون لغة روبوتية.`
-            : `أنت شاب جزائري رجلة. تتحدث مع صديقك "${userInfo.name}". جاوب بإيجاز وبدارجة الجزائرية.`;
+            ? `أنت شاب جزائري حنون ورومانسي. تتحدث في مسنجر مع فتاة اسمها "${userInfo.name}".
+شروط صارمة جداً للهجتك:
+1. اتكلم بالدارجة الجزائرية العادية فقط (مثل: صفا عمري، راني مليح، ربي يحفظك يا الزين).
+2. ممنوع منعاً باتاً الكلمات المغربية (مثل: مزيان، نيت، كلاشك) وممنوع الفصحى والمصرية.
+3. جاوب بسطر واحد قصير جداً وبدون تعقيد.`
+            : `أنت شاب جزائري رجلة تتحدث مع صديقك "${userInfo.name}". جاوب بسطر واحد بالدارجة الجزائرية العادية فقط.`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemInstruction },
-                { role: "user", content: contextPrompt }
+                { role: "user", content: prompt }
             ],
             model: "llama-3.1-8b-instant",
-            temperature: 0.6
+            temperature: 0.3 // درجة منخفضة جداً للالتزام بالدارجة بدون تخليط
         });
 
-        return chatCompletion.choices[0]?.message?.content || "راني معاك يا الزين 🙂❤️";
+        return chatCompletion.choices[0]?.message?.content || "صفا عمري راكي مليحة 🙂❤️";
     } catch (err) {
         return "صحا يا الزين 🙂❤️";
     }
@@ -80,131 +79,71 @@ async function getAIResponse(prompt, userInfo, repliedText = "") {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "17.0",
+    version: "18.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت جزائري يتعلم الكلام من المحادثات ويخزنه في ذاكرته",
+    description: "بوت جزائري مضبوط 100% بدون تخليط لهجات مع نظام تعليم صحيح",
     category: "chat"
 };
 
+async function handleMessage(api, event, text) {
+    const msg = text.trim();
+    if (!msg || containsBadWords(msg)) return;
+
+    // 1. معالجة أمر التعليم فوراً وبدون إرساله للذكاء الاصطناعي
+    if (msg.startsWith("تعلم:") || msg.startsWith("تعلم ")) {
+        const cleanMsg = msg.replace("تعلم:", "").replace("تعلم", "").trim();
+        const parts = cleanMsg.split("=");
+        if (parts.length === 2) {
+            const question = parts[0].trim();
+            const answer = parts[1].trim();
+            learnPhrase(question, answer);
+            return api.sendMessage(`صحيت يا الزين، حفظتها عندي! كي تقولولي "${question}" نرد بـ "${answer}" 🙂❤️`, event.threadID, event.messageID);
+        } else {
+            return api.sendMessage("طريقة التعليم: تعلم: الكلمة = الرد", event.threadID, event.messageID);
+        }
+    }
+
+    // 2. الفحص في الذاكرة أولاً
+    let botResponse = getFromMemory(msg);
+
+    // 3. إذا لم يجدها في الذاكرة، نطلب من AI بالدارجة الجزائرية الصافية
+    if (!botResponse) {
+        const userInfo = await getUserDetails(api, event.senderID, msg);
+        botResponse = await getAIResponse(msg, userInfo);
+    }
+
+    api.sendMessage(botResponse, event.threadID, (err, info) => {
+        if (!err) {
+            global.GoatBot.onReply.set(info.messageID, {
+               commandName: "baby",
+               type: "reply",
+               messageID: info.messageID,
+               author: event.senderID,
+               text: botResponse
+            });
+        }
+    }, event.messageID);
+}
+
 module.exports.onStart = async ({ api, event, args }) => {
     const msg = args.join(" ").trim();
-    const uid = event.senderID;
-
-    try {
-        // ميزة التعليم عبر الأمر: تعلم: الكلمة = الرد
-        if (msg.startsWith("تعلم:") || msg.startsWith("تعلم ")) {
-            const cleanMsg = msg.replace("تعلم:", "").replace("تعلم", "").trim();
-            const parts = cleanMsg.split("=");
-            if (parts.length === 2) {
-                const question = parts[0].trim();
-                const answer = parts[1].trim();
-                learnPhrase(question, answer);
-                return api.sendMessage(`صحيت يا الزين، حفظتها عندي! كي يقوّلي "${question}" نرد بـ "${answer}" 🙂❤️`, event.threadID, event.messageID);
-            } else {
-                return api.sendMessage("طريقة التعليم الصحيحة: اكتب مثلاً\nتعلم: توحشتك = حتى أنا توحشتك يا عمري 🙂❤️", event.threadID, event.messageID);
-            }
-        }
-
-        if (!msg) {
-            const userInfo = await getUserDetails(api, uid, msg);
-            return api.sendMessage(userInfo.isFemale ? `نعم يا الزين... راني نسمع فيك 🙂❤️` : `واش خويا، لباس؟ ✨`, event.threadID, event.messageID);
-        }
-
-        if (containsBadWords(msg)) return;
-
-        // البحث أولاً في الذاكرة المحفوظة
-        let botResponse = getFromMemory(msg);
-
-        // إذا لم يجدها في الذاكرة، يطلب الرد من الذكاء الاصطناعي
-        if (!botResponse) {
-            const userInfo = await getUserDetails(api, uid, msg);
-            botResponse = await getAIResponse(msg, userInfo);
-        }
-
-        api.sendMessage(botResponse, event.threadID, (err, info) => {
-            if (!err) {
-                global.GoatBot.onReply.set(info.messageID, {
-                   commandName: this.config.name,
-                   type: "reply",
-                   messageID: info.messageID,
-                   author: uid,
-                   text: botResponse
-                });
-            }
-        }, event.messageID);
-
-     } catch (err) {
-        console.error(err);
+    if (!msg) {
+        const userInfo = await getUserDetails(api, event.senderID, "");
+        const startMsg = userInfo.isFemale ? `نعم يا الزين... راني نسمع فيك 🙂❤️` : `واش خويا، لباس؟ ✨`;
+        return api.sendMessage(startMsg, event.threadID, event.messageID);
     }
+    await handleMessage(api, event, msg);
 };
 
 module.exports.onReply = async ({ api, event }) => {
     if (event.type !== "message_reply") return;
-    try {
-        const userText = event.body?.trim() || "";
-        if (!userText || containsBadWords(userText)) return;
-
-        if (userText.startsWith("تعلم:") || userText.startsWith("تعلم ")) {
-            const cleanMsg = userText.replace("تعلم:", "").replace("تعلم", "").trim();
-            const parts = cleanMsg.split("=");
-            if (parts.length === 2) {
-                learnPhrase(parts[0], parts[1]);
-                return api.sendMessage("حفظتها في ذاكرتي خلاص 🙂❤️", event.threadID, event.messageID);
-            }
-        }
-
-        let replyMessage = getFromMemory(userText);
-
-        if (!replyMessage) {
-            const repliedText = event.messageReply?.body || "";
-            const userInfo = await getUserDetails(api, event.senderID, userText);
-            replyMessage = await getAIResponse(userText, userInfo, repliedText);
-        }
-
-        api.sendMessage(replyMessage, event.threadID, (err, info) => {
-            if (!err) {
-                global.GoatBot.onReply.set(info.messageID, {
-                   commandName: this.config.name,
-                   type: "reply",
-                   messageID: info.messageID,
-                   author: event.senderID,
-                   text: replyMessage
-                });
-            }
-        }, event.messageID);
-    } catch (err) {
-        console.error(err);
-    }
+    await handleMessage(api, event, event.body || "");
 };
 
 module.exports.onChat = async ({ api, event }) => {
-    try {
-        const message = event.body?.trim() || "";
-        if (event.type === "message_reply" || !message || message.startsWith("/") || message.startsWith(".") || containsBadWords(message)) return;
-
-        let customReply = getFromMemory(message);
-
-        if (!customReply) {
-            const userInfo = await getUserDetails(api, event.senderID, message);
-            customReply = await getAIResponse(message, userInfo);
-        }
-
-        if (customReply) {
-            return api.sendMessage(customReply, event.threadID, (err, info) => {
-                if (!err) {
-                    global.GoatBot.onReply.set(info.messageID, {
-                       commandName: this.config.name,
-                       type: "reply",
-                       messageID: info.messageID,
-                       author: event.senderID,
-                       text: customReply
-                    });
-                }
-            }, event.messageID);
-        }
-    } catch (err) {
-        console.error(err);
-    }
+    const message = event.body?.trim() || "";
+    if (event.type === "message_reply" || !message || message.startsWith("/") || message.startsWith(".")) return;
+    await handleMessage(api, event, message);
 };
