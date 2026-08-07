@@ -17,7 +17,6 @@ if (fs.existsSync(memoryPath)) {
     fs.writeFileSync(memoryPath, JSON.stringify({}, null, 2));
 }
 
-// دالة الحفظ الجماعي والسريع
 function learnMultiplePhrases(text) {
     const lines = text.split("\n");
     let count = 0;
@@ -75,9 +74,23 @@ async function getUserDetails(api, uid, messageText = "") {
 
 async function getAIResponse(prompt, userInfo) {
     try {
-        const systemInstruction = userInfo.isFemale 
-            ? `أنت شاب جزائري حنون، كاريزما، وثقيل. تتحدث مع فتاة اسمها "${userInfo.name}". جاوب بسطر واحد قصير بالدارجة الجزائرية بدون إيموجيات ملونة وبدون كلام رخيص.`
-            : `أنت شاب جزائري رجلة تتحدث مع صديقك "${userInfo.name}". جاوب بسطر واحد بالدارجة الجزائرية العادية.`;
+        const systemInstruction = `أنت شاب جزائري حقيقي اسمه "يوكي". تتحدث فقط بالدارجة الجزائرية العادية والثقيلة.
+
+قواعد صارمة جداً الممنوعات:
+- ممنوع منعاً باتاً الكلمات المصرية (مثل: عايز، دي، عشان، هقولك، بلاش، كده، ايه، ازاي).
+- ممنوع منعاً باتاً الكلمات المغربية (مثل: مزيان، دابا، نيت، كلاشك، عافاك، بزاف بزاف).
+- ممنوع الفصحى والمصطلحات المعقدة والروبوتية.
+
+كيف تتحدث:
+- جاوب بسطر واحد فقط، مباشر ورزين.
+- استخدم كلمات جزائرية حقيقية فقط مثل: (واش، صفا، لباس، عيشك، يعطيك الصحة، صحا، راني، صوالحي، صحيت).
+- إذا تحدثت مع فتاة (${userInfo.name}) كن محترماً وثقيلاً وبدون تلصاق أو إيموجيات ملونة.
+
+أمثلة للرد الصحيح:
+المستخدم: واش راك؟ -> الرد: لباس الحمد لله وأنتِ؟
+المستخدم: شكون أنت؟ -> الرد: أنا يوكي.
+المستخدم: راني عيانة -> الرد: ارتاحي شوية.
+المستخدم: وين رايح؟ -> الرد: نقضي صوالحي ونرجع.`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
@@ -85,7 +98,7 @@ async function getAIResponse(prompt, userInfo) {
                 { role: "user", content: prompt }
             ],
             model: "llama-3.1-8b-instant",
-            temperature: 0.3
+            temperature: 0.2 // درجة منخفضة تضمن عدم الابتكار بلهجات أخرى
         });
 
         return chatCompletion.choices[0]?.message?.content || "لباس الحمد لله وأنتِ";
@@ -97,11 +110,11 @@ async function getAIResponse(prompt, userInfo) {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "19.0",
+    version: "20.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت يتعلّم مئات الكلمات في ثانية واحدة من القوائم الطويلة",
+    description: "بوت جزائري 100% صارم وبدون تخليط لهجات",
     category: "chat"
 };
 
@@ -109,7 +122,6 @@ async function handleMessage(api, event, text) {
     const msg = text.trim();
     if (!msg || containsBadWords(msg)) return;
 
-    // 1. فحص هل تحتوي الرسالة على أوامر تعليم (حتى لو كانت قائمة طويلة)
     if (msg.includes("تعلم:") || msg.includes("تعلم ")) {
         const learnedCount = learnMultiplePhrases(msg);
         if (learnedCount > 0) {
@@ -117,10 +129,8 @@ async function handleMessage(api, event, text) {
         }
     }
 
-    // 2. الفحص في الذاكرة
     let botResponse = getFromMemory(msg);
 
-    // 3. إذا لم يجد، يطلب من الذكاء الاصطناعي
     if (!botResponse) {
         const userInfo = await getUserDetails(api, event.senderID, msg);
         botResponse = await getAIResponse(msg, userInfo);
