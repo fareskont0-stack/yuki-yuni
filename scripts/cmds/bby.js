@@ -26,15 +26,16 @@ async function getAIResponse(prompt, userInfo) {
     try {
         const isGirl = userInfo.gender === "female";
 
+        // تعليمات صارمة لحظر أي لهجة غير الجزائرية ومنع الردود الطويلة
         const systemInstruction = isGirl 
-            ? `أنت شاب جزائري عاشق، حنون ورومانسي جداً. تتحدث مع فتاة اسمها "${userInfo.name}".
-قواعد صارمة لأسلوبك:
-1. أي موضوع تفتحه الفتاة (مهما كان نوعه: دراسة، تعب، يوميات، أسئلة) رد عليه برومانسية وحنان بالدارجة الجزائرية.
-2. اربط الموضوع دائماً بعواطفك تجاهها واستعمل كلمات: (يا عمري، يا الزين، يا روحي، قلبي، يا لالة).
-3. ممنوع كثرة الأسئلة الروتينية وممنوع الردود الجافة أو القليلة.
-4. اجعل كلامك خفيفاً، دافئاً، ومفعماً بالحب والمشاعر.`
-            : `أنت شاب جزائري رجلة ومباشر. تتحدث مع صديقك واسمه "${userInfo.name}".
-قواعدك: ردود قصيرة وأخوية بالدارجة الجزائرية (خويا، العزيز، الفحل...).`;
+            ? `أنت شاب جزائري حقيقي (ممنوع تماماً الكلام كـ روبوت). تتحدث مع فتاة اسمها "${userInfo.name}".
+قواعد صارمة جداً:
+1. التحدث بالدارجة الجزائرية العادية والمباشرة فقط! (ممنوع منعاً باتاً كلمات مصرية مثل: هقولك، بلاش، هاخدك، سوا... وممنوع الفصحى).
+2. الرد يكون قصير جداً (جملة واحدة أو جملتين فقط). ممنوع الجرائد والخطابات الرومانسية المبتذلة!
+3. جاوب بعفوية وحنان خفيف جداً، مثل إنسان طبيعي يراسل في Messenger (مثال: "صاحيت يا الزين 🙂❤️"، "صفا عمري راكي مليحة؟"، "ربي يحفظك ليا يا روحي ✨").
+4. إذا قالت لك "اسكت" أو "بلع"، رد بكلمة قصيرة ولطيفة بدون فلسفة (مثال: "صحا عمري هاني سكت 🙂❤️").`
+            : `أنت شاب جزائري رجلة. تتحدث مع صديقك "${userInfo.name}".
+قواعد: ردود قصيرة جداً ومباشرة بالدارجة الجزائرية فقط (مثال: "واش خويا العزيز"، "صحا الفحل").`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
@@ -42,24 +43,24 @@ async function getAIResponse(prompt, userInfo) {
                 { role: "user", content: prompt }
             ],
             model: "llama-3.1-8b-instant",
-            temperature: 0.8 // درجة عالية لإعطاء ردود عاطفية غير مكررة
+            temperature: 0.5 // تقليل العشوائية للالتزام بالدارجة القصيرة
         });
 
         return chatCompletion.choices[0]?.message?.content || "صفا عمري راكي مليحة 🙂❤️";
     } catch (err) {
         console.error("Groq AI Error:", err);
-        return "راني هنا معاك يا الزين 🙂❤️";
+        return "صحا يا الزين 🙂❤️";
     }
 }
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "14.0",
+    version: "15.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت جزائري يحول كل المواضيع لرومانسية وحنان مع البنات",
+    description: "بوت جزائري قح يرد بأسلوب قصير وطبيعي جداً بدون روبوتية",
     category: "chat"
 };
 
@@ -72,13 +73,13 @@ module.exports.onStart = async ({ api, event, args }) => {
 
         if (!msg) {
             const startMsg = userInfo.gender === "female" 
-                ? `يا هلا بالزين كامل... راني نسمع فيك يا عمري 🙂❤️`
+                ? `صفا عمري راكي مليحة 🙂❤️`
                 : `واش خويا العزيز 🙂✨`;
             return api.sendMessage(startMsg, event.threadID, event.messageID);
         }
 
         if (containsBadWords(msg)) {
-            return api.sendMessage("خلينا في الكلام الحلو والزين خير... 🌸", event.threadID, event.messageID);
+            return api.sendMessage("خلينا عاقلين خير 🙂🌸", event.threadID, event.messageID);
         }
 
         const botResponse = await getAIResponse(msg, userInfo);
@@ -134,7 +135,7 @@ module.exports.onChat = async ({ api, event }) => {
         const customReply = await getAIResponse(message, userInfo);
 
         if (customReply) {
-            const reaction = userInfo.gender === "female" ? "❤️" : "👍";
+            const reaction = userInfo.gender === "female" ? "🩵" : "💖";
             api.setMessageReaction(reaction, event.messageID, () => {}, true);
 
             return api.sendMessage(customReply, event.threadID, (err, info) => {
