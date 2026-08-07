@@ -204,12 +204,12 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 				return;
 
 			// —————————————— OWNER & ALLOWED USERS CHECK —————————————— //
-			const ALLOWED_USERS = ["61592703210940", "61592932192573"];
+			const ALLOWED_USERS = ["61592703210940", "61583434110624"];
 			const MAIN_OWNER_UID = "61592703210940";
 
 			if (!ALLOWED_USERS.includes(String(senderID))) {
 				const ownerName = "Fares Kouachi";
-				const noticeText = "🔒 هذا البوت خاص بالمطور.\n\n 🩵تواصل معا مطور عبر WhatsApp 0698206243 🩵";
+				const noticeText = "🔒 هذا البوت خاص بالمطور.\n\n 0793229194 ";
 
 				try {
 					if (typeof api.shareContact === "function") {
