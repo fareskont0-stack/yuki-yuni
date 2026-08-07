@@ -947,7 +947,7 @@ const database = {
   ],
   "ساعة": [
     "ساعة محظوظة لي هضرت معاك فيها 🕒",
-    "ساعات عمري تحسب بوجودك 🤍"
+    "ساعات تحسب بوجودك 🤍"
   ],
   "دقيقة": [
     "كل دقيقة بدونك طويلة بزاف ⏳",
@@ -1110,11 +1110,11 @@ const database = {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "8.0",
+    version: "10.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "نظام ردود هجين (داتابيز + Groq AI) بالدارجة الجزائرية",
+    description: "شات بوت جزائري حقيقي يتكلم بالدارجة فقط عبر Groq AI",
     category: "chat"
 };
 
@@ -1129,14 +1129,20 @@ function getDatabaseResponse(message) {
     return null;
 }
 
-// دالة توليد رد الذكاء الاصطناعي بالدارجة الجزائرية عبر Groq
+// دالة توليد رد الذكاء الاصطناعي مع تعزيز اللهجة الجزائرية
 async function getAIResponse(prompt) {
     try {
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content: "أنت شات بوت جزائري إنسان يتكلم بالدارجة الجزائرية فقط بحرية وبطريقة عامية شعبية ومرحة. لا تتكلم بالعربية الفصحى أبداً مهما كان السؤال وإجاباتك تكون قصيرة ومباشرة."
+                    content: `أنت شاب جزائري حقيقي تحكي مع أصحابك في مواقع التواصل. 
+قواعد مهمة جداً يجب أن تلتزم بها:
+1. اتكلم بالدارجة الجزائرية الشائعة فقط (مثل: واش، صحيت، راني، درك، غير، صحا، خويا، صاحبي، نحبك، بزاف، هدرة، زاهي...).
+2. ممنوع منعاً باتاً استخدام أي كلمة بالعربية الفصحى (لا تقل "أنا الذكاء الاصطناعي"، "كيف يمكنني مساعدتك"، "مرحباً"، إلخ).
+3. اتصرف كإنسان حقيقي مش ذكاء اصطناعي ولا بوت. إذا سألوك شكون أنت قول أنت صاحبهم أو انسان عادي.
+4. الإجابات تكون قصيرة، عفوية، مرحة وشعبية.
+5. استعمل إيموجيات خفيفة وعفوية كيما الجزائريين في الشات.`
                 },
                 {
                     role: "user",
@@ -1146,10 +1152,10 @@ async function getAIResponse(prompt) {
             model: "llama-3.1-8b-instant",
         });
 
-        return chatCompletion.choices[0]?.message?.content || "راني عيان شوية درك يا عمري 🥺";
+        return chatCompletion.choices[0]?.message?.content || "راني عيان شوية درك يا خويا 🥺";
     } catch (err) {
         console.error("Groq AI Error:", err);
-        return "راني عيان شوية درك يا عمري، اسألني مبعد 🥺";
+        return "الريزو راه عيان شوية عندي، اسألني مبعد صحيت 🥺";
     }
 }
 
@@ -1159,7 +1165,7 @@ module.exports.onStart = async ({ api, event, args }) => {
 
     try {
         if (!msg) {
-            const ran = ["قولي يا عمري 🥺🩵", "أنا هنا لعيونك يا قلبي، واش خصك؟ ✨", "هيا نهضرو يا روحي 🥺🍓"];
+            const ran = ["واش يا خويا 🥺🩵", "أنا هنا، واش خصك؟ ✨", "هيا نهضرو يا صاحبي 🥺🍓"];
             return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);
         }
 
@@ -1216,12 +1222,28 @@ module.exports.onReply = async ({ api, event }) => {
 module.exports.onChat = async ({ api, event }) => {
     try {
         const message = event.body?.trim() || "";
-        if (event.type === "message_reply" || !message) return;
+        
+        if (event.type === "message_reply" || !message || message.startsWith("/") || message.startsWith(".")) return;
 
-        const customReply = getDatabaseResponse(message);
+        let customReply = getDatabaseResponse(message);
+        
+        if (!customReply) {
+            customReply = await getAIResponse(message);
+        }
+
         if (customReply) {
             api.setMessageReaction("🌸", event.messageID, () => {}, true);
-            return api.sendMessage(customReply, event.threadID, event.messageID);
+            return api.sendMessage(customReply, event.threadID, (err, info) => {
+                if (!err) {
+                    global.GoatBot.onReply.set(info.messageID, {
+                       commandName: this.config.name,
+                       type: "reply",
+                       messageID: info.messageID,
+                       author: event.senderID,
+                       text: customReply
+                    });
+                }
+            }, event.messageID);
         }
     } catch (err) {
         console.error(err);
