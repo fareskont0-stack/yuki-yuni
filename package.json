@@ -8,6 +8,7 @@
     "npm": ">=7.0.0"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.12.2",
     "mahmud-fca": "^2.0.7",
     "bcrypt": "^5.0.1",
@@ -73,9 +74,9 @@
     "1secmail-api": "^1.1.1"
   },
   "scripts": {
-    "start": "set NODE_ENV=&& node index.js",
-    "dev": "set NODE_ENV=development&& node index.js",
-    "prod": "set NODE_ENV=production&& node index.js"
+    "start": "node index.js",
+    "dev": "node index.js",
+    "prod": "node index.js"
   },
   "author": "MahMUD",
   "license": "MIT",
