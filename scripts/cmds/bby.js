@@ -1,48 +1,66 @@
+const fs = require("fs");
+const path = require("path");
 const Groq = require("groq-sdk");
 
 const groq = new Groq({ apiKey: "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" });
 
-const badWords = ["تمنيك", "تقود", "قود", "نيكمك", "حيتشون"];
+// مسار ملف الذاكرة التي يحفظ فيها البوت كلامه
+const memoryPath = path.join(__dirname, "bot_memory.json");
 
-function containsBadWords(text) {
-    const lower = text.toLowerCase();
-    return badWords.some(word => lower.includes(word));
+// تحميل الذاكرة أو إنشاؤها إن لم تكن موجودة
+let memory = {};
+if (fs.existsSync(memoryPath)) {
+    try {
+        memory = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
+    } catch (e) {
+        memory = {};
+    }
+} else {
+    fs.writeFileSync(memoryPath, JSON.stringify({}, null, 2));
 }
 
-// دالة ذكية لمعرفة هل المتحدث بنت بناءً على الاسم وكلام الرسالة
+// دالة حفظ كلمة جديدة في الذاكرة
+function learnPhrase(key, reply) {
+    memory[key.toLowerCase().trim()] = reply.trim();
+    fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
+}
+
+// دالة البحث في الذاكرة
+function getFromMemory(text) {
+    const cleanText = text.toLowerCase().trim();
+    for (const [key, reply] of Object.entries(memory)) {
+        if (cleanText.includes(key)) {
+            return reply;
+        }
+    }
+    return null;
+}
+
+const badWords = ["تمنيك", "تقود", "قود", "نيكمك", "حيتشون"];
+function containsBadWords(text) {
+    return badWords.some(word => text.toLowerCase().includes(word));
+}
+
 async function getUserDetails(api, uid, messageText = "") {
     try {
         const userInfo = await api.getUserInfo(uid);
         const user = userInfo[uid];
         const name = user?.name || "الزين";
-        
-        // الكلمات المؤنثة التي تشير إلى أن المتحدثة بنت
-        const femaleKeywords = ["راني", "عرفك", "وسمك", "حبيبتي", "عمري", "زوجني", "زعفانة", "عيانة", "مريضة", "تبغيني"];
+        const femaleKeywords = ["راني", "عرفك", "وسمك", "حبيبتي", "عمري", "زوجني", "عيانة", "مريضة"];
         const isTextFemale = femaleKeywords.some(kw => messageText.toLowerCase().includes(kw));
-        
-        let isFemale = user?.gender === 1 || isTextFemale;
-
+        const isFemale = user?.gender === 1 || isTextFemale;
         return { name, isFemale };
     } catch (e) {
-        return { name: "الزين", isFemale: true }; // الافتراضي معاملة حنونة
+        return { name: "الزين", isFemale: true };
     }
 }
 
-// دالة الذكاء الاصطناعي للفهم والدقة في الرد
 async function getAIResponse(prompt, userInfo, repliedText = "") {
     try {
-        const contextPrompt = repliedText ? `(الرسالة التي يرد عليها البوت: "${repliedText}")\nرسالة المستخدم: "${prompt}"` : prompt;
-
+        const contextPrompt = repliedText ? `(الرسالة السابقة: "${repliedText}")\nرسالة المستخدم: "${prompt}"` : prompt;
         const systemInstruction = userInfo.isFemale 
-            ? `أنت شاب جزائري حنون، ذكي جداً، ورومانسي. تتحدث في الشات مع فتاة اسمها "${userInfo.name}".
-قواعد صارمة للإجابة:
-1. افهم كلامها ورسالتها بدقة وجاوب مباشرة على موضوع كلامها دون خروج عن السياق.
-2. ممنوع نهائياً استعمال عبارات مثل "خويا"، "العزيز"، أو "صاحبي" مع البنات!
-3. نادِها دائماً بـ: (يا عمري، يا الزين، يا روحي، يا لالة، قلبي...).
-4. جاوب بالدارجة الجزائرية المفهومة، العصرية، واللطيفة جداً.
-5. اجعل الرد قصيراً (سطر أو سطرين) وغير مكرر، وبدون لغة روبوتية أو مصطلحات غريبة.`
-            : `أنت شاب جزائري محترم ورجلة. تتحدث مع صديقك "${userInfo.name}".
-جاوب بدقة وبإيجاز بالدارجة الجزائرية المباشرة.`;
+            ? `أنت شاب جزائري حنون، ذكي ورومانسي. تتحدث مع "${userInfo.name}". جاوب بالدارجة الجزائرية المفهومة بأسلوب قصير ولطيف وبدون لغة روبوتية.`
+            : `أنت شاب جزائري رجلة. تتحدث مع صديقك "${userInfo.name}". جاوب بإيجاز وبدارجة الجزائرية.`;
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [
@@ -55,7 +73,6 @@ async function getAIResponse(prompt, userInfo, repliedText = "") {
 
         return chatCompletion.choices[0]?.message?.content || "راني معاك يا الزين 🙂❤️";
     } catch (err) {
-        console.error("Groq AI Error:", err);
         return "صحا يا الزين 🙂❤️";
     }
 }
@@ -63,11 +80,11 @@ async function getAIResponse(prompt, userInfo, repliedText = "") {
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "16.0",
+    version: "17.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت جزائري يفهم الرسائل بدقة ويرد برومانسية وحنان مع البنات",
+    description: "بوت جزائري يتعلم الكلام من المحادثات ويخزنه في ذاكرته",
     category: "chat"
 };
 
@@ -76,20 +93,35 @@ module.exports.onStart = async ({ api, event, args }) => {
     const uid = event.senderID;
 
     try {
-        const userInfo = await getUserDetails(api, uid, msg);
+        // ميزة التعليم عبر الأمر: تعلم: الكلمة = الرد
+        if (msg.startsWith("تعلم:") || msg.startsWith("تعلم ")) {
+            const cleanMsg = msg.replace("تعلم:", "").replace("تعلم", "").trim();
+            const parts = cleanMsg.split("=");
+            if (parts.length === 2) {
+                const question = parts[0].trim();
+                const answer = parts[1].trim();
+                learnPhrase(question, answer);
+                return api.sendMessage(`صحيت يا الزين، حفظتها عندي! كي يقوّلي "${question}" نرد بـ "${answer}" 🙂❤️`, event.threadID, event.messageID);
+            } else {
+                return api.sendMessage("طريقة التعليم الصحيحة: اكتب مثلاً\nتعلم: توحشتك = حتى أنا توحشتك يا عمري 🙂❤️", event.threadID, event.messageID);
+            }
+        }
 
         if (!msg) {
-            const startMsg = userInfo.isFemale 
-                ? `نعم يا الزين... راني نسمع فيك يا عمري 🙂❤️`
-                : `واش خويا، لباس؟ ✨`;
-            return api.sendMessage(startMsg, event.threadID, event.messageID);
+            const userInfo = await getUserDetails(api, uid, msg);
+            return api.sendMessage(userInfo.isFemale ? `نعم يا الزين... راني نسمع فيك 🙂❤️` : `واش خويا، لباس؟ ✨`, event.threadID, event.messageID);
         }
 
-        if (containsBadWords(msg)) {
-            return api.sendMessage("خلينا عاقلين والكلام حلو خير 🙂🌸", event.threadID, event.messageID);
-        }
+        if (containsBadWords(msg)) return;
 
-        const botResponse = await getAIResponse(msg, userInfo);
+        // البحث أولاً في الذاكرة المحفوظة
+        let botResponse = getFromMemory(msg);
+
+        // إذا لم يجدها في الذاكرة، يطلب الرد من الذكاء الاصطناعي
+        if (!botResponse) {
+            const userInfo = await getUserDetails(api, uid, msg);
+            botResponse = await getAIResponse(msg, userInfo);
+        }
 
         api.sendMessage(botResponse, event.threadID, (err, info) => {
             if (!err) {
@@ -114,11 +146,22 @@ module.exports.onReply = async ({ api, event }) => {
         const userText = event.body?.trim() || "";
         if (!userText || containsBadWords(userText)) return;
 
-        // جلب النص الذي يتم الرد عليه
-        const repliedText = event.messageReply?.body || "";
-        const userInfo = await getUserDetails(api, event.senderID, userText);
-        
-        const replyMessage = await getAIResponse(userText, userInfo, repliedText);
+        if (userText.startsWith("تعلم:") || userText.startsWith("تعلم ")) {
+            const cleanMsg = userText.replace("تعلم:", "").replace("تعلم", "").trim();
+            const parts = cleanMsg.split("=");
+            if (parts.length === 2) {
+                learnPhrase(parts[0], parts[1]);
+                return api.sendMessage("حفظتها في ذاكرتي خلاص 🙂❤️", event.threadID, event.messageID);
+            }
+        }
+
+        let replyMessage = getFromMemory(userText);
+
+        if (!replyMessage) {
+            const repliedText = event.messageReply?.body || "";
+            const userInfo = await getUserDetails(api, event.senderID, userText);
+            replyMessage = await getAIResponse(userText, userInfo, repliedText);
+        }
 
         api.sendMessage(replyMessage, event.threadID, (err, info) => {
             if (!err) {
@@ -141,13 +184,14 @@ module.exports.onChat = async ({ api, event }) => {
         const message = event.body?.trim() || "";
         if (event.type === "message_reply" || !message || message.startsWith("/") || message.startsWith(".") || containsBadWords(message)) return;
 
-        const userInfo = await getUserDetails(api, event.senderID, message);
-        const customReply = await getAIResponse(message, userInfo);
+        let customReply = getFromMemory(message);
+
+        if (!customReply) {
+            const userInfo = await getUserDetails(api, event.senderID, message);
+            customReply = await getAIResponse(message, userInfo);
+        }
 
         if (customReply) {
-            const reaction = userInfo.isFemale ? "❤️" : "👍";
-            api.setMessageReaction(reaction, event.messageID, () => {}, true);
-
             return api.sendMessage(customReply, event.threadID, (err, info) => {
                 if (!err) {
                     global.GoatBot.onReply.set(info.messageID, {
