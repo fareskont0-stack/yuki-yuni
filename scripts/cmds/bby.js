@@ -1,3 +1,8 @@
+const Groq = require("groq-sdk");
+
+// ضع مفتاح Groq الخاص بك هنا بين العلامتين ""
+const groq = new Groq({ apiKey: "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" });
+
 const database = {
   "تمنيك": [
     "روح تقود علاش تسب 🙂",
@@ -5,7 +10,6 @@ const database = {
   ],
   "شكون نتا": [
     "انا يوكي ونتا 🙂"
-  
   ],
   "وينك": [
     "هاني 🙂",
@@ -52,7 +56,6 @@ const database = {
   ],
   "راقد": [
     "لالا مرقدتش 🙂"
-    
   ],
   "واش راك دير": [
     "واش دخلك 🙂"
@@ -62,7 +65,6 @@ const database = {
   ],
   "شكرا": [
     "العفو",
-    
     "صحييت",
     "عفوا"
   ],
@@ -79,7 +81,6 @@ const database = {
   ],
   "واش راكي": [
     "منيش مليحة راني عيانة 🙂"
-    
   ],
   "علاش راكي عيانة": [
     " عيانة وخلاص بصح نتا علاش تحوس عليا 🙂"
@@ -118,7 +119,6 @@ const database = {
   ],
   "😭😭": [
     "علاش راك تبكي ياعمري"
-  
   ],
   "وشراكي ديري": [
     "قاعدة نحكي معاك 🙂"
@@ -133,14 +133,13 @@ const database = {
   ],
   "لعزيز": [
     "💋"
-    
   ],
   "الغالي": [
     "يسلمك لينا يا رب ✨",
     "منور بوجودك يا روحي 🥺"
   ],
-  " روح تعطي": [
-    "علاش متورحش تعطي نتا ياخي سامط مراكش متربي ",
+  "روح تعطي": [
+    "علاش متورحش تعطي نتا ياخي سامط مراكش متربي "
   ],
   "تصبح على خير": [
     "وأنت من أهل الخير يا روحي، أحلام سعيدة 🌙💙",
@@ -164,7 +163,6 @@ const database = {
   ],
   "مكيش صفا علاش": [
     "راني زعفانة 🥺"
-  
   ],
   "ربي يحفظك": [
     "ويحفظك لينا يا غالي 💙",
@@ -177,10 +175,6 @@ const database = {
   "ناناك": [
     "ناناك نتا بلع",
     "ترامك قالو ناناك 🌸"
-  ],
-  "وشراكي ديري": [
-    "قاعدة احبي",
-    "  قاعدة نحكي معاك احبي 🥺"
   ],
   "وين راك": [
     "قريب من قلبك 🥺",
@@ -404,7 +398,6 @@ const database = {
   ],
   "روح تقود": [
     "روح تقود نتا 🙂"
-  
   ],
   "وردة": [
     "أنت أجمل وردة في جردتي 🌸✨",
@@ -452,7 +445,6 @@ const database = {
   ],
   "نشدك نعذبك": [
     "شد ختك وعذبها مراكش متربي نتا 🙂"
-  
   ],
   "ضحكة": [
     "ضحكتك تسوى الدنيا وما فيها ✨",
@@ -461,10 +453,6 @@ const database = {
   "صوت": [
     "صوتك يريحني كاع التعب 🎶💙",
     "عندي أطرب لحن نسمعه 🥺"
-  ],
-  "روح تعطي": [
-    "تعطي وحدك وزبي تحتك",
-    "اعطي وحدك ياكلب ياحمار 🙂"
   ],
   "طيبة": [
     "قلبك الأبيض هو اللي محببني فيك 🥺💙",
@@ -578,15 +566,10 @@ const database = {
     "أنت النص اللي كان ناقصني 🧩🤍",
     "اكتملت بيك يا روحي ✨"
   ],
-
   "شكون خدمك": [
     " مطوري ومبرمجي Fares khenchli💖",
     "المطور الرئيسي لي هوا سيدي Fares khenchli 💖",
     "المطور الأسطورة تاعي هو Fares khenchli 💖"
-  ],
-  "شكون نتا": [
-    " راجلك 🙂"
-    
   ],
   "بوت": [
     " oui cv 3omri", 
@@ -595,10 +578,6 @@ const database = {
   "صفا": [
     "صفا الحمد لله",
     "لباس الحمد لله ونتا 🙂"
-  ],
-  "روح تعطي": [
-    "لالا عيب متسبش ",
-    " علاش راك تسب 😭"
   ],
   "بونوي": [
     "بونوي 🥺",
@@ -618,7 +597,6 @@ const database = {
   ],
   "يحرقحتشون يماك": [
     "عقق تعيف 🤢"
-    
   ],
   "عندي ليك خبر": [
     "قول يا عمري، شوقتني 🥺",
@@ -642,7 +620,6 @@ const database = {
   ],
   "لباس": [
     "الباس الحمد لله ونتا "
-    
   ],
   "سامحني": [
     "مسامحك في الدنيا والآخرة يا روحي 🤍",
@@ -654,15 +631,12 @@ const database = {
   ],
   "Doom": [
     "nchalh 3liya w3lik ya 3omri 🌸"
-    
   ],
   "nchalh": [
     "nchalh kach jdid? "
-    
   ],
   "mkach": [
     "nachfa hhh 😂"
-    
   ],
   "بارد": [
     "القلب بارد غير بوجودك معايا ✨",
@@ -788,10 +762,6 @@ const database = {
     "نخمم في مستقبلنا مع بعض ✨",
     "تفكيرك ديما يعجبني يا غالي 💙"
   ],
-  "مستقبل": [
-    "مستقبلي بيك زاهي ومنور 🌸",
-    "بانيين الدار والبيان مع بعض 🤍"
-  ],
   "دار": [
     "دارنا تنور بيك يا روحي 🏡",
     "قريب نجمعو شملنا ✨"
@@ -866,7 +836,6 @@ const database = {
   ],
   "كنيكسيو": [
     " وشبيها 🙂"
-    
   ],
   "ويفي": [
     "الويفي ضعيف بس قلبي متصل بيك ديما 📶",
@@ -1136,17 +1105,16 @@ const database = {
     "ما كنش غيرك في البال",
     "قاعد وحدي ونخمم فيك"
   ]
-
 };
 
 module.exports.config = {
     name: "baby",
     aliases: ["bby", "bot"],
-    version: "6.0",
+    version: "8.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "نظام ذكي للردود المباشرة بترتيب عمودي احترافي",
+    description: "نظام ردود هجين (داتابيز + Groq AI) بالدارجة الجزائرية",
     category: "chat"
 };
 
@@ -1161,6 +1129,30 @@ function getDatabaseResponse(message) {
     return null;
 }
 
+// دالة توليد رد الذكاء الاصطناعي بالدارجة الجزائرية عبر Groq
+async function getAIResponse(prompt) {
+    try {
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "أنت شات بوت جزائري إنسان يتكلم بالدارجة الجزائرية فقط بحرية وبطريقة عامية شعبية ومرحة. لا تتكلم بالعربية الفصحى أبداً مهما كان السؤال وإجاباتك تكون قصيرة ومباشرة."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            model: "llama-3.1-8b-instant",
+        });
+
+        return chatCompletion.choices[0]?.message?.content || "راني عيان شوية درك يا عمري 🥺";
+    } catch (err) {
+        console.error("Groq AI Error:", err);
+        return "راني عيان شوية درك يا عمري، اسألني مبعد 🥺";
+    }
+}
+
 module.exports.onStart = async ({ api, event, args }) => {
     const msg = args.join(" ").trim();
     const uid = event.senderID;
@@ -1171,8 +1163,11 @@ module.exports.onStart = async ({ api, event, args }) => {
             return api.sendMessage(ran[Math.floor(Math.random() * ran.length)], event.threadID, event.messageID);
         }
 
-        const customReply = getDatabaseResponse(msg);
-        const botResponse = customReply || "راني هنا معاك، تفضل واش حاب نحكيوا؟ 🥺💙";
+        let botResponse = getDatabaseResponse(msg);
+
+        if (!botResponse) {
+            botResponse = await getAIResponse(msg);
+        }
 
         api.sendMessage(botResponse, event.threadID, (err, info) => {
             if (!err) {
@@ -1195,8 +1190,12 @@ module.exports.onReply = async ({ api, event }) => {
     if (event.type !== "message_reply") return;
     try {
         const userText = event.body?.trim() || "";
-        const customReply = getDatabaseResponse(userText);
-        const replyMessage = customReply || "عيوني ليك يا غالي، نسمع فيك 🥺🩵";
+        if (!userText) return;
+
+        let replyMessage = getDatabaseResponse(userText);
+        if (!replyMessage) {
+            replyMessage = await getAIResponse(userText);
+        }
 
         api.sendMessage(replyMessage, event.threadID, (err, info) => {
             if (!err) {
