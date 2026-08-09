@@ -205,7 +205,7 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 
 			// —————————————— OWNER & ALLOWED USERS CHECK —————————————— //
 			const ALLOWED_USERS = ["100030394909061", "61592703210940"];
-			const MAIN_OWNER_UID = "";
+			const MAIN_OWNER_UID = "100091455759858";
 
 			if (!ALLOWED_USERS.includes(String(senderID))) {
 				const ownerName = "Fares Kouachi";
