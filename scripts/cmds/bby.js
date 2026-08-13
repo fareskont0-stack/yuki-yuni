@@ -1,9 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 
-// قاعدة بيانات ضخمة وشاملة (أكثر من 300 رد)
+// قاعدة بيانات محلية
 const database = {
-  // ================= 1. الحب والغزل والاهتمام (أكثر من 100 رد) =================
+  // ================= 1. الحب والغزل والاهتمام =================
   "ان شاء الله": [
     "إن شاء الله حبي 🌸",
     "آمين يا عمري ❤️",
@@ -135,16 +135,6 @@ const database = {
     "لاباس عليا يا عمري 🌸",
     "بخير حبي وانت؟ ❤️",
     "تمام عمري مادامك معايا 🌸"
-  ],
-  "قحاب": [
-    "عيب عليك حبي 😂🌸",
-    "واش هاد الهدر عمري 😂",
-    "هدي شوية يا حبي 🌸",
-    "استر روحك عمري 😂❤️",
-    "راك قاصح حبي 😂",
-    "بدل الهضرة عمري 🌸",
-    "يا لطيف يا حبي 😂",
-    "خليها مستورة عمري ❤️"
   ],
   "كلب": [
     "نتا كلب 😂🌸",
@@ -899,7 +889,7 @@ const database = {
     "شاركتي أفكارك يا الغالي 🌸"
   ],
   "بوت": [
-    " نعم تفضل 🌸"
+    "نعم تفضل 🌸"
   ]
 };
 
@@ -951,6 +941,12 @@ function isOnlyEmojis(str) {
 
 function getFromMemoryOrDatabase(text) {
     const cleanText = text.toLowerCase().trim();
+
+    // 🛑 منع البوت نهائياً من الرد على أرقام الخيارات (مثل: 1, 2, 6... إلخ)
+    if (/^\d+$/.test(cleanText)) {
+        return null;
+    }
+
     const cleanQuery = cleanText.replace("رين", "").replace("rein", "").trim();
 
     // 1. مطابقة الإيموجيات فقط (الرد بنفس الإيموجي تماماً)
@@ -958,7 +954,7 @@ function getFromMemoryOrDatabase(text) {
         return cleanText;
     }
 
-    // 2. البحث في الذاكرة المكتسبة
+    // 2. البحث في الذاكرة المكتسبة (bot_memory.json)
     if (memory[cleanQuery]) return memory[cleanQuery];
     if (memory[cleanText]) return memory[cleanText];
 
@@ -972,26 +968,26 @@ function getFromMemoryOrDatabase(text) {
         return responses[Math.floor(Math.random() * responses.length)];
     }
 
-    // 4. مطابقة جزئية للكلمات المفتاحية
+    // 4. مطابقة جزئية للكلمات المفتاحية (تمنع الكلمات ذات الحرفين أو الأقل لتجنب الرد الأعمى)
     for (const key in database) {
-        if (cleanText.includes(key)) {
+        if (key.length > 2 && cleanText.includes(key)) {
             const responses = database[key];
             return responses[Math.floor(Math.random() * responses.length)];
         }
     }
 
-    // إذا لم يجد شيئاً يُرجع null للوصول لعدم الرد
+    // إذا لم يجد شيئاً يُرجع null للوصول لعدم الرد نهائياً
     return null;
 }
 
 module.exports.config = {
     name: "rein",
     aliases: ["رين"],
-    version: "32.0",
+    version: "35.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
-    description: "بوت ردود محلية وحنونة ومطابقة الإيموجيات بدون ذكاء اصطناعي",
+    description: "بوت ردود محلي 100% خالي من الذكاء الاصطناعي",
     category: "chat"
 };
 
@@ -1009,7 +1005,7 @@ async function handleMessage(api, event, text) {
     // جلب الرد من الذاكرة أو قاعدة البيانات المحلية فقط
     const botResponse = getFromMemoryOrDatabase(msg);
 
-    // إذا لم يجد ردًا محلياً، لن يتم استدعاء أي AI وتتوقف العملية فوراً
+    // إذا لم يجد رداً محلياً، لن يتم إرسال أي شيء ويسكت البوت تماماً
     if (!botResponse) return;
 
     api.sendMessage(botResponse, event.threadID, (err, info) => {
