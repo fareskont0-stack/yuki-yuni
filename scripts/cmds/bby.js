@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-// قاعدة بيانات محلية
+// قاعدة بيانات محلية ثابتة
 const database = {
   // ================= 1. الحب والغزل والاهتمام =================
   "ان شاء الله": [
@@ -942,23 +942,23 @@ function isOnlyEmojis(str) {
 function getFromMemoryOrDatabase(text) {
     const cleanText = text.toLowerCase().trim();
 
-    // 🛑 منع البوت نهائياً من الرد على أرقام الخيارات (مثل: 1, 2, 6... إلخ)
+    // 🛑 حظر الأرقام تماماً ومنع الرد عليها
     if (/^\d+$/.test(cleanText)) {
         return null;
     }
 
     const cleanQuery = cleanText.replace("رين", "").replace("rein", "").trim();
 
-    // 1. مطابقة الإيموجيات فقط (الرد بنفس الإيموجي تماماً)
+    // 1. مطابقة الإيموجيات فقط
     if (isOnlyEmojis(cleanText)) {
         return cleanText;
     }
 
-    // 2. البحث في الذاكرة المكتسبة (bot_memory.json)
+    // 2. البحث في الذاكرة المحلية الخالصة (bot_memory.json)
     if (memory[cleanQuery]) return memory[cleanQuery];
     if (memory[cleanText]) return memory[cleanText];
 
-    // 3. المطابقة المباشرة في قاعدة البيانات
+    // 3. المطابقة المباشرة والصرامة في قاعدة البيانات الثابتة فقط
     if (database[cleanQuery]) {
         const responses = database[cleanQuery];
         return responses[Math.floor(Math.random() * responses.length)];
@@ -968,22 +968,14 @@ function getFromMemoryOrDatabase(text) {
         return responses[Math.floor(Math.random() * responses.length)];
     }
 
-    // 4. مطابقة جزئية للكلمات المفتاحية (تمنع الكلمات ذات الحرفين أو الأقل لتجنب الرد الأعمى)
-    for (const key in database) {
-        if (key.length > 2 && cleanText.includes(key)) {
-            const responses = database[key];
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
-    }
-
-    // إذا لم يجد شيئاً يُرجع null للوصول لعدم الرد نهائياً
+    // إذا لم يجد نصاً مطابقاً، يتجاهل الرسالة تماماً وبصمت
     return null;
 }
 
 module.exports.config = {
     name: "rein",
     aliases: ["رين"],
-    version: "35.0",
+    version: "36.0",
     author: "Fares Kouachi",
     countDown: 0,
     role: 0,
@@ -1002,23 +994,13 @@ async function handleMessage(api, event, text) {
         }
     }
 
-    // جلب الرد من الذاكرة أو قاعدة البيانات المحلية فقط
+    // جلب الرد
     const botResponse = getFromMemoryOrDatabase(msg);
 
-    // إذا لم يجد رداً محلياً، لن يتم إرسال أي شيء ويسكت البوت تماماً
+    // إذا لم يتم العثور على رد محلي مطابق، لن يتم إرسال أي نص
     if (!botResponse) return;
 
-    api.sendMessage(botResponse, event.threadID, (err, info) => {
-        if (!err && global.GoatBot?.onReply) {
-            global.GoatBot.onReply.set(info.messageID, {
-               commandName: "rein",
-               type: "reply",
-               messageID: info.messageID,
-               author: event.senderID,
-               text: botResponse
-            });
-        }
-    }, event.messageID);
+    api.sendMessage(botResponse, event.threadID, null, event.messageID);
 }
 
 module.exports.onStart = async ({ api, event, args }) => {
@@ -1028,13 +1010,19 @@ module.exports.onStart = async ({ api, event, args }) => {
 
 module.exports.onReply = async ({ api, event }) => {
     if (event.type !== "message_reply") return;
-    await handleMessage(api, event, event.body || "");
+    const body = event.body?.trim() || "";
+
+    // تجاهل الردود الرقمية منعاً للتضارب مع أوامر المجموعات
+    if (/^\d+$/.test(body)) return;
+
+    await handleMessage(api, event, body);
 };
 
 module.exports.onChat = async ({ api, event }) => {
     const message = event.body?.trim() || "";
 
     if (message.startsWith("/") || message.startsWith(".")) return;
+    if (/^\d+$/.test(message)) return;
 
     await handleMessage(api, event, message);
 };
